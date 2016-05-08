@@ -1,0 +1,35 @@
+apply plugin: 'java'
+apply plugin: 'application'
+apply plugin: 'eclipse'
+apply plugin: 'idea'
+
+// Same repository configuration as root project
+repositories {
+    // External libs - jcenter is Bintray and is supposed to be a superset of Maven Central, but do both just in case
+    jcenter()
+    mavenCentral()
+
+    // MovingBlocks Artifactory instance for libs not readily available elsewhere plus our own libs
+    maven {
+        url "http://artifactory.terasology.org/artifactory/repo"
+    }
+}
+
+mainClassName = "org.terasology.server.WebServerMain"
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '2.13'
+}
+
+dependencies {
+    compile project(':engine')
+
+    compile 'org.eclipse.jetty:jetty-servlet:9.3.8.v20160314'
+    compile 'javax.servlet:javax.servlet-api:3.1.0'
+
+    compile 'org.glassfish.jersey.containers:jersey-container-jetty-servlet:2.22.2'
+    compile 'org.glassfish.jersey.ext:jersey-mvc-freemarker:2.22.2'
+
+    testCompile 'junit:junit:4.12'
+}
+
