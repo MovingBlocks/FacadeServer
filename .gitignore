@@ -17,6 +17,7 @@
 
 # Ignore gradle
 /build/
+/.gradle
 
 # Ignore IntelliJ
 /*.iml

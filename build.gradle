@@ -1,3 +1,7 @@
+plugins {
+    id "org.standardout.versioneye" version "1.3.0"
+}
+
 apply plugin: 'java'
 apply plugin: 'application'
 apply plugin: 'eclipse'
@@ -5,26 +9,25 @@ apply plugin: 'idea'
 
 apply from: 'config/gradle/versioning.gradle'
 
+mainClassName = "org.terasology.web.ServerMain"
+group = 'org.terasology.web'
+
 // Same repository configuration as root project
 repositories {
-    // External libs - jcenter is Bintray and is supposed to be a superset of Maven Central, but do both just in case
-    jcenter()
-    mavenCentral()
+   mavenCentral()
 
     // MovingBlocks Artifactory instance for libs not readily available elsewhere plus our own libs
     maven {
-        url "http://artifactory.terasology.org/artifactory/repo"
+        url "http://artifactory.terasology.org/artifactory/virtual-repo-live"
     }
 }
-
-mainClassName = "org.terasology.server.WebServerMain"
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.13'
 }
 
 dependencies {
-    compile project(':engine')
+    compile 'org.terasology.engine:engine:1.0.0'
 
     compile 'org.eclipse.jetty:jetty-servlet:9.3.8.v20160314'
     compile 'javax.servlet:javax.servlet-api:3.1.0'
