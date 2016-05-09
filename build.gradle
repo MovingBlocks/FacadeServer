@@ -3,6 +3,8 @@ apply plugin: 'application'
 apply plugin: 'eclipse'
 apply plugin: 'idea'
 
+apply from: 'config/gradle/versioning.gradle'
+
 // Same repository configuration as root project
 repositories {
     // External libs - jcenter is Bintray and is supposed to be a superset of Maven Central, but do both just in case

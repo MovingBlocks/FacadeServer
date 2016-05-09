@@ -1,0 +1,22 @@
+
+/* Always show browser scrollbar to prevent page jumping */
+html {
+    overflow-y: scroll;
+}
+
+/* Center text of td elements with ID editremove */
+td.edit-remove {
+  text-align: center;
+}
+
+
+tr.disabled {
+    color: #AAAAAA;
+}
+
+tr.disabled img {
+    filter: gray; /* IE6-9 */
+    filter: grayscale(1); /* Firefox 35+ */
+    -webkit-filter: grayscale(1); /* Google Chrome, Safari 6+ & Opera 15+ */
+}
+

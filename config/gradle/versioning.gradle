@@ -1,0 +1,18 @@
+
+task createVersionJavaFile(type:Copy) {
+    description = 'Creates a java version file based on the template in the resources folder'
+    
+    inputs.property('version', version)    // the up-to-date flag depends on the version property
+    
+    from('src/main/resources/VersionInfo.template')
+    into('src/main/java/org/terasology/web/version')
+    rename '(.*).template', '$1.java'
+
+    expand(VERSION: version)
+    
+    doLast {
+        logger.lifecycle("Updated 'VersionInfo.java' to version $version");
+    }
+}
+
+compileJava.dependsOn createVersionJavaFile
