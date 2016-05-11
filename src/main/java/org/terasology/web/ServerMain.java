@@ -18,12 +18,15 @@ package org.terasology.web;
 
 import java.util.Locale;
 
+import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -31,6 +34,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.web.io.GsonMessageBodyHandler;
 import org.terasology.web.servlet.AboutServlet;
+import org.terasology.web.servlet.LogServlet;
+import org.terasology.web.servlet.WsEventServlet;
 
 
 /**
@@ -62,6 +67,7 @@ public final class ServerMain {
         Locale.setDefault(Locale.ENGLISH);
 
         Server server = createServer(port.intValue(),
+                new LogServlet(),
                 new AboutServlet());
 
         server.start();
@@ -96,9 +102,9 @@ public final class ServerMain {
         }
 
         ServletContextHandler jerseyContext = new ServletContextHandler(ServletContextHandler.GZIP);
-        jerseyContext.setContextPath("/");
         jerseyContext.setResourceBase("templates");
         jerseyContext.addServlet(new ServletHolder(new ServletContainer(rc)), "/*");
+        jerseyContext.addServlet(new ServletHolder(WsEventServlet.class), "/events/*");
 
         HandlerList handlers = new HandlerList();
         handlers.addHandler(logContext);

@@ -3,6 +3,10 @@
         <nav>
           <ul class="nav nav-pills pull-right">
             <li role="presentation"
+                <#if tab == "log">class="active"</#if>
+                ><a href="/log">Logs</a>
+            </li>
+            <li role="presentation"
                 <#if tab == "about">class="active"</#if>
                 ><a href="/home"><span class="glyphicon glyphicon-home" aria-hidden="true" title="Home"></span></a>
             </li>
