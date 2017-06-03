@@ -30,7 +30,8 @@ def jettyVersion = '9.3.8.v20160314'
 def jerseyVersion = '2.22.2'
 
 dependencies {
-    compile 'org.terasology.engine:engine:1.0.0'
+    //compile 'org.terasology.engine:engine:1.0.0'
+    compile project(':engine')
 
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: jettyVersion
     compile group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: jettyVersion

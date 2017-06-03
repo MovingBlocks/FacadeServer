@@ -21,6 +21,6 @@
         <appender-ref ref="FILE"/>
     </root>
 
-    <logger name="org.terasology" level="DEBUG" />
+    <logger name="org.terasology" level="INFO" />
 
 </configuration>
