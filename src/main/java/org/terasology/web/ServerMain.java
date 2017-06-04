@@ -16,6 +16,9 @@
 
 package org.terasology.web;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Locale;
 
 import org.eclipse.jetty.server.Server;
@@ -29,6 +32,9 @@ import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.engine.LoggingContext;
+import org.terasology.engine.paths.PathManager;
+import org.terasology.engine.subsystem.common.ConfigurationSubsystem;
 import org.terasology.web.io.GsonMessageBodyHandler;
 import org.terasology.web.servlet.AboutServlet;
 import org.terasology.web.servlet.LogServlet;
@@ -41,6 +47,9 @@ public final class ServerMain {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerMain.class);
 
+    private static final String ARG_ENGINE_DIR = "-homedir=";
+    private static final String ARG_ENGINE_SERVER_PORT = "-serverPort=";
+
     private ServerMain() {
         // no instances
     }
@@ -50,6 +59,9 @@ public final class ServerMain {
      * @throws Exception
      */
     public static void main(String[] args) throws Exception {
+
+        setupLogging();
+        handleArgs(args);
 
         String portEnv = System.getenv("PORT");
         if (portEnv == null) {
@@ -68,14 +80,43 @@ public final class ServerMain {
                 new AboutServlet());
 
         server.start();
-        logger.info("Server started on port {}!", port);
+        logger.info("Web server started on port {}!", port);
 
         EngineRunner.runEngine();
 
         server.join();
     }
 
-    public static Server createServer(int port, Object... annotatedObjects) throws Exception {
+    private static void handleArgs(String[] args) {
+        Path homePath = Paths.get(""); //use current directory as default
+        for (String arg: args) {
+            if (arg.startsWith(ARG_ENGINE_DIR)) {
+                homePath = Paths.get(arg.substring(ARG_ENGINE_DIR.length()));
+            } else if (arg.startsWith(ARG_ENGINE_SERVER_PORT)) {
+                System.setProperty(ConfigurationSubsystem.SERVER_PORT_PROPERTY, arg.substring(ARG_ENGINE_SERVER_PORT.length()));
+            } else {
+                logger.error("Unrecognized command line argument \"" + arg + "\"");
+                System.exit(1);
+            }
+        }
+        try {
+            PathManager.getInstance().useOverrideHomePath(homePath);
+        } catch (IOException e) {
+            logger.error("Failed to access the engine data directory", e);
+            System.exit(1);
+        }
+    }
+
+    private static void setupLogging() {
+        Path path = PathManager.getInstance().getLogPath();
+        if (path == null) {
+            path = Paths.get("logs");
+        }
+
+        LoggingContext.initialize(path);
+    }
+
+    private static Server createServer(int port, Object... annotatedObjects) throws Exception {
         Server server = new Server(port);
 
         ResourceHandler logFileResourceHandler = new ResourceHandler();

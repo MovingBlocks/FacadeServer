@@ -99,3 +99,4 @@ run.dependsOn rootProject.moduleClasses
 run.dependsOn setupServerConfig
 run.dependsOn setupServerModules
 run.workingDir = rootDir
+run.args = ["-homedir=terasology-server"]

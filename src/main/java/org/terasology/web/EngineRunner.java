@@ -17,10 +17,8 @@ package org.terasology.web;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.engine.LoggingContext;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
-import org.terasology.engine.paths.PathManager;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
 import org.terasology.engine.subsystem.headless.HeadlessAudio;
 import org.terasology.engine.subsystem.headless.HeadlessGraphics;
@@ -28,10 +26,6 @@ import org.terasology.engine.subsystem.headless.HeadlessInput;
 import org.terasology.engine.subsystem.headless.HeadlessTimer;
 import org.terasology.engine.subsystem.headless.mode.HeadlessStateChangeListener;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
-
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 final class EngineRunner {
 
@@ -41,12 +35,6 @@ final class EngineRunner {
     }
 
     static void runEngine() {
-        try {
-            PathManager.getInstance().useOverrideHomePath(Paths.get("terasology-server"));
-        } catch (IOException e) {
-            logger.error("Failed to access engine data directory", e);
-        }
-        setupLogging();
         TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
         populateSubsystems(builder);
         TerasologyEngine engine = builder.build();
@@ -62,12 +50,4 @@ final class EngineRunner {
                 .add(new HibernationSubsystem());
     }
 
-    private static void setupLogging() {
-        Path path = PathManager.getInstance().getLogPath();
-        if (path == null) {
-            path = Paths.get("logs");
-        }
-
-        LoggingContext.initialize(path);
-    }
 }
