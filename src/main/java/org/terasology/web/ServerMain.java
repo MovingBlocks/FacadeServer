@@ -19,6 +19,8 @@ package org.terasology.web;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
 import org.eclipse.jetty.server.Server;
@@ -47,6 +49,7 @@ public final class ServerMain {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerMain.class);
 
+    private static final String[] ARGS_HELP = {"--help", "-help", "/help", "-h", "/h", "-?", "/?"};
     private static final String ARG_ENGINE_DIR = "-homedir=";
     private static final String ARG_ENGINE_SERVER_PORT = "-serverPort=";
 
@@ -84,14 +87,19 @@ public final class ServerMain {
     }
 
     private static void handleArgs(String[] args) {
+        List<String> helpArgs = Arrays.asList(ARGS_HELP);
         Path homePath = Paths.get(""); //use current directory as default
         for (String arg: args) {
-            if (arg.startsWith(ARG_ENGINE_DIR)) {
+            if (helpArgs.contains(arg)) {
+                printUsage();
+                System.exit(0);
+            } else if (arg.startsWith(ARG_ENGINE_DIR)) {
                 homePath = Paths.get(arg.substring(ARG_ENGINE_DIR.length()));
             } else if (arg.startsWith(ARG_ENGINE_SERVER_PORT)) {
                 System.setProperty(ConfigurationSubsystem.SERVER_PORT_PROPERTY, arg.substring(ARG_ENGINE_SERVER_PORT.length()));
             } else {
                 System.err.println("Unrecognized command line argument \"" + arg + "\"");
+                printUsage();
                 System.exit(1);
             }
         }
@@ -101,6 +109,14 @@ public final class ServerMain {
             System.err.println("Failed to access the engine data directory: " + e.getMessage());
             System.exit(1);
         }
+    }
+
+    private static void printUsage() {
+        System.out.println("Available command line options:");
+        System.out.println(ARG_ENGINE_DIR + ": use the specified directory as the Terasology engine data directory");
+        System.out.println(ARG_ENGINE_SERVER_PORT + ": use the specified port for the Terasology server");
+        System.out.println();
+        System.out.println("The web server port (default 8080) can be overridden by setting the environment variable PORT.");
     }
 
     private static void setupLogging() {
