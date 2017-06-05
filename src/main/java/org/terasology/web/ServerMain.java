@@ -54,14 +54,10 @@ public final class ServerMain {
         // no instances
     }
 
-    /**
-     * @param args ignored
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
 
-        setupLogging();
         handleArgs(args);
+        setupLogging();
 
         String portEnv = System.getenv("PORT");
         if (portEnv == null) {
@@ -75,7 +71,7 @@ public final class ServerMain {
         // define the date format.
         Locale.setDefault(Locale.ENGLISH);
 
-        Server server = createServer(port.intValue(),
+        Server server = createServer(port,
                 new LogServlet(),
                 new AboutServlet());
 
@@ -95,14 +91,14 @@ public final class ServerMain {
             } else if (arg.startsWith(ARG_ENGINE_SERVER_PORT)) {
                 System.setProperty(ConfigurationSubsystem.SERVER_PORT_PROPERTY, arg.substring(ARG_ENGINE_SERVER_PORT.length()));
             } else {
-                logger.error("Unrecognized command line argument \"" + arg + "\"");
+                System.err.println("Unrecognized command line argument \"" + arg + "\"");
                 System.exit(1);
             }
         }
         try {
             PathManager.getInstance().useOverrideHomePath(homePath);
         } catch (IOException e) {
-            logger.error("Failed to access the engine data directory", e);
+            System.err.println("Failed to access the engine data directory: " + e.getMessage());
             System.exit(1);
         }
     }

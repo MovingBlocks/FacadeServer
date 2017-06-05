@@ -15,8 +15,6 @@
  */
 package org.terasology.web;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
@@ -28,8 +26,6 @@ import org.terasology.engine.subsystem.headless.mode.HeadlessStateChangeListener
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
 
 final class EngineRunner {
-
-    private static final Logger logger = LoggerFactory.getLogger(ServerMain.class);
 
     private EngineRunner() {
     }
