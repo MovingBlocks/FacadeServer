@@ -133,7 +133,7 @@ public final class ServerMain {
 
         ResourceHandler logFileResourceHandler = new ResourceHandler();
         logFileResourceHandler.setDirectoriesListed(true);
-        logFileResourceHandler.setResourceBase("logs");
+        logFileResourceHandler.setResourceBase(LoggingContext.getLoggingPath().toString());
 
         ContextHandler logContext = new ContextHandler("/logs"); // the server uri path
         logContext.setHandler(logFileResourceHandler);
