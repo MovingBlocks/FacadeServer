@@ -19,6 +19,7 @@ import org.junit.Test;
 import org.terasology.identity.CertificateGenerator;
 import org.terasology.identity.CertificatePair;
 import org.terasology.identity.IdentityConstants;
+import org.terasology.identity.PrivateIdentityCertificate;
 import org.terasology.identity.PublicIdentityCertificate;
 
 import java.math.BigInteger;
@@ -30,7 +31,7 @@ import static org.junit.Assert.assertTrue;
 public class AuthenticationHandshakeHandlerTest {
 
     private BigInteger randomBigInteger(Random random) {
-        byte[] randomBytes = new byte[16];
+        byte[] randomBytes = new byte[64];
         random.nextBytes(randomBytes);
         return new BigInteger(randomBytes);
     }
@@ -43,7 +44,12 @@ public class AuthenticationHandshakeHandlerTest {
         return new PublicIdentityCertificate(id, randomBigInteger(r), randomBigInteger(r), randomBigInteger(r));
     }
 
-    @Test(expected = AuthenticationFailedException.class)
+    private PrivateIdentityCertificate randomPrivateCert(int seed) {
+        Random r = new Random(seed);
+        return new PrivateIdentityCertificate(randomBigInteger(r), randomBigInteger(r));
+    }
+
+    @Test(expected = AuthenticationFailedException.class) //authentication attempt that must be rejected
     public void testInvalidCertificate() throws AuthenticationFailedException {
         CertificateGenerator gen = new CertificateGenerator();
         CertificatePair server = gen.generateSelfSigned();
@@ -54,7 +60,25 @@ public class AuthenticationHandshakeHandlerTest {
         handshake.authenticate(clientHello, null);
     }
 
-    @Test
+    @Test(expected = AuthenticationFailedException.class) //authentication attempt that must be rejected
+    public void testBadSignature() throws AuthenticationFailedException {
+        CertificateGenerator gen = new CertificateGenerator();
+        CertificatePair server = gen.generateSelfSigned();
+        CertificatePair client = gen.generate(server.getPrivateCert());
+
+        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandler(server.getPublicCert());
+        HandshakeHello serverHello = handshake.initServerHello();
+        assertTrue(serverHello.getCertificate().verifySelfSigned());
+        byte[] clientRandom = new byte[IdentityConstants.SERVER_CLIENT_RANDOM_LENGTH];
+        //correct public certificate...
+        HandshakeHello clientHello = new HandshakeHello(clientRandom, client.getPublicCert(), System.currentTimeMillis());
+        byte[] dataToSign = HandshakeHello.concat(serverHello, clientHello);
+        //...but wrong private certificate
+        byte[] signature = randomPrivateCert(2).sign(dataToSign);
+        handshake.authenticate(clientHello, signature);
+    }
+
+    @Test //legitimate authentication attempt that must be accepted
     public void testOk() throws AuthenticationFailedException {
         CertificateGenerator gen = new CertificateGenerator();
         CertificatePair server = gen.generateSelfSigned();

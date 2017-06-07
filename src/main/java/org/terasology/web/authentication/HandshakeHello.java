@@ -45,12 +45,6 @@ class HandshakeHello {
         return Bytes.concat(random, certificateToByteArray(), timestamp);
     }
 
-    /**
-     * TODO
-     * @param a
-     * @param b
-     * @return
-     */
     public static byte[] concat(HandshakeHello a, HandshakeHello b) {
         return Bytes.concat(a.toByteArray(), b.toByteArray());
     }

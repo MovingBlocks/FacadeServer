@@ -46,6 +46,11 @@ public final class AuthenticationHandshakeHandler {
     /**
      * Tries to finalize the authentication process.
      * If no exception is thrown, the authentication has been successfully completed.
+     * @param clientHello the hello message sent by the client
+     * @param handshakeVerificationSignature the verification data sent by the client. On the client sie it must be built
+     * by concatenating the received server hello with the built client hello (see {@link HandshakeHello#concat(HandshakeHello, HandshakeHello)})
+     * and signing the result with the private client identity certificate (see {@link org.terasology.identity.PrivateIdentityCertificate#sign(byte[])}).
+     * @throws AuthenticationFailedException if the authentication fails
      */
     public void authenticate(HandshakeHello clientHello, byte[] handshakeVerificationSignature) throws AuthenticationFailedException {
         PublicIdentityCertificate clientCert = clientHello.getCertificate();
