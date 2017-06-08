@@ -37,6 +37,7 @@ dependencies {
     compile group: 'org.glassfish.jersey.ext', name: 'jersey-mvc-freemarker', version: jerseyVersion
 
     testCompile 'junit:junit:4.12'
+    testCompile group: 'org.mockito', name: 'mockito-core', version: '2.7.22'
 }
 
 // Copied from PC facade

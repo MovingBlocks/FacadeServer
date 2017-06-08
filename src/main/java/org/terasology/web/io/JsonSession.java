@@ -20,19 +20,33 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.terasology.config.Config;
-import org.terasology.config.SecurityConfig;
+import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
+import org.terasology.web.authentication.AuthenticationHandshakeHandlerImpl;
 import org.terasology.web.authentication.ClientAuthenticationMessage;
 import org.terasology.web.authentication.HandshakeHello;
 
+import java.math.BigInteger;
+
 public class JsonSession {
 
-    private static final Gson GSON = new GsonBuilder().create();
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeHierarchyAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
+            .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
+            .create();
 
     private AuthenticationHandshakeHandler authHandler;
     private String clientId; //this is the same UUID used to identify players in the engine, and is only set when the client is correctly authenticated
+
+    JsonSession(AuthenticationHandshakeHandler authHandler) {
+        this.authHandler = authHandler;
+    }
+
+    public JsonSession() {
+        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getContext().get(Config.class).getSecurity().getServerPublicCertificate()));
+    }
 
     public boolean isAuthenticated() {
         return clientId != null;
@@ -40,17 +54,15 @@ public class JsonSession {
 
     public ActionResult initAuthentication() {
         if (isAuthenticated()) {
-            throw new RuntimeException("Already authenticated");
+            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
         }
-        SecurityConfig securityConfig = EngineRunner.getContext().get(Config.class).getSecurity();
-        authHandler = new AuthenticationHandshakeHandler(securityConfig.getServerPublicCertificate());
         HandshakeHello serverHello = authHandler.initServerHello();
         return new ActionResult(GSON.toJsonTree(serverHello));
     }
 
     public ActionResult finishAuthentication(JsonElement clientMessage) {
         if (isAuthenticated()) {
-            throw new RuntimeException("Already authenticated");
+            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
         }
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);

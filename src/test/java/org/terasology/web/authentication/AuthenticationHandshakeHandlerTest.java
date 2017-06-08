@@ -54,7 +54,7 @@ public class AuthenticationHandshakeHandlerTest {
         CertificateGenerator gen = new CertificateGenerator();
         CertificatePair server = gen.generateSelfSigned();
 
-        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandler(server.getPublicCert());
+        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server.getPublicCert());
         handshake.initServerHello();
         HandshakeHello clientHello = new HandshakeHello(new byte[4], randomPublicCert(1), 0);
         handshake.authenticate(clientHello, null);
@@ -66,7 +66,7 @@ public class AuthenticationHandshakeHandlerTest {
         CertificatePair server = gen.generateSelfSigned();
         CertificatePair client = gen.generate(server.getPrivateCert());
 
-        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandler(server.getPublicCert());
+        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server.getPublicCert());
         HandshakeHello serverHello = handshake.initServerHello();
         assertTrue(serverHello.getCertificate().verifySelfSigned());
         byte[] clientRandom = new byte[IdentityConstants.SERVER_CLIENT_RANDOM_LENGTH];
@@ -84,7 +84,7 @@ public class AuthenticationHandshakeHandlerTest {
         CertificatePair server = gen.generateSelfSigned();
         CertificatePair client = gen.generate(server.getPrivateCert()); //a valid certificate pair signed by the server
 
-        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandler(server.getPublicCert());
+        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server.getPublicCert());
         HandshakeHello serverHello = handshake.initServerHello();
         assertTrue(serverHello.getCertificate().verifySelfSigned());
         byte[] clientRandom = new byte[IdentityConstants.SERVER_CLIENT_RANDOM_LENGTH];

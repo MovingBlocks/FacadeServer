@@ -20,6 +20,11 @@ public class ClientAuthenticationMessage {
     private HandshakeHello clientHello;
     private byte[] signature;
 
+    public ClientAuthenticationMessage(HandshakeHello clientHello, byte[] signature) {
+        this.clientHello = clientHello;
+        this.signature = signature;
+    }
+
     public HandshakeHello getClientHello() {
         return clientHello;
     }

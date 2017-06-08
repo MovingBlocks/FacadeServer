@@ -15,33 +15,11 @@
  */
 package org.terasology.web.authentication;
 
-import org.terasology.identity.IdentityConstants;
-import org.terasology.identity.PublicIdentityCertificate;
-
-import java.security.SecureRandom;
-
-/**
- * Represents the server part of an authentication handshake;
- * similar to {@link org.terasology.network.internal.ServerHandshakeHandler}, but more generic (not tied to netty).
- */
-public final class AuthenticationHandshakeHandler {
-
-    private final PublicIdentityCertificate serverPublicCert;
-    private byte[] serverRandom = new byte[IdentityConstants.SERVER_CLIENT_RANDOM_LENGTH];
-    private HandshakeHello serverHello;
-
-    public AuthenticationHandshakeHandler(PublicIdentityCertificate serverPublicCert) {
-        this.serverPublicCert = serverPublicCert;
-    }
-
+public interface AuthenticationHandshakeHandler {
     /**
      * @return the initial handshake that must be sent from the server to the client.
      */
-    public HandshakeHello initServerHello() {
-        new SecureRandom().nextBytes(serverRandom);
-        serverHello = new HandshakeHello(serverRandom, serverPublicCert, System.currentTimeMillis());
-        return serverHello;
-    }
+    HandshakeHello initServerHello();
 
     /**
      * Tries to finalize the authentication process.
@@ -52,14 +30,5 @@ public final class AuthenticationHandshakeHandler {
      * and signing the result with the private client identity certificate (see {@link org.terasology.identity.PrivateIdentityCertificate#sign(byte[])}).
      * @throws AuthenticationFailedException if the authentication fails
      */
-    public void authenticate(HandshakeHello clientHello, byte[] handshakeVerificationSignature) throws AuthenticationFailedException {
-        PublicIdentityCertificate clientCert = clientHello.getCertificate();
-        if (!clientCert.verifySignedBy(serverPublicCert)) {
-            throw new AuthenticationFailedException(true);
-        }
-        byte[] signatureData = HandshakeHello.concat(serverHello, clientHello);
-        if (!clientCert.verify(signatureData, handshakeVerificationSignature)) {
-            throw new AuthenticationFailedException(false);
-        }
-    }
+    void authenticate(HandshakeHello clientHello, byte[] handshakeVerificationSignature) throws AuthenticationFailedException;
 }

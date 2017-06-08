@@ -43,13 +43,16 @@ public class ActionResult {
         this(status, message, null);
     }
 
-
     public ActionResult(Status status) {
         this(status, "");
     }
 
     public ActionResult(JsonElement data) {
         this(Status.OK, null, data);
+    }
+
+    public Status getStatus() {
+        return status;
     }
 
     public String toJsonString(Gson gson) {

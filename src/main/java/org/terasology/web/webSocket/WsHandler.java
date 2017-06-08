@@ -19,6 +19,7 @@ package org.terasology.web.webSocket;
 import java.io.IOException;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
@@ -33,7 +34,7 @@ import org.terasology.web.io.JsonSession;
 public class WsHandler extends WebSocketAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(WsHandler.class);
-    private static final Gson GSON = new Gson();
+    private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private JsonSession jsonSession;
 
     @Override
@@ -53,7 +54,7 @@ public class WsHandler extends WebSocketAdapter {
         } catch (JsonSyntaxException ex) {
             trySendResult(ActionResult.JSON_PARSE_ERROR);
             return;
-        } catch (InvalidClientMessageException ex) {
+        } catch (NullPointerException | InvalidClientMessageException ex) {
             trySendResult(new ActionResult(ActionResult.Status.BAD_REQUEST, ex.getMessage()));
             return;
         }
