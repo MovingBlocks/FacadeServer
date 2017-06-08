@@ -18,6 +18,7 @@ package org.terasology.web.servlet;
 
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
+import org.terasology.web.webSocket.WsHandler;
 
 /**
  * Registers the {@link WsHandler} class for all incoming connections.
