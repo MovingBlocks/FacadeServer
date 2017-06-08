@@ -40,7 +40,7 @@ import org.terasology.engine.subsystem.common.ConfigurationSubsystem;
 import org.terasology.web.io.GsonMessageBodyHandler;
 import org.terasology.web.servlet.AboutServlet;
 import org.terasology.web.servlet.LogServlet;
-import org.terasology.web.servlet.WsEventServlet;
+import org.terasology.web.servlet.WsConnectionServlet;
 
 
 /**
@@ -156,7 +156,7 @@ public final class ServerMain {
         ServletContextHandler jerseyContext = new ServletContextHandler(ServletContextHandler.GZIP);
         jerseyContext.setResourceBase("templates");
         jerseyContext.addServlet(new ServletHolder(new ServletContainer(rc)), "/*");
-        jerseyContext.addServlet(new ServletHolder(WsEventServlet.class), "/events/*");
+        jerseyContext.addServlet(new ServletHolder(WsConnectionServlet.class), "/ws/*");
 
         HandlerList handlers = new HandlerList();
         handlers.addHandler(logContext);

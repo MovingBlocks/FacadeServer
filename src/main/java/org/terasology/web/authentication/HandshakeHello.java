@@ -20,7 +20,7 @@ import org.terasology.identity.PublicIdentityCertificate;
 
 import java.nio.ByteBuffer;
 
-class HandshakeHello {
+public class HandshakeHello {
 
     private byte[] random;
     private PublicIdentityCertificate certificate;

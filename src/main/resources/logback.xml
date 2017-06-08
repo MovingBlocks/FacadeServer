@@ -40,7 +40,7 @@
         </encoder>
     </appender>
 
-    <root level="${logOverrideLevel:-debug}">
+    <root level="${logOverrideLevel:-info}">
         <appender-ref ref="SIFT" />
         <appender-ref ref="CONSOLE" />
     </root>
