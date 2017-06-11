@@ -54,7 +54,7 @@ public class AuthenticationHandshakeHandlerTest {
         CertificateGenerator gen = new CertificateGenerator();
         CertificatePair server = gen.generateSelfSigned();
 
-        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server.getPublicCert());
+        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server);
         handshake.initServerHello();
         HandshakeHello clientHello = new HandshakeHello(new byte[4], randomPublicCert(1), 0);
         handshake.authenticate(new ClientAuthenticationMessage(clientHello, null));
@@ -66,7 +66,7 @@ public class AuthenticationHandshakeHandlerTest {
         CertificatePair server = gen.generateSelfSigned();
         CertificatePair client = gen.generate(server.getPrivateCert());
 
-        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server.getPublicCert());
+        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server);
         HandshakeHello serverHello = handshake.initServerHello();
         assertTrue(serverHello.getCertificate().verifySelfSigned());
         byte[] clientRandom = new byte[IdentityConstants.SERVER_CLIENT_RANDOM_LENGTH];
@@ -84,13 +84,14 @@ public class AuthenticationHandshakeHandlerTest {
         CertificatePair server = gen.generateSelfSigned();
         CertificatePair client = gen.generate(server.getPrivateCert()); //a valid certificate pair signed by the server
 
-        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server.getPublicCert());
+        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server);
         HandshakeHello serverHello = handshake.initServerHello();
         assertTrue(serverHello.getCertificate().verifySelfSigned());
         byte[] clientRandom = new byte[IdentityConstants.SERVER_CLIENT_RANDOM_LENGTH];
         HandshakeHello clientHello = new HandshakeHello(clientRandom, client.getPublicCert(), System.currentTimeMillis());
         byte[] dataToSign = HandshakeHello.concat(serverHello, clientHello);
         byte[] signature = client.getPrivateCert().sign(dataToSign);
-        handshake.authenticate(new ClientAuthenticationMessage(clientHello, signature));
+        byte[] serverVerification = handshake.authenticate(new ClientAuthenticationMessage(clientHello, signature));
+        assertTrue(server.getPublicCert().verify(dataToSign, serverVerification));
     }
 }

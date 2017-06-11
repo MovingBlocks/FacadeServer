@@ -55,6 +55,10 @@ public class ActionResult {
         return status;
     }
 
+    public JsonElement getData() {
+        return data;
+    }
+
     public String toJsonString(Gson gson) {
         return gson.toJson(this);
     }

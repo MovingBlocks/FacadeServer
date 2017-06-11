@@ -59,12 +59,13 @@ public class JsonSessionTest {
         }
 
         @Override
-        public void authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
+        public byte[] authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
             Preconditions.checkNotNull(authenticationMessage.getClientHello());
             Preconditions.checkNotNull(authenticationMessage.getSignature());
             if (!nextResult) {
                 throw new AuthenticationFailedException(true);
             }
+            return new byte[]{0, 0, 0};
         }
     }
 
@@ -91,7 +92,9 @@ public class JsonSessionTest {
         assertEquals(ActionResult.Status.UNAUTHORIZED, session.finishAuthentication(dummyClientMessage).getStatus());
         assertFalse(session.isAuthenticated());
         authHandlerMock.nextResult = true;
-        assertEquals(ActionResult.Status.OK, session.finishAuthentication(dummyClientMessage).getStatus());
+        ActionResult result = session.finishAuthentication(dummyClientMessage);
+        assertEquals(ActionResult.Status.OK, result.getStatus());
+        assertEquals("AAAA", result.getData().getAsString()); //"AAAA" is the base64 of three 0 bytes, returned by the mock authenticate method
         assertTrue(session.isAuthenticated());
         assertEquals(ActionResult.Status.UNAUTHORIZED, session.finishAuthentication(dummyClientMessage).getStatus()); //already authenticated
     }

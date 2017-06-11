@@ -51,7 +51,7 @@ public class JsonSession {
     }
 
     public JsonSession() {
-        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getContext().get(Config.class).getSecurity().getServerPublicCertificate()),
+        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getContext().get(Config.class).getSecurity()),
                 new HeadlessClientFactory(EngineRunner.getContext().get(EntityManager.class)));
     }
 
@@ -73,10 +73,10 @@ public class JsonSession {
         }
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);
-            authHandler.authenticate(clientAuthentication);
+            byte[] serverVerification = authHandler.authenticate(clientAuthentication);
             String clientId = clientAuthentication.getClientHello().getCertificate().getId();
             client = headlessClientFactory.connectNewHeadlessClient(clientId);
-            return ActionResult.OK;
+            return new ActionResult(GSON.toJsonTree(serverVerification));
         } catch (NullPointerException | JsonSyntaxException ex) {
             return new ActionResult(ActionResult.Status.BAD_REQUEST);
         } catch (AuthenticationFailedException ex) {

@@ -29,7 +29,10 @@ public interface AuthenticationHandshakeHandler {
      * - the verification data sent by the client, which on the client side must be built
      * by concatenating the received server hello with the built client hello (see {@link HandshakeHello#concat(HandshakeHello, HandshakeHello)})
      * and signing the result with the private client identity certificate (see {@link org.terasology.identity.PrivateIdentityCertificate#sign(byte[])}).
+     * @return the server verification data, which is the concatenation of the server hello with the received client hello signed with the server
+     * private certificate; the client can optionally verify the server's identity by verifying this data is signed with the server public certificate
+     * and disconnect if the signature is not valid.
      * @throws AuthenticationFailedException if the authentication fails
      */
-    void authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException;
+    byte[] authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException;
 }

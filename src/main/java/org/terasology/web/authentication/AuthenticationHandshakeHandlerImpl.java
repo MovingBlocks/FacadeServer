@@ -15,6 +15,8 @@
  */
 package org.terasology.web.authentication;
 
+import org.terasology.config.SecurityConfig;
+import org.terasology.identity.CertificatePair;
 import org.terasology.identity.IdentityConstants;
 import org.terasology.identity.PublicIdentityCertificate;
 
@@ -26,31 +28,36 @@ import java.security.SecureRandom;
  */
 public final class AuthenticationHandshakeHandlerImpl implements AuthenticationHandshakeHandler {
 
-    private final PublicIdentityCertificate serverPublicCert;
+    private final CertificatePair serverCertificate;
     private byte[] serverRandom = new byte[IdentityConstants.SERVER_CLIENT_RANDOM_LENGTH];
     private HandshakeHello serverHello;
 
-    public AuthenticationHandshakeHandlerImpl(PublicIdentityCertificate serverPublicCert) {
-        this.serverPublicCert = serverPublicCert;
+    public AuthenticationHandshakeHandlerImpl(CertificatePair serverCertificate) {
+        this.serverCertificate = serverCertificate;
+    }
+
+    public AuthenticationHandshakeHandlerImpl(SecurityConfig securityConfig) {
+        this(new CertificatePair(securityConfig.getServerPublicCertificate(), securityConfig.getServerPrivateCertificate()));
     }
 
     @Override
     public HandshakeHello initServerHello() {
         new SecureRandom().nextBytes(serverRandom);
-        serverHello = new HandshakeHello(serverRandom, serverPublicCert, System.currentTimeMillis());
+        serverHello = new HandshakeHello(serverRandom, serverCertificate.getPublicCert(), System.currentTimeMillis());
         return serverHello;
     }
 
     @Override
-    public void authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
+    public byte[] authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
         HandshakeHello clientHello = authenticationMessage.getClientHello();
         PublicIdentityCertificate clientCert = clientHello.getCertificate();
-        if (!clientCert.verifySignedBy(serverPublicCert)) {
+        if (!clientCert.verifySignedBy(serverCertificate.getPublicCert())) {
             throw new AuthenticationFailedException(true);
         }
         byte[] signatureData = HandshakeHello.concat(serverHello, clientHello);
         if (!clientCert.verify(signatureData, authenticationMessage.getSignature())) {
             throw new AuthenticationFailedException(false);
         }
+        return serverCertificate.getPrivateCert().sign(signatureData);
     }
 }
