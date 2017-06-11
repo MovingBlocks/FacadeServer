@@ -73,6 +73,8 @@ public class WsHandler extends WebSocketAdapter {
     @Override
     public void onWebSocketClose(int statusCode, String reason) {
         super.onWebSocketClose(statusCode, reason);
+        jsonSession.disconnect();
+        jsonSession = null;
         logger.info("Socket Closed: [" + statusCode + "] " + reason);
     }
 

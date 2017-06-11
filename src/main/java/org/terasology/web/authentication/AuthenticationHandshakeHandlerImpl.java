@@ -42,13 +42,14 @@ public final class AuthenticationHandshakeHandlerImpl implements AuthenticationH
     }
 
     @Override
-    public void authenticate(HandshakeHello clientHello, byte[] handshakeVerificationSignature) throws AuthenticationFailedException {
+    public void authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
+        HandshakeHello clientHello = authenticationMessage.getClientHello();
         PublicIdentityCertificate clientCert = clientHello.getCertificate();
         if (!clientCert.verifySignedBy(serverPublicCert)) {
             throw new AuthenticationFailedException(true);
         }
         byte[] signatureData = HandshakeHello.concat(serverHello, clientHello);
-        if (!clientCert.verify(signatureData, handshakeVerificationSignature)) {
+        if (!clientCert.verify(signatureData, authenticationMessage.getSignature())) {
             throw new AuthenticationFailedException(false);
         }
     }

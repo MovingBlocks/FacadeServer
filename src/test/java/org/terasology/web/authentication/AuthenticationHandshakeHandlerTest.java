@@ -57,7 +57,7 @@ public class AuthenticationHandshakeHandlerTest {
         AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server.getPublicCert());
         handshake.initServerHello();
         HandshakeHello clientHello = new HandshakeHello(new byte[4], randomPublicCert(1), 0);
-        handshake.authenticate(clientHello, null);
+        handshake.authenticate(new ClientAuthenticationMessage(clientHello, null));
     }
 
     @Test(expected = AuthenticationFailedException.class) //authentication attempt that must be rejected
@@ -75,7 +75,7 @@ public class AuthenticationHandshakeHandlerTest {
         byte[] dataToSign = HandshakeHello.concat(serverHello, clientHello);
         //...but wrong private certificate
         byte[] signature = randomPrivateCert(2).sign(dataToSign);
-        handshake.authenticate(clientHello, signature);
+        handshake.authenticate(new ClientAuthenticationMessage(clientHello, signature));
     }
 
     @Test //legitimate authentication attempt that must be accepted
@@ -91,6 +91,6 @@ public class AuthenticationHandshakeHandlerTest {
         HandshakeHello clientHello = new HandshakeHello(clientRandom, client.getPublicCert(), System.currentTimeMillis());
         byte[] dataToSign = HandshakeHello.concat(serverHello, clientHello);
         byte[] signature = client.getPrivateCert().sign(dataToSign);
-        handshake.authenticate(clientHello, signature);
+        handshake.authenticate(new ClientAuthenticationMessage(clientHello, signature));
     }
 }

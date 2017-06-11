@@ -20,6 +20,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.terasology.config.Config;
+import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.authentication.AuthenticationFailedException;
@@ -27,6 +28,8 @@ import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.AuthenticationHandshakeHandlerImpl;
 import org.terasology.web.authentication.ClientAuthenticationMessage;
 import org.terasology.web.authentication.HandshakeHello;
+import org.terasology.web.client.HeadlessClient;
+import org.terasology.web.client.HeadlessClientFactory;
 
 import java.math.BigInteger;
 
@@ -37,19 +40,23 @@ public class JsonSession {
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
             .create();
 
-    private AuthenticationHandshakeHandler authHandler;
-    private String clientId; //this is the same UUID used to identify players in the engine, and is only set when the client is correctly authenticated
+    private final AuthenticationHandshakeHandler authHandler;
+    private final HeadlessClientFactory headlessClientFactory;
 
-    JsonSession(AuthenticationHandshakeHandler authHandler) {
+    private HeadlessClient client;
+
+    JsonSession(AuthenticationHandshakeHandler authHandler, HeadlessClientFactory headlessClientFactory) {
         this.authHandler = authHandler;
+        this.headlessClientFactory = headlessClientFactory;
     }
 
     public JsonSession() {
-        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getContext().get(Config.class).getSecurity().getServerPublicCertificate()));
+        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getContext().get(Config.class).getSecurity().getServerPublicCertificate()),
+                new HeadlessClientFactory(EngineRunner.getContext().get(EntityManager.class)));
     }
 
     public boolean isAuthenticated() {
-        return clientId != null;
+        return client != null;
     }
 
     public ActionResult initAuthentication() {
@@ -66,14 +73,20 @@ public class JsonSession {
         }
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);
-            authHandler.authenticate(clientAuthentication.getClientHello(), clientAuthentication.getSignature());
-            clientId = clientAuthentication.getClientHello().getCertificate().getId();
+            authHandler.authenticate(clientAuthentication);
+            String clientId = clientAuthentication.getClientHello().getCertificate().getId();
+            client = headlessClientFactory.connectNewHeadlessClient(clientId);
             return ActionResult.OK;
         } catch (NullPointerException | JsonSyntaxException ex) {
             return new ActionResult(ActionResult.Status.BAD_REQUEST);
         } catch (AuthenticationFailedException ex) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED);
         }
+    }
+
+    public void disconnect() {
+        client.disconnect();
+        client = null;
     }
 
 }
