@@ -53,6 +53,7 @@ import com.google.gson.GsonBuilder;
 public final class GsonMessageBodyHandler implements MessageBodyWriter<Object>, MessageBodyReader<Object> {
 
     private static final Gson GSON = new GsonBuilder()
+        .disableHtmlEscaping()
         .setPrettyPrinting()
         .registerTypeAdapter(Version.class, new VersionTypeAdapter())
         .registerTypeAdapter(Name.class, new NameTypeAdapter())

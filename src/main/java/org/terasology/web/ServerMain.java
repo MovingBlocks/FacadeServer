@@ -37,8 +37,10 @@ import org.slf4j.LoggerFactory;
 import org.terasology.engine.LoggingContext;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.engine.subsystem.common.ConfigurationSubsystem;
+import org.terasology.web.io.ActionResultMessageBodyWriter;
 import org.terasology.web.io.GsonMessageBodyHandler;
 import org.terasology.web.servlet.AboutServlet;
+import org.terasology.web.servlet.HttpAPIServlet;
 import org.terasology.web.servlet.LogServlet;
 import org.terasology.web.servlet.WsConnectionServlet;
 
@@ -76,7 +78,8 @@ public final class ServerMain {
 
         Server server = createServer(port,
                 new LogServlet(),
-                new AboutServlet());
+                new AboutServlet(),
+                new HttpAPIServlet());
 
         server.start();
         logger.info("Web server started on port {}!", port);
@@ -147,6 +150,7 @@ public final class ServerMain {
 
         ResourceConfig rc = new ResourceConfig();
         rc.register(new GsonMessageBodyHandler());               // register JSON serializer
+        rc.register(new ActionResultMessageBodyWriter());
         rc.register(FreemarkerMvcFeature.class);
 
         for (Object servlet : annotatedObjects) {

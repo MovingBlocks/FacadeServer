@@ -55,6 +55,10 @@ public class ActionResult {
         return status;
     }
 
+    public String getMessage() {
+        return message;
+    }
+
     public JsonElement getData() {
         return data;
     }
