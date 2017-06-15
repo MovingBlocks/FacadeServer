@@ -18,13 +18,18 @@ package org.terasology.web;
 import org.terasology.context.Context;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
+import org.terasology.engine.modes.GameState;
+import org.terasology.engine.modes.StateIngame;
+import org.terasology.engine.modes.StateMainMenu;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
 import org.terasology.engine.subsystem.headless.HeadlessAudio;
 import org.terasology.engine.subsystem.headless.HeadlessGraphics;
 import org.terasology.engine.subsystem.headless.HeadlessInput;
 import org.terasology.engine.subsystem.headless.HeadlessTimer;
-import org.terasology.engine.subsystem.headless.mode.HeadlessStateChangeListener;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
+import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.logic.console.Console;
+import org.terasology.web.resources.ConsoleResource;
 
 public final class EngineRunner {
 
@@ -37,7 +42,15 @@ public final class EngineRunner {
         TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
         populateSubsystems(builder);
         engine = builder.build();
-        engine.subscribeToStateChange(new HeadlessStateChangeListener(engine));
+        engine.subscribeToStateChange(() -> {
+            GameState state = engine.getState();
+            if (state instanceof StateIngame) {
+                Context context = state.getContext();
+                state.getContext().get(EntityManager.class).getEventSystem().registerEventHandler(new ConsoleResource(context.get(Console.class))); //TODO make it a singleton or use an enum
+            } else if (state instanceof StateMainMenu) {
+                engine.shutdown();
+            }
+        });
         engine.run(new StateHeadlessSetup());
     }
 
