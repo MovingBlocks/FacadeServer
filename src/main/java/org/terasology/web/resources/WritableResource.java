@@ -17,7 +17,9 @@ package org.terasology.web.resources;
 
 import org.terasology.entitySystem.entity.EntityRef;
 
-public interface WritableResource<T> {
+public interface WritableResource<T> extends Resource {
+
+    Class<T> getDataType();
 
     void write(EntityRef clientEntity, T data);
 }

@@ -41,7 +41,7 @@ public class WebSocketHandler extends WebSocketAdapter {
     public void onWebSocketConnect(Session session) {
         super.onWebSocketConnect(session);
         logger.info("Connected: " + session.getRemoteAddress());
-        jsonSession = new JsonSession();
+        jsonSession = new JsonSession(); //TODO
     }
 
     @Override

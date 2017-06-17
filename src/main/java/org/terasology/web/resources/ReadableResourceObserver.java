@@ -17,7 +17,7 @@ package org.terasology.web.resources;
 
 import org.terasology.entitySystem.entity.EntityRef;
 
-public interface ReadableResource<T> extends Resource {
+public interface ReadableResourceObserver<T> {
 
-    T read(EntityRef clientEntity);
+    void update(EntityRef client, ObservableReadableResource<T> resource);
 }

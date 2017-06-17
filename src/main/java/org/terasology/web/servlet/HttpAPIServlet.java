@@ -42,6 +42,7 @@ public class HttpAPIServlet {
     private JsonSession anonymousSession;
 
     // TODO: call this after engine initialization
+
     public void initAnonymousSession() {
          anonymousSession = new JsonSession();
     }

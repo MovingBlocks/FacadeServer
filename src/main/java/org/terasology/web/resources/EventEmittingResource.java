@@ -19,23 +19,22 @@ import org.terasology.entitySystem.entity.EntityRef;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.BiConsumer;
 
-public abstract class EventEmittingResource<T> {
+public abstract class EventEmittingResource<T> implements Resource {
 
-    private Set<BiConsumer<EntityRef, T>> observers = new HashSet<>();
+    private Set<EventEmittingResourceObserver<T>> observers = new HashSet<>();
 
-    public final void addObserver(BiConsumer<EntityRef, T> observer) {
+    public final void addObserver(EventEmittingResourceObserver<T> observer) {
         observers.add(observer);
     }
 
-    public final void removeObserver(BiConsumer<EntityRef, T> observer) {
+    public final void removeObserver(EventEmittingResourceObserver<T> observer) {
         observers.remove(observer);
     }
 
-    protected final void notifyEvent(EntityRef clientEntity, T data) {
-        for (BiConsumer<EntityRef, T> observer: observers) {
-            observer.accept(clientEntity, data);
+    public final void notifyEvent(EntityRef clientEntity, T eventData) {
+        for (EventEmittingResourceObserver<T> observer: observers) {
+            observer.update(clientEntity, this, eventData);
         }
     }
 }

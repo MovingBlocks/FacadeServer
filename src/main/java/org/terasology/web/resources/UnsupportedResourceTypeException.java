@@ -15,9 +15,9 @@
  */
 package org.terasology.web.resources;
 
-import org.terasology.entitySystem.entity.EntityRef;
+public class UnsupportedResourceTypeException extends Exception {
 
-public interface ReadableResource<T> extends Resource {
-
-    T read(EntityRef clientEntity);
+    public UnsupportedResourceTypeException() {
+        super("The requested action is not supported on this resource.");
+    }
 }

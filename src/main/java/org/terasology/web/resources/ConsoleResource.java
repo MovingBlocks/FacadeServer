@@ -27,13 +27,18 @@ public class ConsoleResource extends EventEmittingResource<MessageEvent> impleme
 
     private Console console;
 
-    public ConsoleResource(Console console) {
+    ConsoleResource(Console console) {
         this.console = console;
     }
 
     @ReceiveEvent(components = ClientComponent.class)
     public void onMessage(MessageEvent event, EntityRef entityRef) {
         notifyEvent(entityRef, event);
+    }
+
+    @Override
+    public Class<String> getDataType() {
+        return String.class;
     }
 
     @Override

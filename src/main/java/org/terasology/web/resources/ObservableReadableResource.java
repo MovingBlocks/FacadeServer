@@ -19,23 +19,22 @@ import org.terasology.entitySystem.entity.EntityRef;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public abstract class ObservableReadableResource<T> implements ReadableResource<T> {
 
-    private Set<Consumer<EntityRef>> observers = new HashSet<>();
+    private Set<ReadableResourceObserver<T>> observers = new HashSet<>();
 
-    public final void addObserver(Consumer<EntityRef> observer) {
+    public final void addObserver(ReadableResourceObserver<T> observer) {
         observers.add(observer);
     }
 
-    public final void removeObserver(Consumer<EntityRef> observer) {
+    public final void removeObserver(ReadableResourceObserver<T> observer) {
         observers.remove(observer);
     }
 
-    protected final void notifyChanged(EntityRef clientEntity) {
-        for (Consumer<EntityRef> observer: observers) {
-            observer.accept(clientEntity);
+    public final void notifyChanged(EntityRef clientEntity) {
+        for (ReadableResourceObserver<T> observer: observers) {
+            observer.update(clientEntity, this);
         }
     }
 }

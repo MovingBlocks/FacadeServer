@@ -27,9 +27,7 @@ import org.terasology.engine.subsystem.headless.HeadlessGraphics;
 import org.terasology.engine.subsystem.headless.HeadlessInput;
 import org.terasology.engine.subsystem.headless.HeadlessTimer;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
-import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.logic.console.Console;
-import org.terasology.web.resources.ConsoleResource;
+import org.terasology.web.resources.ResourceManager;
 
 public final class EngineRunner {
 
@@ -45,8 +43,7 @@ public final class EngineRunner {
         engine.subscribeToStateChange(() -> {
             GameState state = engine.getState();
             if (state instanceof StateIngame) {
-                Context context = state.getContext();
-                state.getContext().get(EntityManager.class).getEventSystem().registerEventHandler(new ConsoleResource(context.get(Console.class))); //TODO make it a singleton or use an enum
+                ResourceManager.getInstance().initialize(state.getContext());
             } else if (state instanceof StateMainMenu) {
                 engine.shutdown();
             }
