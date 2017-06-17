@@ -20,7 +20,9 @@ public class InvalidClientMessageException extends Exception {
     public enum Reason {
         MESSAGETYPE_EMPTY("messageType is empty or not valid"),
         DATA_REQUIRED("data is required"),
-        DATA_NOT_REQUIRED("no data must be sent");
+        DATA_NOT_REQUIRED("no data must be sent"),
+        ACTION_REQUIRED("an action must be specified"),
+        RESOURCENAME_REQUIRED("a resource name must be specified");
 
         private final String message;
 

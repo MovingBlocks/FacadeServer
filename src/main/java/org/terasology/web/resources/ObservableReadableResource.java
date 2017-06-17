@@ -15,26 +15,25 @@
  */
 package org.terasology.web.resources;
 
+import com.google.common.collect.Maps;
 import org.terasology.entitySystem.entity.EntityRef;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Map;
+import java.util.function.Consumer;
 
 public abstract class ObservableReadableResource<T> implements ReadableResource<T> {
 
-    private Set<ReadableResourceObserver<T>> observers = new HashSet<>();
+    private Map<EntityRef, Consumer<ObservableReadableResource<T>>> observers = Maps.newHashMap();
 
-    public final void addObserver(ReadableResourceObserver<T> observer) {
-        observers.add(observer);
+    public final void setObserver(EntityRef clientEntityRef, Consumer<ObservableReadableResource<T>> observer) {
+        observers.put(clientEntityRef, observer);
     }
 
-    public final void removeObserver(ReadableResourceObserver<T> observer) {
-        observers.remove(observer);
+    public final void removeObserver(EntityRef clientEntityRef) {
+        observers.remove(clientEntityRef);
     }
 
     public final void notifyChanged(EntityRef clientEntity) {
-        for (ReadableResourceObserver<T> observer: observers) {
-            observer.update(clientEntity, this);
-        }
+        observers.get(clientEntity).accept(this);
     }
 }

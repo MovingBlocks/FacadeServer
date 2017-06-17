@@ -16,4 +16,6 @@
 package org.terasology.web.resources;
 
 public interface Resource {
+
+    String getName();
 }

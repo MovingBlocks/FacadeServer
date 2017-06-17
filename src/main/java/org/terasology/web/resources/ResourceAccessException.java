@@ -15,9 +15,18 @@
  */
 package org.terasology.web.resources;
 
-public class UnsupportedResourceTypeException extends Exception {
+import org.terasology.web.io.ActionResult;
 
-    public UnsupportedResourceTypeException() {
-        super("The requested action is not supported on this resource.");
+public class ResourceAccessException extends Exception {
+
+    private final ActionResult resultToSend;
+
+    public ResourceAccessException(ActionResult resultToSend) {
+        super("Failed to access requested resource: " + resultToSend.getMessage());
+        this.resultToSend = resultToSend;
+    }
+
+    public ActionResult getResultToSend() {
+        return resultToSend;
     }
 }

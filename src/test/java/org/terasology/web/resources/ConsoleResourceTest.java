@@ -32,12 +32,12 @@ public class ConsoleResourceTest {
     @SuppressWarnings("unchecked")
     public void testMessageNotification() {
         ConsoleResource consoleResource = new ConsoleResource(mock(Console.class));
-        EventEmittingResourceObserver observer = mock(EventEmittingResourceObserver.class);
+        BiConsumer<EventEmittingResource<MessageEvent>, MessageEvent> observer = mock(BiConsumer.class);
         MessageEvent testEvent = mock(MessageEvent.class);
         EntityRef client = mock(EntityRef.class);
-        consoleResource.addObserver(observer);
+        consoleResource.setObserver(client, observer);
         consoleResource.onMessage(testEvent, client);
-        verify(observer).update(client, consoleResource, testEvent);
+        verify(observer).accept(consoleResource, testEvent);
     }
 
     @Test

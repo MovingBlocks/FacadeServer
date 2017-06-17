@@ -37,6 +37,11 @@ public class ConsoleResource extends EventEmittingResource<MessageEvent> impleme
     }
 
     @Override
+    public String getName() {
+        return "console";
+    }
+
+    @Override
     public Class<String> getDataType() {
         return String.class;
     }

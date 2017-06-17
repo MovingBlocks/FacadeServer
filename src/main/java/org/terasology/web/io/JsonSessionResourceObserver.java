@@ -16,45 +16,39 @@
 package org.terasology.web.io;
 
 import com.google.gson.JsonElement;
-import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.web.resources.EventEmittingResource;
-import org.terasology.web.resources.EventEmittingResourceObserver;
 import org.terasology.web.resources.ObservableReadableResource;
-import org.terasology.web.resources.ReadableResourceObserver;
 
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
-class JsonSessionResourceObserver implements ReadableResourceObserver, EventEmittingResourceObserver {
+class JsonSessionResourceObserver implements Consumer<ObservableReadableResource>, BiConsumer<EventEmittingResource, Object> {
 
     private JsonSession session;
-    private BiConsumer<EntityRef, JsonElement> readableResourceObserver;
-    private BiConsumer<EntityRef, JsonElement> eventResourceObserver;
+    private BiConsumer<String, JsonElement> readableResourceObserver;
+    private BiConsumer<String, JsonElement> eventResourceObserver;
 
     JsonSessionResourceObserver(JsonSession session) {
         this.session = session;
     }
 
-    void setReadableResourceObserver(BiConsumer<EntityRef, JsonElement> readableResourceObserver) {
+    void setReadableResourceObserver(BiConsumer<String, JsonElement> readableResourceObserver) {
         this.readableResourceObserver = readableResourceObserver;
     }
 
-    void setEventResourceObserver(BiConsumer<EntityRef, JsonElement> eventResourceObserver) {
+    void setEventResourceObserver(BiConsumer<String, JsonElement> eventResourceObserver) {
         this.eventResourceObserver = eventResourceObserver;
     }
 
     //for readable resource updates
     @Override
-    public void update(EntityRef client, ObservableReadableResource resource) {
-        if (readableResourceObserver != null) {
-            readableResourceObserver.accept(client, session.readResource(resource));
-        }
+    public void accept(ObservableReadableResource resource) {
+        readableResourceObserver.accept(resource.getName(), session.readResource(resource));
     }
 
     //for events
     @Override
-    public void update(EntityRef client, EventEmittingResource resource, Object eventData) {
-        if (eventResourceObserver != null) {
-            eventResourceObserver.accept(client, session.serializeEvent(resource, eventData));
-        }
+    public void accept(EventEmittingResource resource, Object eventData) {
+        eventResourceObserver.accept(resource.getName(), session.serializeEvent(eventData));
     }
 }

@@ -26,7 +26,9 @@ public class ActionResult {
     public enum Status {
         OK,
         BAD_REQUEST,
-        UNAUTHORIZED
+        UNAUTHORIZED,
+        ACTION_NOT_ALLOWED,
+        NOT_FOUND
     }
 
     private Status status;
@@ -63,7 +65,7 @@ public class ActionResult {
         return data;
     }
 
-    public String toJsonString(Gson gson) {
-        return gson.toJson(this);
+    public JsonElement toJsonTree(Gson gson) {
+        return gson.toJsonTree(this);
     }
 }

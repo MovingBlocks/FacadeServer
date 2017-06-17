@@ -20,6 +20,7 @@ import java.io.IOException;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
@@ -41,14 +42,19 @@ public class WebSocketHandler extends WebSocketAdapter {
     public void onWebSocketConnect(Session session) {
         super.onWebSocketConnect(session);
         logger.info("Connected: " + session.getRemoteAddress());
-        jsonSession = new JsonSession(); //TODO
+        jsonSession = new JsonSession();
+        jsonSession.setEventResourceObserver((resourceName, eventData) ->
+                trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.RESOURCE_EVENT, resourceName, eventData)));
+        jsonSession.setReadableResourceObserver((resourceName, newData) ->
+                trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.RESOURCE_CHANGED, resourceName, newData)));
     }
 
     @Override
     public void onWebSocketText(String message) {
         super.onWebSocketText(message);
+        ClientToServerMessage deserializedMessage;
         try {
-            ClientMessage deserializedMessage = GSON.fromJson(message, ClientMessage.class);
+            deserializedMessage = GSON.fromJson(message, ClientToServerMessage.class);
             deserializedMessage.checkValid();
             handleClientMessage(deserializedMessage);
         } catch (JsonSyntaxException ex) {
@@ -85,15 +91,41 @@ public class WebSocketHandler extends WebSocketAdapter {
         }
     }
 
-    private void trySend(String message) {
+    private void trySend(ServerToClientMessage message) {
         try {
-            getSession().getRemote().sendString(message);
+            getSession().getRemote().sendString(GSON.toJson(message));
         } catch (IOException e) {
             logger.warn("Unable to send message!", e);
         }
     }
 
+    private void trySendResult(ActionResult result, String resourceName) {
+        trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, resourceName, result.toJsonTree(GSON)));
+    }
+
     private void trySendResult(ActionResult result) {
-        trySend(result.toJsonString(GSON));
+        trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, result.toJsonTree(GSON)));
+    }
+
+    private void handleResourceRequest(JsonElement requestMessage) {
+        ResourceRequestClientMessage deserializedMessage;
+        try {
+            deserializedMessage = GSON.fromJson(requestMessage, ResourceRequestClientMessage.class);
+            deserializedMessage.checkValid();
+        } catch (JsonSyntaxException ex) {
+            trySendResult(ActionResult.JSON_PARSE_ERROR);
+            return;
+        } catch (NullPointerException | InvalidClientMessageException ex) {
+            trySendResult(new ActionResult(ActionResult.Status.BAD_REQUEST, ex.getMessage()));
+            return;
+        }
+        String resourceName = deserializedMessage.getResourceName();
+        switch (deserializedMessage.getAction()) {
+            case READ:
+                trySendResult(jsonSession.readResource(resourceName), resourceName);
+                break;
+            case WRITE:
+                trySendResult(jsonSession.writeResource(resourceName, deserializedMessage.getData()), resourceName);
+        }
     }
 }

@@ -22,6 +22,7 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.event.internal.EventSystem;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.logic.console.Console;
+import org.terasology.web.io.ActionResult;
 
 import java.util.Map;
 import java.util.Set;
@@ -55,18 +56,21 @@ public class ResourceManager {
 
     private void putResource(Resource resource) {
         if (!resources.containsValue(resource)) {
-            resources.put(resource.getClass().getSimpleName(), resource);
+            resources.put(resource.getName(), resource);
         } else {
             throw new IllegalArgumentException("This type of resource has already been registered");
         }
     }
 
-    public <T extends Resource> T getAs(String name, Class<T> type) throws UnsupportedResourceTypeException {
+    public <T extends Resource> T getAs(String name, Class<T> type) throws ResourceAccessException {
         Resource resource = resources.get(name);
+        if (resource == null) {
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.NOT_FOUND, "Resource not found."));
+        }
         if (type.isAssignableFrom(resource.getClass())) {
             return type.cast(resource);
         }
-        throw new UnsupportedResourceTypeException();
+        throw new ResourceAccessException(new ActionResult(ActionResult.Status.ACTION_NOT_ALLOWED, "This resource does not support the requested action."));
     }
 
     public <T extends Resource> Set<T> getAllAs(Class<T> type) {

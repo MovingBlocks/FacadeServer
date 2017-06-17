@@ -21,7 +21,6 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.terasology.config.Config;
 import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.authentication.AuthenticationFailedException;
@@ -34,8 +33,8 @@ import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.resources.EventEmittingResource;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ReadableResource;
+import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.ResourceManager;
-import org.terasology.web.resources.UnsupportedResourceTypeException;
 import org.terasology.web.resources.WritableResource;
 
 import java.math.BigInteger;
@@ -60,12 +59,7 @@ public class JsonSession {
         this.headlessClientFactory = headlessClientFactory;
         this.resourceManager = resourceManager;
         this.resourceObserver = new JsonSessionResourceObserver(this);
-        for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
-            observableResource.addObserver(resourceObserver);
-        }
-        for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
-            eventResource.addObserver(resourceObserver);
-        }
+        //TODO: set observers for anonymous clients
     }
 
     public JsonSession() {
@@ -73,11 +67,11 @@ public class JsonSession {
                 new HeadlessClientFactory(EngineRunner.getContext().get(EntityManager.class)), ResourceManager.getInstance());
     }
 
-    public void setReadableResourceObserver(BiConsumer<EntityRef, JsonElement> observer) {
+    public void setReadableResourceObserver(BiConsumer<String, JsonElement> observer) {
         resourceObserver.setReadableResourceObserver(observer);
     }
 
-    public void setEventResourceObserver(BiConsumer<EntityRef, JsonElement> observer) {
+    public void setEventResourceObserver(BiConsumer<String, JsonElement> observer) {
         resourceObserver.setEventResourceObserver(observer);
     }
 
@@ -102,6 +96,12 @@ public class JsonSession {
             byte[] serverVerification = authHandler.authenticate(clientAuthentication);
             String clientId = clientAuthentication.getClientHello().getCertificate().getId();
             client = headlessClientFactory.connectNewHeadlessClient(clientId);
+            for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
+                observableResource.setObserver(client.getEntity(), resourceObserver);
+            }
+            for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
+                eventResource.setObserver(client.getEntity(), resourceObserver);
+            }
             return new ActionResult(GSON.toJsonTree(serverVerification));
         } catch (NullPointerException | JsonSyntaxException ex) {
             return new ActionResult(ActionResult.Status.BAD_REQUEST);
@@ -112,16 +112,16 @@ public class JsonSession {
 
     public void disconnect() {
         for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
-            observableResource.removeObserver(resourceObserver);
+            observableResource.removeObserver(client.getEntity());
         }
         for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
-            eventResource.removeObserver(resourceObserver);
+            eventResource.removeObserver(client.getEntity());
         }
         client.disconnect();
         client = null;
     }
 
-    <T> JsonElement serializeEvent(EventEmittingResource<T> eventResource, T eventData) {
+    JsonElement serializeEvent(Object eventData) {
         return GSON.toJsonTree(eventData);
     }
 
@@ -133,8 +133,8 @@ public class JsonSession {
         ReadableResource resource;
         try {
             resource = resourceManager.getAs(resourceName, ReadableResource.class);
-        } catch (UnsupportedResourceTypeException ex) {
-            return new ActionResult(ActionResult.Status.BAD_REQUEST, ex.getMessage());
+        } catch (ResourceAccessException ex) {
+            return ex.getResultToSend();
         }
         return new ActionResult(readResource(resource));
     }
@@ -143,8 +143,8 @@ public class JsonSession {
         WritableResource resource;
         try {
             resource = resourceManager.getAs(resourceName, WritableResource.class);
-        } catch (UnsupportedResourceTypeException ex) {
-            return new ActionResult(ActionResult.Status.BAD_REQUEST, ex.getMessage());
+        } catch (ResourceAccessException ex) {
+            return ex.getResultToSend();
         }
         resource.write(client.getEntity(), GSON.fromJson(data, resource.getDataType()));
         return ActionResult.OK;

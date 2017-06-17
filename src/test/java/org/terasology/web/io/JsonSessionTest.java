@@ -42,14 +42,15 @@ import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.resources.EventEmittingResource;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ReadableResource;
+import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.ResourceManager;
-import org.terasology.web.resources.UnsupportedResourceTypeException;
 import org.terasology.web.resources.WritableResource;
 
 
 import java.math.BigInteger;
 import java.util.Arrays;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -83,12 +84,20 @@ public class JsonSessionTest {
 
     private static class ObservableReadableResourceMock extends ObservableReadableResource<String> {
         @Override
+        public String getName() {
+            return "testResource";
+        }
+        @Override
         public String read(EntityRef clientEntity) {
             return "test";
         }
     }
 
     private static class EventEmittingResourceMock extends EventEmittingResource<String> {
+        @Override
+        public String getName() {
+            return "testResource";
+        }
     }
 
     private static class ClientEntityMockBundle {
@@ -148,7 +157,7 @@ public class JsonSessionTest {
     }
 
     private JsonSession setupAlwaysAccepting(String playerId, HeadlessClientFactory clientFactory, ResourceManager resourceManager,
-                                             BiConsumer<EntityRef, JsonElement> readableResourceObserver, BiConsumer<EntityRef, JsonElement> eventResourceObserver) {
+                                             BiConsumer<String, JsonElement> readableResourceObserver, BiConsumer<String, JsonElement> eventResourceObserver) {
         AuthenticationHandshakeHandler authHandlerMock = mock(AuthenticationHandshakeHandler.class); //always accept, don't check for nulls
         JsonSession session = new JsonSession(authHandlerMock, clientFactory, resourceManager);
         session.setReadableResourceObserver(readableResourceObserver);
@@ -196,7 +205,7 @@ public class JsonSessionTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testReadResource() throws UnsupportedResourceTypeException {
+    public void testReadResource() throws ResourceAccessException {
         ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
 
         ReadableResource<String> readableResource = mock(ReadableResource.class);
@@ -210,7 +219,7 @@ public class JsonSessionTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testWriteResource() throws UnsupportedResourceTypeException {
+    public void testWriteResource() throws ResourceAccessException {
         ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
 
         WritableResource<String> writableResource = mock(WritableResource.class);
@@ -225,35 +234,35 @@ public class JsonSessionTest {
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testObservableReadableResource() throws UnsupportedResourceTypeException {
+    public void testObservableReadableResource() throws ResourceAccessException {
         ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
 
         ObservableReadableResource<String> observableReadableResource = new ObservableReadableResourceMock();
         ResourceManager resourceManager = mock(ResourceManager.class);
         when(resourceManager.getAllAs(ObservableReadableResource.class)).thenReturn(Sets.newHashSet(observableReadableResource));
 
-        BiConsumer<EntityRef, JsonElement> observer = mock(BiConsumer.class);
+        BiConsumer<String, JsonElement> observer = mock(BiConsumer.class);
 
         setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, observer, null);
         verify(observer, times(0)).accept(any(), any());
         observableReadableResource.notifyChanged(clientMock.entity);
-        verify(observer, times(1)).accept(clientMock.entity, new JsonPrimitive("test"));
+        verify(observer, times(1)).accept(observableReadableResource.getName(), new JsonPrimitive("test"));
     }
 
     @Test
     @SuppressWarnings("unchecked")
-    public void testEventEmittingResource() throws UnsupportedResourceTypeException {
+    public void testEventEmittingResource() throws ResourceAccessException {
         ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
 
         EventEmittingResource<String> eventEmittingResource = new EventEmittingResourceMock();
         ResourceManager resourceManager = mock(ResourceManager.class);
         when(resourceManager.getAllAs(EventEmittingResource.class)).thenReturn(Sets.newHashSet(eventEmittingResource));
 
-        BiConsumer<EntityRef, JsonElement> observer = mock(BiConsumer.class);
+        BiConsumer<String, JsonElement> observer = mock(BiConsumer.class);
 
         setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, null, observer);
         verify(observer, times(0)).accept(any(), any());
         eventEmittingResource.notifyEvent(clientMock.entity, "test");
-        verify(observer, times(1)).accept(clientMock.entity, new JsonPrimitive("test"));
+        verify(observer, times(1)).accept(eventEmittingResource.getName(), new JsonPrimitive("test"));
     }
 }

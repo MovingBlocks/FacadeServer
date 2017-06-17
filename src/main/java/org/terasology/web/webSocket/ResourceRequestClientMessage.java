@@ -17,19 +17,23 @@ package org.terasology.web.webSocket;
 
 import com.google.gson.JsonElement;
 
-public class ClientMessage {
+public class ResourceRequestClientMessage {
 
-    public enum MessageType {
-        AUTHENTICATION_REQUEST,
-        AUTHENTICATION_DATA,
-        RESOURCE
+    public enum Action {
+        READ,
+        WRITE
     }
 
-    private MessageType messageType;
+    private Action action;
+    private String resourceName;
     private JsonElement data;
 
-    public MessageType getMessageType() {
-        return messageType;
+    public Action getAction() {
+        return action;
+    }
+
+    public String getResourceName() {
+        return resourceName;
     }
 
     public JsonElement getData() {
@@ -37,12 +41,14 @@ public class ClientMessage {
     }
 
     public void checkValid() throws InvalidClientMessageException {
-        if (messageType == null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.MESSAGETYPE_EMPTY);
-        } else if (messageType == MessageType.AUTHENTICATION_REQUEST && data != null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.DATA_NOT_REQUIRED);
-        } else if (messageType != MessageType.AUTHENTICATION_REQUEST && data == null) {
+        if (action == null) {
+            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.ACTION_REQUIRED);
+        } else if (resourceName == null) {
+            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.RESOURCENAME_REQUIRED);
+        } else if (action == Action.WRITE && data == null) {
             throw new InvalidClientMessageException(InvalidClientMessageException.Reason.DATA_REQUIRED);
+        } else if (action == Action.READ && data != null) {
+            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.DATA_NOT_REQUIRED);
         }
     }
 }
