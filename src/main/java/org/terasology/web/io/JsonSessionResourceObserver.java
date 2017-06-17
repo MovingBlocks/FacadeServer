@@ -43,12 +43,16 @@ class JsonSessionResourceObserver implements Consumer<ObservableReadableResource
     //for readable resource updates
     @Override
     public void accept(ObservableReadableResource resource) {
-        readableResourceObserver.accept(resource.getName(), session.readResource(resource));
+        if (readableResourceObserver != null) {
+            readableResourceObserver.accept(resource.getName(), session.readResource(resource));
+        }
     }
 
     //for events
     @Override
     public void accept(EventEmittingResource resource, Object eventData) {
-        eventResourceObserver.accept(resource.getName(), session.serializeEvent(eventData));
+        if (eventResourceObserver != null) {
+            eventResourceObserver.accept(resource.getName(), session.serializeEvent(eventData));
+        }
     }
 }

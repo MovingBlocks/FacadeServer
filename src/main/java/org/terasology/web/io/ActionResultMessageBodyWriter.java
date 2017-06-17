@@ -41,6 +41,8 @@ public class ActionResultMessageBodyWriter implements MessageBodyWriter<ActionRe
     private static final Map<ActionResult.Status, Response.Status> ERRORMAP = ImmutableMap.<ActionResult.Status, Response.Status>builder()
             .put(ActionResult.Status.BAD_REQUEST, Response.Status.BAD_REQUEST)
             .put(ActionResult.Status.UNAUTHORIZED, Response.Status.UNAUTHORIZED)
+            .put(ActionResult.Status.NOT_FOUND, Response.Status.NOT_FOUND)
+            .put(ActionResult.Status.ACTION_NOT_ALLOWED, Response.Status.METHOD_NOT_ALLOWED)
             .build();
 
     @Override
