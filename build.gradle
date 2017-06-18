@@ -2,24 +2,18 @@ plugins {
     id "org.standardout.versioneye" version "1.3.0"
 }
 
-apply plugin: 'java'
+apply from: "$rootDir/config/gradle/artifactory.gradle"
 apply plugin: 'application'
-apply plugin: 'eclipse'
-apply plugin: 'idea'
 
 apply from: 'config/gradle/versioning.gradle'
 
+import groovy.json.JsonBuilder
+
 mainClassName = "org.terasology.web.ServerMain"
-group = 'org.terasology.web'
 
-// Same repository configuration as root project
-repositories {
-   mavenCentral()
-
-    // MovingBlocks Artifactory instance for libs not readily available elsewhere plus our own libs
-    maven {
-        url "http://artifactory.terasology.org/artifactory/virtual-repo-live"
-    }
+ext {
+    localServerDataPath = 'terasology-server'
+    group = 'org.terasology.web'
 }
 
 task wrapper(type: Wrapper) {
@@ -30,7 +24,8 @@ def jettyVersion = '9.3.8.v20160314'
 def jerseyVersion = '2.22.2'
 
 dependencies {
-    compile 'org.terasology.engine:engine:1.0.0'
+    //compile 'org.terasology.engine:engine:1.0.0'
+    compile project(':engine')
 
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: jettyVersion
     compile group: 'org.eclipse.jetty.websocket', name: 'websocket-server', version: jettyVersion
@@ -43,3 +38,65 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+// Copied from PC facade
+// By delaying this task to doLast (the << bit) we don't get the headless server dir set up unless actually wanting it
+// TODO: This is not the Gradle Way. Needs more declared output-fu to determine up-to-date instead of the if
+task setupServerConfig() << {
+    description "Parses parameters passed via Gradle and writes them to the local run-from-source server dir's config.cfg"
+
+    def json = new JsonBuilder()
+
+    def serverRoot = rootProject.file(localServerDataPath);
+    def config = new File(serverRoot, 'config.cfg')
+
+    if (!config.exists()) {
+
+        serverRoot.mkdir()
+        logger.lifecycle("Creating config file $config")
+
+        json {
+            worldGeneration {
+                if (project.hasProperty('seed')) {
+                    logger.lifecycle("  Seed value: $seed");
+                    defaultSeed seed
+                }
+                if (project.hasProperty('worldGen')) {
+                    logger.lifecycle("  World Generator: $worldGen");
+                    defaultGenerator worldGen
+                }
+            }
+            defaultModSelection {
+                if (project.hasProperty('extraModules')) {
+                    logger.lifecycle("  Enabling modules: $extraModules");
+                    modules extraModules.tokenize(" ,")
+                }
+            }
+        }
+        config.text = json.toPrettyString()
+    }
+}
+
+// TODO: Seems to always be up to date so no modules get copied
+task setupServerModules(type: Sync) << {
+    description 'Parses "extraModules" - a comma-separated list of modules and puts them into ' + localServerDataPath
+
+    if (project.hasProperty('extraModules')) {
+        // Grab modules from Artifactory - cheats by declaring them as dependencies
+        extraModules.tokenize(' ,').each { String module ->
+            println "Extra module: " + module
+            dependencies {
+                modules group: 'org.terasology.modules', name: module, version: '+', changing: 'true'
+            }
+        }
+    }
+
+    from(configurations.modules)
+    into(new File(rootProject.file(localServerDataPath), "modules"))
+}
+
+run.dependsOn rootProject.extractNatives
+run.dependsOn rootProject.moduleClasses
+run.dependsOn setupServerConfig
+run.dependsOn setupServerModules
+run.workingDir = rootDir
+run.args = ["-homedir=terasology-server"]

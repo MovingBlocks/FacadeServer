@@ -16,22 +16,27 @@
 
 package org.terasology.web;
 
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 
-import org.eclipse.jetty.server.Connector;
 import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.terasology.engine.LoggingContext;
+import org.terasology.engine.paths.PathManager;
+import org.terasology.engine.subsystem.common.ConfigurationSubsystem;
 import org.terasology.web.io.GsonMessageBodyHandler;
 import org.terasology.web.servlet.AboutServlet;
 import org.terasology.web.servlet.LogServlet;
@@ -44,15 +49,18 @@ public final class ServerMain {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerMain.class);
 
+    private static final String[] ARGS_HELP = {"--help", "-help", "/help", "-h", "/h", "-?", "/?"};
+    private static final String ARG_ENGINE_DIR = "-homedir=";
+    private static final String ARG_ENGINE_SERVER_PORT = "-serverPort=";
+
     private ServerMain() {
         // no instances
     }
 
-    /**
-     * @param args ignored
-     * @throws Exception
-     */
     public static void main(String[] args) throws Exception {
+
+        handleArgs(args);
+        setupLogging();
 
         String portEnv = System.getenv("PORT");
         if (portEnv == null) {
@@ -66,22 +74,66 @@ public final class ServerMain {
         // define the date format.
         Locale.setDefault(Locale.ENGLISH);
 
-        Server server = createServer(port.intValue(),
+        Server server = createServer(port,
                 new LogServlet(),
                 new AboutServlet());
 
         server.start();
-        logger.info("Server started on port {}!", port);
+        logger.info("Web server started on port {}!", port);
+
+        EngineRunner.runEngine();
 
         server.join();
     }
 
-    public static Server createServer(int port, Object... annotatedObjects) throws Exception {
+    private static void handleArgs(String[] args) {
+        List<String> helpArgs = Arrays.asList(ARGS_HELP);
+        Path homePath = Paths.get(""); //use current directory as default
+        for (String arg: args) {
+            if (helpArgs.contains(arg)) {
+                printUsage();
+                System.exit(0);
+            } else if (arg.startsWith(ARG_ENGINE_DIR)) {
+                homePath = Paths.get(arg.substring(ARG_ENGINE_DIR.length()));
+            } else if (arg.startsWith(ARG_ENGINE_SERVER_PORT)) {
+                System.setProperty(ConfigurationSubsystem.SERVER_PORT_PROPERTY, arg.substring(ARG_ENGINE_SERVER_PORT.length()));
+            } else {
+                System.err.println("Unrecognized command line argument \"" + arg + "\"");
+                printUsage();
+                System.exit(1);
+            }
+        }
+        try {
+            PathManager.getInstance().useOverrideHomePath(homePath);
+        } catch (IOException e) {
+            System.err.println("Failed to access the engine data directory: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    private static void printUsage() {
+        System.out.println("Available command line options:");
+        System.out.println(ARG_ENGINE_DIR + ": use the specified directory as the Terasology engine data directory");
+        System.out.println(ARG_ENGINE_SERVER_PORT + ": use the specified port for the Terasology server");
+        System.out.println();
+        System.out.println("The web server port (default 8080) can be overridden by setting the environment variable PORT.");
+    }
+
+    private static void setupLogging() {
+        Path path = PathManager.getInstance().getLogPath();
+        if (path == null) {
+            path = Paths.get("logs");
+        }
+
+        LoggingContext.initialize(path);
+    }
+
+    private static Server createServer(int port, Object... annotatedObjects) throws Exception {
         Server server = new Server(port);
 
         ResourceHandler logFileResourceHandler = new ResourceHandler();
         logFileResourceHandler.setDirectoriesListed(true);
-        logFileResourceHandler.setResourceBase("logs");
+        logFileResourceHandler.setResourceBase(LoggingContext.getLoggingPath().toString());
 
         ContextHandler logContext = new ContextHandler("/logs"); // the server uri path
         logContext.setHandler(logFileResourceHandler);
