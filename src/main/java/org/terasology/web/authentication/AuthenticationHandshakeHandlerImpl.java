@@ -52,11 +52,11 @@ public final class AuthenticationHandshakeHandlerImpl implements AuthenticationH
         HandshakeHello clientHello = authenticationMessage.getClientHello();
         PublicIdentityCertificate clientCert = clientHello.getCertificate();
         if (!clientCert.verifySignedBy(serverCertificate.getPublicCert())) {
-            throw new AuthenticationFailedException(true);
+            throw new AuthenticationFailedException(AuthenticationFailedException.INVALID_CLIENT_CERT);
         }
         byte[] signatureData = HandshakeHello.concat(serverHello, clientHello);
         if (!clientCert.verify(signatureData, authenticationMessage.getSignature())) {
-            throw new AuthenticationFailedException(false);
+            throw new AuthenticationFailedException(AuthenticationFailedException.INVALID_VERIFICATION_SIGNATURE);
         }
         return serverCertificate.getPrivateCert().sign(signatureData);
     }

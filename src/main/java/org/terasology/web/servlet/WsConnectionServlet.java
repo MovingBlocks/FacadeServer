@@ -18,10 +18,10 @@ package org.terasology.web.servlet;
 
 import org.eclipse.jetty.websocket.servlet.WebSocketServlet;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
-import org.terasology.web.webSocket.WsHandler;
+import org.terasology.web.webSocket.WebSocketHandler;
 
 /**
- * Registers the {@link WsHandler} class for all incoming connections.
+ * Registers the {@link WebSocketHandler} class for all incoming connections.
  */
 public class WsConnectionServlet extends WebSocketServlet {
 
@@ -30,6 +30,6 @@ public class WsConnectionServlet extends WebSocketServlet {
     @Override
     public void configure(WebSocketServletFactory factory) {
         factory.getPolicy().setIdleTimeout(10000);        // set a 10 second timeout
-        factory.register(WsHandler.class);
+        factory.register(WebSocketHandler.class);
     }
 }

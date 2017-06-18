@@ -31,7 +31,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import java.util.AbstractMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -43,14 +42,8 @@ public class HttpAPIServlet {
     private JsonSession anonymousSession;
 
     // TODO: call this after engine initialization
-    public void initAnonymourSession() {
+    public void initAnonymousSession() {
          anonymousSession = new JsonSession();
-    }
-
-    private Map.Entry<String, JsonSession> newSession() {
-        Map.Entry<String, JsonSession> entry = new AbstractMap.SimpleEntry<>(UUID.randomUUID().toString(), new JsonSession());
-        sessions.put(entry.getKey(), entry.getValue());
-        return entry;
     }
 
     private JsonSession getSession(HttpServletRequest request) {
@@ -60,7 +53,8 @@ public class HttpAPIServlet {
         }
         JsonSession session = sessions.get(token);
         if (session == null) {
-            throw new JsonWebApplicationException("Invalid session token", Response.Status.FORBIDDEN); //non-existing token token -> forbidden
+            //non-existing token -> access is forbidden
+            throw new JsonWebApplicationException("Invalid session token", Response.Status.FORBIDDEN);
         }
         return session;
     }
@@ -69,9 +63,12 @@ public class HttpAPIServlet {
     @Path("auth")
     @Produces(MediaType.APPLICATION_JSON)
     public ActionResult initAuthentication(@Context HttpServletResponse response) {
-        Map.Entry<String, JsonSession> session = newSession();
-        response.setHeader(SESSION_TOKEN_HEADER, session.getKey());
-        return session.getValue().initAuthentication();
+        //initialize new session
+        String sessionId = UUID.randomUUID().toString();
+        JsonSession session = new JsonSession();
+        sessions.put(sessionId, session);
+        response.setHeader(SESSION_TOKEN_HEADER, sessionId);
+        return session.initAuthentication();
     }
 
     @POST
@@ -93,7 +90,7 @@ public class HttpAPIServlet {
     public ActionResult logout(@Context HttpServletRequest request) {
         String token = request.getHeader(SESSION_TOKEN_HEADER);
         if (!sessions.containsKey(token)) {
-            throw new JsonWebApplicationException("Invalid session token", Response.Status.FORBIDDEN);
+            throw new JsonWebApplicationException("Invalid session token", Response.Status.NOT_FOUND);
         }
         sessions.remove(token);
         return ActionResult.OK;

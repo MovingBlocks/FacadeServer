@@ -31,9 +31,9 @@ import org.terasology.web.io.JsonSession;
 /**
  * Manages one websocket session
  */
-public class WsHandler extends WebSocketAdapter {
+public class WebSocketHandler extends WebSocketAdapter {
 
-    private static final Logger logger = LoggerFactory.getLogger(WsHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(WebSocketHandler.class);
     private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
     private JsonSession jsonSession;
 
@@ -47,26 +47,14 @@ public class WsHandler extends WebSocketAdapter {
     @Override
     public void onWebSocketText(String message) {
         super.onWebSocketText(message);
-        ClientMessage deserializedMessage;
         try {
-            deserializedMessage = GSON.fromJson(message, ClientMessage.class);
+            ClientMessage deserializedMessage = GSON.fromJson(message, ClientMessage.class);
             deserializedMessage.checkValid();
+            handleClientMessage(deserializedMessage);
         } catch (JsonSyntaxException ex) {
             trySendResult(ActionResult.JSON_PARSE_ERROR);
-            return;
-        } catch (NullPointerException | InvalidClientMessageException ex) {
+        } catch (InvalidClientMessageException ex) {
             trySendResult(new ActionResult(ActionResult.Status.BAD_REQUEST, ex.getMessage()));
-            return;
-        }
-        switch(deserializedMessage.getMessageType()) {
-            case AUTHENTICATION_REQUEST:
-                trySendResult(jsonSession.initAuthentication()); //send server handshake hello
-                break;
-            case AUTHENTICATION_DATA:
-                trySendResult(jsonSession.finishAuthentication(deserializedMessage.getData())); //process client handshake hello
-                break;
-            case RESOURCE:
-
         }
     }
 
@@ -82,6 +70,19 @@ public class WsHandler extends WebSocketAdapter {
     public void onWebSocketError(Throwable cause) {
         super.onWebSocketError(cause);
         logger.error("Error", cause);
+    }
+
+    private void handleClientMessage(ClientMessage clientMessage) {
+        switch(clientMessage.getMessageType()) {
+            case AUTHENTICATION_REQUEST:
+                trySendResult(jsonSession.initAuthentication()); //send server handshake hello
+                break;
+            case AUTHENTICATION_DATA:
+                trySendResult(jsonSession.finishAuthentication(clientMessage.getData())); //process client handshake hello
+                break;
+            case RESOURCE:
+
+        }
     }
 
     private void trySend(String message) {

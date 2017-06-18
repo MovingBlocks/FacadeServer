@@ -17,7 +17,10 @@ package org.terasology.web.authentication;
 
 public class AuthenticationFailedException extends Exception {
 
-    public AuthenticationFailedException(boolean invalidCertificate) {
-        super(invalidCertificate ? "Received invalid client certificate" : "Received invalid verification signature");
+    public static final String INVALID_CLIENT_CERT = "Received invalid client certificate";
+    public static final String INVALID_VERIFICATION_SIGNATURE = "Received invalid verification signature";
+
+    public AuthenticationFailedException(String message) {
+        super(message);
     }
 }

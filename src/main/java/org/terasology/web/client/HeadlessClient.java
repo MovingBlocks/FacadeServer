@@ -73,7 +73,7 @@ public class HeadlessClient extends AbstractClient {
 
     @Override
     public ViewDistance getViewDistance() {
-        return null;
+        return ViewDistance.LEGALLY_BLIND;
     }
 
     @Override

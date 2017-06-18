@@ -36,7 +36,7 @@ import java.math.BigInteger;
 public class JsonSession {
 
     private static final Gson GSON = new GsonBuilder()
-            .registerTypeHierarchyAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
+            .registerTypeAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
             .create();
 

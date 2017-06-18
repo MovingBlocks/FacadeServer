@@ -63,7 +63,7 @@ public class JsonSessionTest {
             Preconditions.checkNotNull(authenticationMessage.getClientHello());
             Preconditions.checkNotNull(authenticationMessage.getSignature());
             if (!nextResult) {
-                throw new AuthenticationFailedException(true);
+                throw new AuthenticationFailedException(AuthenticationFailedException.INVALID_CLIENT_CERT);
             }
             return new byte[]{0, 0, 0};
         }
