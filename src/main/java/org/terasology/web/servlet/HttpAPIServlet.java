@@ -15,7 +15,6 @@
  */
 package org.terasology.web.servlet;
 
-import com.google.common.collect.Maps;
 import com.google.gson.JsonElement;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.io.JsonSession;
@@ -31,6 +30,7 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
@@ -38,7 +38,7 @@ import java.util.UUID;
 public class HttpAPIServlet {
 
     private static final String SESSION_TOKEN_HEADER = "Session-Token";
-    private final Map<String, JsonSession> sessions = Maps.newHashMap(); //maps session tokens with the active sessions
+    private final Map<String, JsonSession> sessions = new HashMap<>(); //maps session tokens with the active sessions
     private JsonSession anonymousSession;
 
     // TODO: call this after engine initialization
