@@ -37,6 +37,7 @@ import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.ClientAuthenticationMessage;
 import org.terasology.web.authentication.HandshakeHello;
+import org.terasology.web.client.AnonymousHeadlessClient;
 import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.resources.EventEmittingResource;
@@ -109,6 +110,20 @@ public class JsonSessionTest {
             when(client.getEntity()).thenReturn(entity);
             factoryMock = mock(HeadlessClientFactory.class);
             when(factoryMock.connectNewHeadlessClient("testPlayerId")).thenReturn(client);
+            when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(mock(AnonymousHeadlessClient.class));
+        }
+    }
+
+    private static class AnonymousClientEntityMockBundle {
+        private EntityRef entity;
+        private HeadlessClientFactory factoryMock;
+
+        private AnonymousClientEntityMockBundle() {
+            entity = mock(EntityRef.class);
+            AnonymousHeadlessClient client = mock(AnonymousHeadlessClient.class);
+            when(client.getEntity()).thenReturn(entity);
+            factoryMock = mock(HeadlessClientFactory.class);
+            when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(client);
         }
     }
 
@@ -135,6 +150,7 @@ public class JsonSessionTest {
         AuthenticationHandshakeHandlerMock authHandlerMock = new AuthenticationHandshakeHandlerMock();
         HeadlessClientFactory headlessClientFactoryMock = mock(HeadlessClientFactory.class);
         when(headlessClientFactoryMock.connectNewHeadlessClient("testId")).thenReturn(new HeadlessClient("testId"));
+        when(headlessClientFactoryMock.connectNewAnonymousHeadlessClient()).thenReturn(mock(AnonymousHeadlessClient.class));
         JsonSession session = new JsonSession(authHandlerMock, headlessClientFactoryMock, resourceManagerMock);
         JsonElement dummyClientMessage = GSON.toJsonTree(new ClientAuthenticationMessage(
                 new HandshakeHello(null, new PublicIdentityCertificate("testId", null, null, null), 0),
@@ -194,7 +210,7 @@ public class JsonSessionTest {
 
         JsonSession session = setupAlwaysAccepting("testUserId", entityManagerMock);
         assertTrue(session.isAuthenticated());
-        verify(entityManagerMock).create("engine:client");
+        verify(entityManagerMock, times(2)).create("engine:client"); //2 because one is for the anonymous client
         session.disconnect();
         assertFalse(session.isAuthenticated());
 
@@ -227,7 +243,7 @@ public class JsonSessionTest {
         when(resourceManager.getAs("testResource", WritableResource.class)).thenReturn(writableResource);
 
         JsonSession session = setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, null, null);
-        session.writeResource("testResource", new JsonPrimitive("testValue"));
+        assertEquals(ActionResult.Status.OK, session.writeResource("testResource", new JsonPrimitive("testValue")).getStatus());
         verify(writableResource).write(clientMock.entity, "testValue");
     }
 
@@ -263,5 +279,34 @@ public class JsonSessionTest {
         verify(observer, times(0)).accept(any(), any());
         eventEmittingResource.notifyEvent(clientMock.entity, "test");
         verify(observer, times(1)).accept(eventEmittingResource.getName(), new JsonPrimitive("test"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testAnonymousReadResource() throws ResourceAccessException {
+        AnonymousClientEntityMockBundle clientMock = new AnonymousClientEntityMockBundle();
+
+        ReadableResource<String> readableResource = mock(ReadableResource.class);
+        when(readableResource.read(clientMock.entity)).thenReturn("testValue");
+        ResourceManager resourceManager = mock(ResourceManager.class);
+        when(resourceManager.getAs("testResource", ReadableResource.class)).thenReturn(readableResource);
+
+        JsonSession session = new JsonSession(null, clientMock.factoryMock, resourceManager);
+        assertResult(ActionResult.Status.OK, new JsonPrimitive("testValue"), session.readResource("testResource"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testAnonymousCantWriteResource() throws ResourceAccessException {
+        AnonymousClientEntityMockBundle clientMock = new AnonymousClientEntityMockBundle();
+
+        WritableResource<String> writableResource = mock(WritableResource.class);
+        when(writableResource.getDataType()).thenReturn(String.class);
+        ResourceManager resourceManager = mock(ResourceManager.class);
+        when(resourceManager.getAs("testResource", WritableResource.class)).thenReturn(writableResource);
+
+        JsonSession session = new JsonSession(null, clientMock.factoryMock, resourceManager);
+        assertEquals(ActionResult.Status.UNAUTHORIZED, session.writeResource("testResource", new JsonPrimitive("testValue")).getStatus());
+        verify(writableResource, times(0)).write(clientMock.entity, "testValue");
     }
 }

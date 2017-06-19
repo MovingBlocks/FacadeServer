@@ -22,13 +22,14 @@ import com.google.gson.JsonSyntaxException;
 import org.terasology.config.Config;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
+import org.terasology.network.Client;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.AuthenticationHandshakeHandlerImpl;
 import org.terasology.web.authentication.ClientAuthenticationMessage;
 import org.terasology.web.authentication.HandshakeHello;
-import org.terasology.web.client.HeadlessClient;
+import org.terasology.web.client.AnonymousHeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.resources.EventEmittingResource;
 import org.terasology.web.resources.ObservableReadableResource;
@@ -52,14 +53,14 @@ public class JsonSession {
     private final ResourceManager resourceManager;
     private final JsonSessionResourceObserver resourceObserver;
 
-    private HeadlessClient client;
+    private Client client;
 
     JsonSession(AuthenticationHandshakeHandler authHandler, HeadlessClientFactory headlessClientFactory, ResourceManager resourceManager) {
         this.authHandler = authHandler;
         this.headlessClientFactory = headlessClientFactory;
         this.resourceManager = resourceManager;
         this.resourceObserver = new JsonSessionResourceObserver(this);
-        //TODO: set observers for anonymous clients
+        this.client = headlessClientFactory.connectNewAnonymousHeadlessClient();
     }
 
     public JsonSession() {
@@ -76,7 +77,7 @@ public class JsonSession {
     }
 
     public boolean isAuthenticated() {
-        return client != null;
+        return  client != null && !(client instanceof AnonymousHeadlessClient);
     }
 
     public ActionResult initAuthentication() {
@@ -94,6 +95,7 @@ public class JsonSession {
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);
             byte[] serverVerification = authHandler.authenticate(clientAuthentication);
+            client.disconnect(); //disconnect the anonymous client
             String clientId = clientAuthentication.getClientHello().getCertificate().getId();
             client = headlessClientFactory.connectNewHeadlessClient(clientId);
             for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
@@ -140,6 +142,9 @@ public class JsonSession {
     }
 
     public ActionResult writeResource(String resourceName, JsonElement data) {
+        if (!isAuthenticated()) {
+            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to resources.");
+        }
         WritableResource resource;
         try {
             resource = resourceManager.getAs(resourceName, WritableResource.class);
