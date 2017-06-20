@@ -22,6 +22,7 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.event.internal.EventSystem;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.logic.console.Console;
+import org.terasology.network.NetworkSystem;
 import org.terasology.web.io.ActionResult;
 
 import java.util.Map;
@@ -40,6 +41,7 @@ public class ResourceManager {
         if (resources == null) {
             resources = Maps.newHashMap();
             putResource(new ConsoleResource(context.get(Console.class)));
+            putResource(new OnlinePlayersResource(context.get(NetworkSystem.class)));
         }
         registerEventHandlers(context);
     }
