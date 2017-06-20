@@ -15,6 +15,7 @@
  */
 package org.terasology.web;
 
+import org.terasology.context.Context;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
@@ -25,7 +26,9 @@ import org.terasology.engine.subsystem.headless.HeadlessTimer;
 import org.terasology.engine.subsystem.headless.mode.HeadlessStateChangeListener;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
 
-final class EngineRunner {
+public final class EngineRunner {
+
+    private static TerasologyEngine engine;
 
     private EngineRunner() {
     }
@@ -33,7 +36,7 @@ final class EngineRunner {
     static void runEngine() {
         TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
         populateSubsystems(builder);
-        TerasologyEngine engine = builder.build();
+        engine = builder.build();
         engine.subscribeToStateChange(new HeadlessStateChangeListener(engine));
         engine.run(new StateHeadlessSetup());
     }
@@ -44,6 +47,10 @@ final class EngineRunner {
                 .add(new HeadlessAudio())
                 .add(new HeadlessInput())
                 .add(new HibernationSubsystem());
+    }
+
+    public static Context getContext() {
+        return engine.getState().getContext();
     }
 
 }
