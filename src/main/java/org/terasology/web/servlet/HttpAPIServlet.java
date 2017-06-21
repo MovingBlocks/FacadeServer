@@ -43,15 +43,11 @@ public class HttpAPIServlet {
     private final Map<String, JsonSessionWithEventQueue> sessions = new HashMap<>(); //maps session tokens with the active sessions
     private JsonSession anonymousSession;
 
-    // TODO: call this after engine initialization
-    public void initAnonymousSession() {
-         anonymousSession = new JsonSession(); //TODO
-    }
-
     private JsonSessionWithEventQueue getSessionWithEventQueue(String token) {
         JsonSessionWithEventQueue session = sessions.get(token);
         if (session == null) {
-            throw new JsonWebApplicationException("Invalid session token", Response.Status.FORBIDDEN); //non-existing token token -> forbidden
+            //non-existing token -> forbidden
+            throw new JsonWebApplicationException("Invalid session token", Response.Status.FORBIDDEN);
         }
         return session;
     }
@@ -63,6 +59,9 @@ public class HttpAPIServlet {
     private JsonSession getSession(HttpServletRequest request) {
         String token = request.getHeader(SESSION_TOKEN_HEADER);
         if (token == null) {
+            if (anonymousSession == null) {
+                anonymousSession = new JsonSession();
+            }
             return anonymousSession;
         }
         return getSessionWithEventQueue(token).getSession();
