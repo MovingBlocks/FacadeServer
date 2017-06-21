@@ -15,7 +15,10 @@
  */
 package org.terasology.web.authentication;
 
-public class ClientAuthenticationMessage {
+import org.terasology.web.io.gsonUtils.InvalidClientMessageException;
+import org.terasology.web.io.gsonUtils.Validable;
+
+public class ClientAuthenticationMessage implements Validable {
 
     private HandshakeHello clientHello;
     private byte[] signature;
@@ -31,5 +34,13 @@ public class ClientAuthenticationMessage {
 
     public byte[] getSignature() {
         return signature;
+    }
+
+    @Override
+    public void validate() throws InvalidClientMessageException {
+        if (clientHello == null || signature == null) {
+            throw new InvalidClientMessageException("clientHello and signature fields must be specified");
+        }
+        clientHello.validate();
     }
 }

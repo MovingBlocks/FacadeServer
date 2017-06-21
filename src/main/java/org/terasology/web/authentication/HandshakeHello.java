@@ -17,10 +17,12 @@ package org.terasology.web.authentication;
 
 import com.google.common.primitives.Bytes;
 import org.terasology.identity.PublicIdentityCertificate;
+import org.terasology.web.io.gsonUtils.InvalidClientMessageException;
+import org.terasology.web.io.gsonUtils.Validable;
 
 import java.nio.ByteBuffer;
 
-public class HandshakeHello {
+public class HandshakeHello implements Validable {
 
     private byte[] random;
     private PublicIdentityCertificate certificate;
@@ -47,5 +49,16 @@ public class HandshakeHello {
 
     public static byte[] concat(HandshakeHello a, HandshakeHello b) {
         return Bytes.concat(a.toByteArray(), b.toByteArray());
+    }
+
+    @Override
+    public void validate() throws InvalidClientMessageException {
+        if (random == null || certificate == null || timestamp == null) {
+            throw new InvalidClientMessageException("random, certificate and timestamp fields must be specified");
+        }
+        if (certificate.getId() == null || certificate.getModulus() == null
+                || certificate.getExponent() == null || certificate.getSignature() == null) {
+            throw new InvalidClientMessageException("the certificate must contain the id, modulus, exponent and signature fields");
+        }
     }
 }

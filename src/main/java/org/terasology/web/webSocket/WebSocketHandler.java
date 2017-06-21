@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.io.JsonSession;
+import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
 
 /**
  * Manages one websocket session
@@ -35,7 +36,10 @@ import org.terasology.web.io.JsonSession;
 public class WebSocketHandler extends WebSocketAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketHandler.class);
-    private static final Gson GSON = new GsonBuilder().disableHtmlEscaping().create();
+    private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapterFactory(ValidatorTypeAdapterFactory.getInstance())
+            .disableHtmlEscaping()
+            .create();
     private JsonSession jsonSession;
 
     @Override
@@ -54,12 +58,9 @@ public class WebSocketHandler extends WebSocketAdapter {
         super.onWebSocketText(message);
         try {
             ClientToServerMessage deserializedMessage = GSON.fromJson(message, ClientToServerMessage.class);
-            deserializedMessage.checkValid();
             handleClientMessage(deserializedMessage);
         } catch (JsonSyntaxException ex) {
-            trySendResult(ActionResult.JSON_PARSE_ERROR);
-        } catch (InvalidClientMessageException ex) {
-            trySendResult(new ActionResult(ActionResult.Status.BAD_REQUEST, ex.getMessage()));
+            trySendResult(new ActionResult(ex));
         }
     }
 
@@ -110,12 +111,8 @@ public class WebSocketHandler extends WebSocketAdapter {
         ResourceRequestClientMessage deserializedMessage;
         try {
             deserializedMessage = GSON.fromJson(requestMessage, ResourceRequestClientMessage.class);
-            deserializedMessage.checkValid();
         } catch (JsonSyntaxException ex) {
-            trySendResult(ActionResult.JSON_PARSE_ERROR);
-            return;
-        } catch (NullPointerException | InvalidClientMessageException ex) {
-            trySendResult(new ActionResult(ActionResult.Status.BAD_REQUEST, ex.getMessage()));
+            trySendResult(new ActionResult(ex));
             return;
         }
         String resourceName = deserializedMessage.getResourceName();

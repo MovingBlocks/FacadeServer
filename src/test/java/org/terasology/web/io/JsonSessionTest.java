@@ -15,7 +15,6 @@
  */
 package org.terasology.web.io;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -40,6 +39,7 @@ import org.terasology.web.authentication.HandshakeHello;
 import org.terasology.web.client.AnonymousHeadlessClient;
 import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
+import org.terasology.web.io.gsonUtils.ByteArrayBase64Serializer;
 import org.terasology.web.resources.EventEmittingResource;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ReadableResource;
@@ -73,8 +73,6 @@ public class JsonSessionTest {
 
         @Override
         public byte[] authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
-            Preconditions.checkNotNull(authenticationMessage.getClientHello());
-            Preconditions.checkNotNull(authenticationMessage.getSignature());
             if (!nextResult) {
                 throw new AuthenticationFailedException(AuthenticationFailedException.INVALID_CLIENT_CERT);
             }
@@ -127,11 +125,12 @@ public class JsonSessionTest {
         }
     }
 
+    private static final BigInteger ZERO = BigInteger.ZERO;
+    private static final byte[] EMPTY = new byte[]{};
     private static final Gson GSON = new GsonBuilder()
             .registerTypeHierarchyAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
             .create();
-
     private static ResourceManager resourceManagerMock;
 
     @BeforeClass
@@ -153,8 +152,8 @@ public class JsonSessionTest {
         when(headlessClientFactoryMock.connectNewAnonymousHeadlessClient()).thenReturn(mock(AnonymousHeadlessClient.class));
         JsonSession session = new JsonSession(authHandlerMock, headlessClientFactoryMock, resourceManagerMock);
         JsonElement dummyClientMessage = GSON.toJsonTree(new ClientAuthenticationMessage(
-                new HandshakeHello(null, new PublicIdentityCertificate("testId", null, null, null), 0),
-                new byte[2]));
+                new HandshakeHello(EMPTY, new PublicIdentityCertificate("testId", ZERO, ZERO, ZERO), 0),
+                EMPTY));
 
         assertFalse(session.isAuthenticated());
         assertEquals(ActionResult.Status.OK, session.initAuthentication().getStatus());
@@ -177,10 +176,10 @@ public class JsonSessionTest {
         JsonSession session = new JsonSession(authHandlerMock, clientFactory, resourceManager);
         session.setReadableResourceObserver(readableResourceObserver);
         session.setEventResourceObserver(eventResourceObserver);
-        PublicIdentityCertificate cert = new PublicIdentityCertificate(playerId, null, null, null);
-        ClientAuthenticationMessage message = new ClientAuthenticationMessage(new HandshakeHello(null, cert, 0), null);
+        PublicIdentityCertificate cert = new PublicIdentityCertificate(playerId, ZERO, ZERO, ZERO);
+        ClientAuthenticationMessage message = new ClientAuthenticationMessage(new HandshakeHello(EMPTY, cert, 0), EMPTY);
         session.initAuthentication();
-        session.finishAuthentication(GSON.toJsonTree(message));
+        assertEquals(ActionResult.Status.OK, session.finishAuthentication(GSON.toJsonTree(message)).getStatus());
         return session;
     }
 
@@ -212,9 +211,6 @@ public class JsonSessionTest {
         assertTrue(session.isAuthenticated());
         verify(entityManagerMock, times(2)).create("engine:client"); //2 because one is for the anonymous client
         session.disconnect();
-        assertFalse(session.isAuthenticated());
-
-        session = setupAlwaysAccepting("nonExistingUserId", entityManagerMock);
         assertFalse(session.isAuthenticated());
     }
 

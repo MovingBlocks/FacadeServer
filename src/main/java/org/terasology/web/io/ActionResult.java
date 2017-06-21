@@ -17,11 +17,11 @@ package org.terasology.web.io;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 
 public class ActionResult {
 
     public static final ActionResult OK = new ActionResult(Status.OK);
-    public static final ActionResult JSON_PARSE_ERROR = new ActionResult(Status.BAD_REQUEST, "Failed to parse JSON message");
 
     public enum Status {
         OK,
@@ -51,6 +51,19 @@ public class ActionResult {
 
     public ActionResult(JsonElement data) {
         this(Status.OK, null, data);
+    }
+
+    public ActionResult(JsonSyntaxException ex) {
+        this(Status.BAD_REQUEST, getExceptionMessage(ex), null);
+    }
+
+    private static String getExceptionMessage(JsonSyntaxException ex) {
+        String result = ex.getMessage();
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            result += " - Cause: " + cause.getMessage();
+        }
+        return result;
     }
 
     public Status getStatus() {

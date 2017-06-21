@@ -16,8 +16,10 @@
 package org.terasology.web.webSocket;
 
 import com.google.gson.JsonElement;
+import org.terasology.web.io.gsonUtils.InvalidClientMessageException;
+import org.terasology.web.io.gsonUtils.Validable;
 
-public class ResourceRequestClientMessage {
+public class ResourceRequestClientMessage implements Validable {
 
     public enum Action {
         READ,
@@ -40,15 +42,16 @@ public class ResourceRequestClientMessage {
         return data;
     }
 
-    public void checkValid() throws InvalidClientMessageException {
+    @Override
+    public void validate() throws InvalidClientMessageException {
         if (action == null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.ACTION_REQUIRED);
+            throw new InvalidClientMessageException("an action must be specified");
         } else if (resourceName == null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.RESOURCENAME_REQUIRED);
+            throw new InvalidClientMessageException("a resource name must be specified");
         } else if (action == Action.WRITE && data == null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.DATA_REQUIRED);
+            throw new InvalidClientMessageException("data is required");
         } else if (action == Action.READ && data != null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.DATA_NOT_REQUIRED);
+            throw new InvalidClientMessageException("no data must be sent");
         }
     }
 }

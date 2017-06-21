@@ -31,6 +31,8 @@ import org.terasology.web.authentication.ClientAuthenticationMessage;
 import org.terasology.web.authentication.HandshakeHello;
 import org.terasology.web.client.AnonymousHeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
+import org.terasology.web.io.gsonUtils.ByteArrayBase64Serializer;
+import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
 import org.terasology.web.resources.EventEmittingResource;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ReadableResource;
@@ -44,6 +46,7 @@ import java.util.function.BiConsumer;
 public class JsonSession {
 
     private static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapterFactory(ValidatorTypeAdapterFactory.getInstance())
             .registerTypeAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
             .create();
@@ -120,8 +123,8 @@ public class JsonSession {
             client = headlessClientFactory.connectNewHeadlessClient(clientId);
             setResourceObservers(); //observe the notifications sent for the authenticated client
             return new ActionResult(GSON.toJsonTree(serverVerification));
-        } catch (NullPointerException | JsonSyntaxException ex) {
-            return new ActionResult(ActionResult.Status.BAD_REQUEST);
+        } catch (JsonSyntaxException ex) {
+            return new ActionResult(ex);
         } catch (AuthenticationFailedException ex) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED);
         }
