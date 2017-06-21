@@ -34,12 +34,15 @@ public abstract class ObservableReadableResource<T> implements ReadableResource<
     }
 
     public final void notifyChanged(EntityRef clientEntity) {
-        observers.get(clientEntity).accept(this);
+        Consumer<ObservableReadableResource<T>> observer = observers.get(clientEntity);
+        if (observer != null) {
+            observer.accept(this);
+        }
     }
 
     public final void notifyChangedAll() {
         for (EntityRef client: observers.keySet()) {
-            notifyChanged(client);
+            observers.get(client).accept(this);
         }
     }
 }

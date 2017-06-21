@@ -34,6 +34,9 @@ public abstract class EventEmittingResource<T> implements Resource {
     }
 
     public final void notifyEvent(EntityRef clientEntity, T eventData) {
-        observers.get(clientEntity).accept(this, eventData);
+        BiConsumer<EventEmittingResource<T>, T> observer = observers.get(clientEntity);
+        if (observer != null) {
+            observer.accept(this, eventData);
+        }
     }
 }

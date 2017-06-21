@@ -61,11 +61,30 @@ public class JsonSession {
         this.resourceManager = resourceManager;
         this.resourceObserver = new JsonSessionResourceObserver(this);
         this.client = headlessClientFactory.connectNewAnonymousHeadlessClient();
+        setResourceObservers(); //observe the notifications sent for the anonymous client
     }
 
     public JsonSession() {
         this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getContext().get(Config.class).getSecurity()),
                 new HeadlessClientFactory(EngineRunner.getContext().get(EntityManager.class)), ResourceManager.getInstance());
+    }
+
+    private void setResourceObservers() {
+        for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
+            observableResource.setObserver(client.getEntity(), resourceObserver);
+        }
+        for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
+            eventResource.setObserver(client.getEntity(), resourceObserver);
+        }
+    }
+
+    private void removeResourceObservers() {
+        for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
+            observableResource.removeObserver(client.getEntity());
+        }
+        for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
+            eventResource.removeObserver(client.getEntity());
+        }
     }
 
     public void setReadableResourceObserver(BiConsumer<String, JsonElement> observer) {
@@ -95,15 +114,11 @@ public class JsonSession {
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);
             byte[] serverVerification = authHandler.authenticate(clientAuthentication);
+            removeResourceObservers(); //remove the observers for the anonymous client
             client.disconnect(); //disconnect the anonymous client
             String clientId = clientAuthentication.getClientHello().getCertificate().getId();
             client = headlessClientFactory.connectNewHeadlessClient(clientId);
-            for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
-                observableResource.setObserver(client.getEntity(), resourceObserver);
-            }
-            for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
-                eventResource.setObserver(client.getEntity(), resourceObserver);
-            }
+            setResourceObservers(); //observe the notifications sent for the authenticated client
             return new ActionResult(GSON.toJsonTree(serverVerification));
         } catch (NullPointerException | JsonSyntaxException ex) {
             return new ActionResult(ActionResult.Status.BAD_REQUEST);
@@ -113,12 +128,7 @@ public class JsonSession {
     }
 
     public void disconnect() {
-        for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
-            observableResource.removeObserver(client.getEntity());
-        }
-        for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
-            eventResource.removeObserver(client.getEntity());
-        }
+        removeResourceObservers();
         client.disconnect();
         client = null;
     }

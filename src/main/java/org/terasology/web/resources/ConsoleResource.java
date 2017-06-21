@@ -19,11 +19,12 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.console.Console;
+import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
 import org.terasology.network.ClientComponent;
 
 @RegisterSystem
-public class ConsoleResource extends EventEmittingResource<MessageEvent> implements DefaultComponentSystem, WritableResource<String> {
+public class ConsoleResource extends EventEmittingResource<Message> implements DefaultComponentSystem, WritableResource<String> {
 
     private Console console;
 
@@ -33,7 +34,7 @@ public class ConsoleResource extends EventEmittingResource<MessageEvent> impleme
 
     @ReceiveEvent(components = ClientComponent.class)
     public void onMessage(MessageEvent event, EntityRef entityRef) {
-        notifyEvent(entityRef, event);
+        notifyEvent(entityRef, event.getFormattedMessage());
     }
 
     @Override

@@ -16,15 +16,16 @@
 package org.terasology.web.resources;
 
 import org.junit.Test;
-import org.mockito.Mock;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.console.Console;
+import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
 
 import java.util.function.BiConsumer;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ConsoleResourceTest {
 
@@ -32,12 +33,13 @@ public class ConsoleResourceTest {
     @SuppressWarnings("unchecked")
     public void testMessageNotification() {
         ConsoleResource consoleResource = new ConsoleResource(mock(Console.class));
-        BiConsumer<EventEmittingResource<MessageEvent>, MessageEvent> observer = mock(BiConsumer.class);
+        BiConsumer<EventEmittingResource<Message>, Message> observer = mock(BiConsumer.class);
         MessageEvent testEvent = mock(MessageEvent.class);
+        when(testEvent.getFormattedMessage()).thenReturn(new Message("testMessage"));
         EntityRef client = mock(EntityRef.class);
         consoleResource.setObserver(client, observer);
         consoleResource.onMessage(testEvent, client);
-        verify(observer).accept(consoleResource, testEvent);
+        verify(observer).accept(consoleResource, testEvent.getFormattedMessage());
     }
 
     @Test

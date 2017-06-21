@@ -52,9 +52,8 @@ public class WebSocketHandler extends WebSocketAdapter {
     @Override
     public void onWebSocketText(String message) {
         super.onWebSocketText(message);
-        ClientToServerMessage deserializedMessage;
         try {
-            deserializedMessage = GSON.fromJson(message, ClientToServerMessage.class);
+            ClientToServerMessage deserializedMessage = GSON.fromJson(message, ClientToServerMessage.class);
             deserializedMessage.checkValid();
             handleClientMessage(deserializedMessage);
         } catch (JsonSyntaxException ex) {
