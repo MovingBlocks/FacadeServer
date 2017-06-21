@@ -32,7 +32,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
-import java.util.AbstractMap;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -41,18 +40,12 @@ import java.util.UUID;
 public class HttpAPIServlet {
 
     private static final String SESSION_TOKEN_HEADER = "Session-Token";
-    private final Map<String, JsonSessionWithEventQueue> sessions = Maps.newHashMap(); //maps session tokens with the active sessions
+    private final Map<String, JsonSessionWithEventQueue> sessions = new HashMap<>(); //maps session tokens with the active sessions
     private JsonSession anonymousSession;
 
     // TODO: call this after engine initialization
     public void initAnonymousSession() {
          anonymousSession = new JsonSession(); //TODO
-    }
-
-    private Map.Entry<String, JsonSessionWithEventQueue> newSession() {
-        Map.Entry<String, JsonSessionWithEventQueue> entry = new AbstractMap.SimpleEntry<>(UUID.randomUUID().toString(), new JsonSessionWithEventQueue());
-        sessions.put(entry.getKey(), entry.getValue());
-        return entry;
     }
 
     private JsonSessionWithEventQueue getSessionWithEventQueue(String token) {
@@ -81,10 +74,10 @@ public class HttpAPIServlet {
     public ActionResult initAuthentication(@Context HttpServletResponse response) {
         //initialize new session
         String sessionId = UUID.randomUUID().toString();
-        JsonSession session = new JsonSession();
+        JsonSessionWithEventQueue session = new JsonSessionWithEventQueue();
         sessions.put(sessionId, session);
         response.setHeader(SESSION_TOKEN_HEADER, sessionId);
-        return session.initAuthentication();
+        return session.getSession().initAuthentication();
     }
 
     @POST

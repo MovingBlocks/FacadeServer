@@ -78,7 +78,7 @@ public class WebSocketHandler extends WebSocketAdapter {
         logger.error("Error", cause);
     }
 
-    private void handleClientMessage(ClientMessage clientMessage) {
+    private void handleClientMessage(ClientToServerMessage clientMessage) {
         switch(clientMessage.getMessageType()) {
             case AUTHENTICATION_REQUEST:
                 trySendResult(jsonSession.initAuthentication()); //send server handshake hello
@@ -86,8 +86,8 @@ public class WebSocketHandler extends WebSocketAdapter {
             case AUTHENTICATION_DATA:
                 trySendResult(jsonSession.finishAuthentication(clientMessage.getData())); //process client handshake hello
                 break;
-            case RESOURCE:
-
+            case RESOURCE_REQUEST:
+                handleResourceRequest(clientMessage.getData());
         }
     }
 
