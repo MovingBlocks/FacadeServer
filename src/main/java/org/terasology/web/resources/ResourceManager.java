@@ -15,8 +15,6 @@
  */
 package org.terasology.web.resources;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import org.terasology.context.Context;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.event.internal.EventSystem;
@@ -25,6 +23,8 @@ import org.terasology.logic.console.Console;
 import org.terasology.network.NetworkSystem;
 import org.terasology.web.io.ActionResult;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -39,7 +39,7 @@ public class ResourceManager {
 
     public void initialize(Context context) {
         if (resources == null) {
-            resources = Maps.newHashMap();
+            resources = new HashMap<>();
             putResource(new ConsoleResource(context.get(Console.class)));
             putResource(new OnlinePlayersResource(context.get(NetworkSystem.class)));
         }
@@ -76,7 +76,7 @@ public class ResourceManager {
     }
 
     public <T extends Resource> Set<T> getAllAs(Class<T> type) {
-        Set<T> result = Sets.newHashSet();
+        Set<T> result = new HashSet<>();
         for (Map.Entry<String, Resource> entry: resources.entrySet()) {
             if (type.isAssignableFrom(entry.getValue().getClass())) {
                 result.add(type.cast(entry.getValue()));

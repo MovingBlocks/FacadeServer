@@ -15,17 +15,18 @@
  */
 package org.terasology.web.servlet;
 
-import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
 import org.terasology.web.io.JsonSession;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
 public class JsonSessionWithEventQueue {
 
     private final JsonSession session;
-    private final Queue<ResourceEvent> eventQueue = Lists.newLinkedList();
+    private final Queue<ResourceEvent> eventQueue = new LinkedList<>();
 
     public JsonSessionWithEventQueue(JsonSession session) {
         this.session = session;
@@ -41,7 +42,7 @@ public class JsonSessionWithEventQueue {
     }
 
     public List<ResourceEvent> drainEventQueue() {
-        List<ResourceEvent> result = Lists.newArrayList();
+        List<ResourceEvent> result = new ArrayList<>();
         synchronized (eventQueue) {
             ResourceEvent item;
             while ((item = eventQueue.poll()) != null) {

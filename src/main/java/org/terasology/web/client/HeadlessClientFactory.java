@@ -21,7 +21,6 @@ public class HeadlessClientFactory {
 
     private final EntityManager entityManager;
 
-
     public HeadlessClientFactory(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
@@ -38,7 +37,7 @@ public class HeadlessClientFactory {
 
     /**
      * @return a new instance of {@link AnonymousHeadlessClient}, which entity has no correspondent clientInfo entity and components;
-     * thus, it's data is not persisted in the save files. Used to provide anonymous for read-only access to certain resources.
+     * thus, it's data is not persisted in the save files. Used to provide anonymous read-only access to certain resources.
      */
     public AnonymousHeadlessClient connectNewAnonymousHeadlessClient() {
         AnonymousHeadlessClient result = new AnonymousHeadlessClient();

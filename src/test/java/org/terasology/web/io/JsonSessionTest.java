@@ -50,6 +50,7 @@ import org.terasology.web.resources.WritableResource;
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.function.BiConsumer;
 
 import static org.junit.Assert.assertEquals;
@@ -136,7 +137,7 @@ public class JsonSessionTest {
     @BeforeClass
     public static void setUpResourceManagerMock() {
         resourceManagerMock = mock(ResourceManager.class);
-        when(resourceManagerMock.getAllAs(any())).thenReturn(Sets.newHashSet());
+        when(resourceManagerMock.getAllAs(any())).thenReturn(new HashSet<>());
     }
 
     private void assertResult(ActionResult.Status expectedStatus, JsonElement expectedData, ActionResult actual) {

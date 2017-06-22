@@ -46,11 +46,10 @@ public final class ValidatorTypeAdapterFactory implements TypeAdapterFactory {
             @Override
             public T read(JsonReader in) throws IOException {
                 T value = delegate.read(in);
-                if (Validable.class.isAssignableFrom(type.getRawType())) {
-                    if (value == null) {
-                        throw new InvalidClientMessageException("the message must not be a JSON null value");
-                    }
-                    Validable.class.cast(value).validate();
+                if (value == null) {
+                    throw new InvalidClientMessageException("the message must not be a JSON null value");
+                } else if (value instanceof Validable) {
+                    ((Validable) value).validate();
                 }
                 return value;
             }

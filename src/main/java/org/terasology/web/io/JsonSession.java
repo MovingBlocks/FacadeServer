@@ -99,7 +99,7 @@ public class JsonSession {
     }
 
     public boolean isAuthenticated() {
-        return  client != null && !(client instanceof AnonymousHeadlessClient);
+        return client != null && !(client instanceof AnonymousHeadlessClient);
     }
 
     public ActionResult initAuthentication() {

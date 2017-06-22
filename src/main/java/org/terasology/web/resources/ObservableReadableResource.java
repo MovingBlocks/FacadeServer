@@ -15,15 +15,15 @@
  */
 package org.terasology.web.resources;
 
-import com.google.common.collect.Maps;
 import org.terasology.entitySystem.entity.EntityRef;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
 public abstract class ObservableReadableResource<T> implements ReadableResource<T> {
 
-    private Map<EntityRef, Consumer<ObservableReadableResource<T>>> observers = Maps.newHashMap();
+    private Map<EntityRef, Consumer<ObservableReadableResource<T>>> observers = new HashMap<>();
 
     public final void setObserver(EntityRef clientEntityRef, Consumer<ObservableReadableResource<T>> observer) {
         observers.put(clientEntityRef, observer);

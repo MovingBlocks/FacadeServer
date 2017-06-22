@@ -58,12 +58,11 @@ public class ActionResult {
     }
 
     private static String getExceptionMessage(JsonSyntaxException ex) {
-        String result = ex.getMessage();
         Throwable cause = ex.getCause();
         if (cause != null) {
-            result += " - Cause: " + cause.getMessage();
+            return cause.getMessage();
         }
-        return result;
+        return ex.getMessage();
     }
 
     public Status getStatus() {

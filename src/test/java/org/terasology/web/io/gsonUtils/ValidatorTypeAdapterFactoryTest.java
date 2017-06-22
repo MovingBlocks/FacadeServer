@@ -31,7 +31,7 @@ public class ValidatorTypeAdapterFactoryTest {
             .registerTypeAdapterFactory(ValidatorTypeAdapterFactory.getInstance())
             .create();
 
-    private static class ValidableMock implements Validable {
+    private static final class ValidableMock implements Validable {
         private String data;
         private boolean mustThrow;
 
@@ -50,7 +50,7 @@ public class ValidatorTypeAdapterFactoryTest {
         @Override
         public boolean equals(Object other) {
             if (other instanceof ValidableMock) {
-                return ((ValidableMock)other).data.equals(data) && ((ValidableMock)other).mustThrow == mustThrow;
+                return ((ValidableMock) other).data.equals(data) && ((ValidableMock) other).mustThrow == mustThrow;
             }
             return false;
         }

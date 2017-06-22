@@ -15,15 +15,15 @@
  */
 package org.terasology.web.resources;
 
-import com.google.common.collect.Maps;
 import org.terasology.entitySystem.entity.EntityRef;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.function.BiConsumer;
 
 public abstract class EventEmittingResource<T> implements Resource {
 
-    private Map<EntityRef, BiConsumer<EventEmittingResource<T>, T>> observers = Maps.newHashMap();
+    private Map<EntityRef, BiConsumer<EventEmittingResource<T>, T>> observers = new HashMap<>();
 
     public final void setObserver(EntityRef clientEntityRef, BiConsumer<EventEmittingResource<T>, T> observer) {
         observers.put(clientEntityRef, observer);
