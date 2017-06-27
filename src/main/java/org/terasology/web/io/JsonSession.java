@@ -73,19 +73,19 @@ public class JsonSession {
     }
 
     private void setResourceObservers() {
-        for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
+        for (ObservableReadableResource observableResource: resourceManager.getAll(ObservableReadableResource.class)) {
             observableResource.setObserver(client.getEntity(), resourceObserver);
         }
-        for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
+        for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
             eventResource.setObserver(client.getEntity(), resourceObserver);
         }
     }
 
     private void removeResourceObservers() {
-        for (ObservableReadableResource observableResource: resourceManager.getAllAs(ObservableReadableResource.class)) {
+        for (ObservableReadableResource observableResource: resourceManager.getAll(ObservableReadableResource.class)) {
             observableResource.removeObserver(client.getEntity());
         }
-        for (EventEmittingResource eventResource: resourceManager.getAllAs(EventEmittingResource.class)) {
+        for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
             eventResource.removeObserver(client.getEntity());
         }
     }

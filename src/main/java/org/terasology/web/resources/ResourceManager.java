@@ -75,7 +75,7 @@ public class ResourceManager {
         throw new ResourceAccessException(new ActionResult(ActionResult.Status.ACTION_NOT_ALLOWED, "This resource does not support the requested action."));
     }
 
-    public <T extends Resource> Set<T> getAllAs(Class<T> type) {
+    public <T extends Resource> Set<T> getAll(Class<T> type) {
         Set<T> result = new HashSet<>();
         for (Map.Entry<String, Resource> entry: resources.entrySet()) {
             if (type.isAssignableFrom(entry.getValue().getClass())) {

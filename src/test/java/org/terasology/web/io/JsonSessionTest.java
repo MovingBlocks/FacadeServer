@@ -137,7 +137,7 @@ public class JsonSessionTest {
     @BeforeClass
     public static void setUpResourceManagerMock() {
         resourceManagerMock = mock(ResourceManager.class);
-        when(resourceManagerMock.getAllAs(any())).thenReturn(new HashSet<>());
+        when(resourceManagerMock.getAll(any())).thenReturn(new HashSet<>());
     }
 
     private void assertResult(ActionResult.Status expectedStatus, JsonElement expectedData, ActionResult actual) {
@@ -251,7 +251,7 @@ public class JsonSessionTest {
 
         ObservableReadableResource<String> observableReadableResource = new ObservableReadableResourceMock();
         ResourceManager resourceManager = mock(ResourceManager.class);
-        when(resourceManager.getAllAs(ObservableReadableResource.class)).thenReturn(Sets.newHashSet(observableReadableResource));
+        when(resourceManager.getAll(ObservableReadableResource.class)).thenReturn(Sets.newHashSet(observableReadableResource));
 
         BiConsumer<String, JsonElement> observer = mock(BiConsumer.class);
 
@@ -268,7 +268,7 @@ public class JsonSessionTest {
 
         EventEmittingResource<String> eventEmittingResource = new EventEmittingResourceMock();
         ResourceManager resourceManager = mock(ResourceManager.class);
-        when(resourceManager.getAllAs(EventEmittingResource.class)).thenReturn(Sets.newHashSet(eventEmittingResource));
+        when(resourceManager.getAll(EventEmittingResource.class)).thenReturn(Sets.newHashSet(eventEmittingResource));
 
         BiConsumer<String, JsonElement> observer = mock(BiConsumer.class);
 

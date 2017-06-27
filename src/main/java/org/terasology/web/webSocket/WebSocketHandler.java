@@ -87,7 +87,7 @@ public class WebSocketHandler extends WebSocketAdapter {
                 trySendResult(jsonSession.finishAuthentication(clientMessage.getData())); //process client handshake hello
                 break;
             case RESOURCE_REQUEST:
-                handleResourceRequest(clientMessage.getData());
+                parseAndHandleResourceRequest(clientMessage.getData());
         }
     }
 
@@ -107,14 +107,16 @@ public class WebSocketHandler extends WebSocketAdapter {
         trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, result.toJsonTree(GSON)));
     }
 
-    private void handleResourceRequest(JsonElement requestMessage) {
-        ResourceRequestClientMessage deserializedMessage;
+    private void parseAndHandleResourceRequest(JsonElement requestMessage) {
         try {
-            deserializedMessage = GSON.fromJson(requestMessage, ResourceRequestClientMessage.class);
+            ResourceRequestClientMessage deserializedMessage = GSON.fromJson(requestMessage, ResourceRequestClientMessage.class);
+            handleResourceRequest(deserializedMessage);
         } catch (JsonSyntaxException ex) {
             trySendResult(new ActionResult(ex));
-            return;
         }
+    }
+
+    private void handleResourceRequest(ResourceRequestClientMessage deserializedMessage) {
         String resourceName = deserializedMessage.getResourceName();
         switch (deserializedMessage.getAction()) {
             case READ:

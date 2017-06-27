@@ -36,7 +36,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Path("http")
+@Path("api")
 public class HttpAPIServlet {
 
     private static final String SESSION_TOKEN_HEADER = "Session-Token";
