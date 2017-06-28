@@ -16,10 +16,8 @@
 package org.terasology.web.resources;
 
 import org.terasology.context.Context;
-import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.entitySystem.event.internal.EventSystem;
+import org.terasology.engine.ComponentSystemManager;
 import org.terasology.entitySystem.systems.ComponentSystem;
-import org.terasology.registry.InjectionHelper;
 import org.terasology.web.io.ActionResult;
 
 import java.util.HashMap;
@@ -32,6 +30,9 @@ public class ResourceManager {
     private static final ResourceManager INSTANCE = new ResourceManager();
     private Map<String, Resource> resources;
 
+    private ResourceManager() {
+    }
+
     public static ResourceManager getInstance() {
         return INSTANCE;
     }
@@ -39,31 +40,16 @@ public class ResourceManager {
     public void initialize(Context context) {
         if (resources == null) {
             resources = new HashMap<>();
-            putResource(new ConsoleResource());
-            putResource(new OnlinePlayersResource());
-        }
-        injectContext(context);
-        registerEventHandlers(context);
-    }
-
-    private void injectContext(Context context) {
-        for (Resource resource: resources.values()) {
-            InjectionHelper.inject(resource, context);
+            registerAndPutResource(context, new ConsoleResource());
+            registerAndPutResource(context, new OnlinePlayersResource());
         }
     }
 
-    private void registerEventHandlers(Context context) {
-        EventSystem eventSystem = context.get(EntityManager.class).getEventSystem();
-        for (Map.Entry<String, Resource> entry: resources.entrySet()) {
-            Resource resource = entry.getValue();
-            if (resource instanceof ComponentSystem) {
-                eventSystem.registerEventHandler((ComponentSystem) resource);
-            }
-        }
-    }
-
-    private void putResource(Resource resource) {
+    private void registerAndPutResource(Context context, Resource resource) {
         if (!resources.containsValue(resource)) {
+            if (resource instanceof ComponentSystem) {
+                context.get(ComponentSystemManager.class).register((ComponentSystem) resource);
+            }
             resources.put(resource.getName(), resource);
         } else {
             throw new IllegalArgumentException("This type of resource has already been registered");
