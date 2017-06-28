@@ -22,14 +22,15 @@ import org.terasology.logic.console.Console;
 import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
 import org.terasology.network.ClientComponent;
+import org.terasology.registry.In;
 
 @RegisterSystem
 public class ConsoleResource extends EventEmittingResource<Message> implements DefaultComponentSystem, WritableResource<String> {
 
+    @In
     private Console console;
 
-    ConsoleResource(Console console) {
-        this.console = console;
+    ConsoleResource() {
     }
 
     @ReceiveEvent(components = ClientComponent.class)

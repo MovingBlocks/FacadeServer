@@ -16,10 +16,13 @@
 package org.terasology.web.resources;
 
 import org.junit.Test;
+import org.terasology.context.Context;
+import org.terasology.context.internal.ContextImpl;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.console.Console;
 import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
+import org.terasology.registry.InjectionHelper;
 
 import java.util.function.BiConsumer;
 
@@ -32,7 +35,7 @@ public class ConsoleResourceTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testMessageNotification() {
-        ConsoleResource consoleResource = new ConsoleResource(mock(Console.class));
+        ConsoleResource consoleResource = new ConsoleResource();
         BiConsumer<EventEmittingResource<Message>, Message> observer = mock(BiConsumer.class);
         MessageEvent testEvent = mock(MessageEvent.class);
         when(testEvent.getFormattedMessage()).thenReturn(new Message("testMessage"));
@@ -45,7 +48,10 @@ public class ConsoleResourceTest {
     @Test
     public void testCommandExecution() {
         Console consoleMock = mock(Console.class);
-        ConsoleResource consoleResource = new ConsoleResource(consoleMock);
+        Context context = new ContextImpl();
+        context.put(Console.class, consoleMock);
+        ConsoleResource consoleResource = new ConsoleResource();
+        InjectionHelper.inject(consoleResource, context);
         EntityRef client = mock(EntityRef.class);
         consoleResource.write(client, "testCommand testArg");
         verify(consoleMock).execute("testCommand testArg", client);

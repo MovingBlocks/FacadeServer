@@ -16,11 +16,14 @@
 package org.terasology.web.resources;
 
 import org.junit.Test;
+import org.terasology.context.Context;
+import org.terasology.context.internal.ContextImpl;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.network.Client;
 import org.terasology.network.NetworkSystem;
 import org.terasology.network.events.ConnectedEvent;
 import org.terasology.network.events.DisconnectedEvent;
+import org.terasology.registry.InjectionHelper;
 
 import java.util.Arrays;
 import java.util.List;
@@ -46,7 +49,10 @@ public class OnlinePlayersResourceTest {
         List<Client> clientMocks = Arrays.asList(mockClient("client1"), mockClient("client2"));
         when(networkSystemMock.getPlayers()).thenReturn(clientMocks);
 
-        OnlinePlayersResource onlinePlayersResource = new OnlinePlayersResource(networkSystemMock);
+        Context context = new ContextImpl();
+        context.put(NetworkSystem.class, networkSystemMock);
+        OnlinePlayersResource onlinePlayersResource = new OnlinePlayersResource();
+        InjectionHelper.inject(onlinePlayersResource, context);
         assertEquals(Arrays.asList("client1", "client2"), onlinePlayersResource.read(EntityRef.NULL));
     }
 
@@ -55,7 +61,10 @@ public class OnlinePlayersResourceTest {
     public void testNotification() {
         Consumer<ObservableReadableResource<List<String>>> observer = mock(Consumer.class);
 
-        OnlinePlayersResource onlinePlayersResource = new OnlinePlayersResource(mock(NetworkSystem.class));
+        Context context = new ContextImpl();
+        context.put(NetworkSystem.class, mock(NetworkSystem.class));
+        OnlinePlayersResource onlinePlayersResource = new OnlinePlayersResource();
+        InjectionHelper.inject(onlinePlayersResource, context);
         onlinePlayersResource.setObserver(mock(EntityRef.class), observer);
         onlinePlayersResource.onConnected(mock(ConnectedEvent.class), EntityRef.NULL);
         onlinePlayersResource.onDisconnected(mock(DisconnectedEvent.class), EntityRef.NULL);

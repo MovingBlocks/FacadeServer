@@ -22,6 +22,7 @@ import org.terasology.network.Client;
 import org.terasology.network.NetworkSystem;
 import org.terasology.network.events.ConnectedEvent;
 import org.terasology.network.events.DisconnectedEvent;
+import org.terasology.registry.In;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,10 +30,10 @@ import java.util.List;
 @RegisterSystem
 public class OnlinePlayersResource extends ObservableReadableResource<List<String>> implements DefaultComponentSystem {
 
+    @In
     private NetworkSystem networkSystem;
 
-    OnlinePlayersResource(NetworkSystem networkSystem) {
-        this.networkSystem = networkSystem;
+    OnlinePlayersResource() {
     }
 
     @Override

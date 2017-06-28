@@ -19,8 +19,7 @@ import org.terasology.context.Context;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.event.internal.EventSystem;
 import org.terasology.entitySystem.systems.ComponentSystem;
-import org.terasology.logic.console.Console;
-import org.terasology.network.NetworkSystem;
+import org.terasology.registry.InjectionHelper;
 import org.terasology.web.io.ActionResult;
 
 import java.util.HashMap;
@@ -40,10 +39,17 @@ public class ResourceManager {
     public void initialize(Context context) {
         if (resources == null) {
             resources = new HashMap<>();
-            putResource(new ConsoleResource(context.get(Console.class)));
-            putResource(new OnlinePlayersResource(context.get(NetworkSystem.class)));
+            putResource(new ConsoleResource());
+            putResource(new OnlinePlayersResource());
         }
+        injectContext(context);
         registerEventHandlers(context);
+    }
+
+    private void injectContext(Context context) {
+        for (Resource resource: resources.values()) {
+            InjectionHelper.inject(resource, context);
+        }
     }
 
     private void registerEventHandlers(Context context) {
