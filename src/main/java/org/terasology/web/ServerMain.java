@@ -54,6 +54,9 @@ public final class ServerMain {
     private static final String[] ARGS_HELP = {"--help", "-help", "/help", "-h", "/h", "-?", "/?"};
     private static final String ARG_ENGINE_DIR = "-homedir=";
     private static final String ARG_ENGINE_SERVER_PORT = "-serverPort=";
+    private static final String ARG_WAIT_MANUAL_START = "-dontStartDefault";
+
+    private static boolean autoStart = true;
 
     private ServerMain() {
         // no instances
@@ -84,7 +87,7 @@ public final class ServerMain {
         server.start();
         logger.info("Web server started on port {}!", port);
 
-        EngineRunner.runEngine();
+        EngineRunner.runEngine(autoStart);
 
         server.join();
     }
@@ -100,6 +103,8 @@ public final class ServerMain {
                 homePath = Paths.get(arg.substring(ARG_ENGINE_DIR.length()));
             } else if (arg.startsWith(ARG_ENGINE_SERVER_PORT)) {
                 System.setProperty(ConfigurationSubsystem.SERVER_PORT_PROPERTY, arg.substring(ARG_ENGINE_SERVER_PORT.length()));
+            } else if (arg.equals(ARG_WAIT_MANUAL_START)) {
+                autoStart = false;
             } else {
                 System.err.println("Unrecognized command line argument \"" + arg + "\"");
                 printUsage();
@@ -118,6 +123,7 @@ public final class ServerMain {
         System.out.println("Available command line options:");
         System.out.println(ARG_ENGINE_DIR + ": use the specified directory as the Terasology engine data directory");
         System.out.println(ARG_ENGINE_SERVER_PORT + ": use the specified port for the Terasology server");
+        System.out.println(ARG_WAIT_MANUAL_START + ": do not generate and start a game with the default settings, but wait for manual setup via the web interface");
         System.out.println();
         System.out.println("The web server port (default 8080) can be overridden by setting the environment variable PORT.");
     }

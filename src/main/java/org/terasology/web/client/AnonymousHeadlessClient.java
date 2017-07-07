@@ -34,7 +34,11 @@ public class AnonymousHeadlessClient implements Client {
     void connect(EntityManager entityManager) {
         //only the client entity is created to identify the client in the engine and receive events
         //no clientInfo entity is created because this client's data must not be persistent
-        entity = entityManager.create("engine:client");
+        if (entityManager != null) {
+            entity = entityManager.create("engine:client");
+        }
+        //if entityManager == null, we are in the StateEngineIdle state and the resources available
+        //in this state are not bound to client entities
     }
 
     @Override

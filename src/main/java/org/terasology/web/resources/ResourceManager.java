@@ -17,7 +17,10 @@ package org.terasology.web.resources;
 
 import org.terasology.context.Context;
 import org.terasology.engine.ComponentSystemManager;
+import org.terasology.engine.modes.GameState;
+import org.terasology.engine.modes.StateIngame;
 import org.terasology.entitySystem.systems.ComponentSystem;
+import org.terasology.web.StateEngineIdle;
 import org.terasology.web.io.ActionResult;
 
 import java.util.HashMap;
@@ -37,11 +40,15 @@ public class ResourceManager {
         return INSTANCE;
     }
 
-    public void initialize(Context context) {
-        if (resources == null) {
-            resources = new HashMap<>();
+    public void initialize(GameState gameState) {
+        Context context = gameState.getContext();
+        resources = new HashMap<>();
+        if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
             registerAndPutResource(context, new OnlinePlayersResource());
+        } else if (gameState instanceof StateEngineIdle) {
+            registerAndPutResource(context, new GamesResource());
+            //TODO: add server config resource
         }
     }
 

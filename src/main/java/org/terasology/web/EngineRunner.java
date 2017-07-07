@@ -19,7 +19,6 @@ import org.terasology.context.Context;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
 import org.terasology.engine.modes.GameState;
-import org.terasology.engine.modes.StateIngame;
 import org.terasology.engine.modes.StateMainMenu;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
 import org.terasology.engine.subsystem.headless.HeadlessAudio;
@@ -36,19 +35,19 @@ public final class EngineRunner {
     private EngineRunner() {
     }
 
-    static void runEngine() {
+    static void runEngine(boolean autoStart) {
         TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
         populateSubsystems(builder);
         engine = builder.build();
         engine.subscribeToStateChange(() -> {
             GameState state = engine.getState();
-            if (state instanceof StateIngame) {
-                ResourceManager.getInstance().initialize(state.getContext());
-            } else if (state instanceof StateMainMenu) {
+            if (state instanceof StateMainMenu) {
                 engine.shutdown();
+            } else {
+                ResourceManager.getInstance().initialize(state);
             }
         });
-        engine.run(new StateHeadlessSetup());
+        engine.run(autoStart ? new StateHeadlessSetup() : new StateEngineIdle());
     }
 
     private static void populateSubsystems(TerasologyEngineBuilder builder) {
