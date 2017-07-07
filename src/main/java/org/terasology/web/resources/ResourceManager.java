@@ -43,6 +43,7 @@ public class ResourceManager {
     public void initialize(GameState gameState) {
         Context context = gameState.getContext();
         resources = new HashMap<>();
+        registerAndPutResource(context, new EngineStateResource(gameState));
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
             registerAndPutResource(context, new OnlinePlayersResource());
