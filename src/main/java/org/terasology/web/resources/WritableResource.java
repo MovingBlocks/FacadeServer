@@ -15,11 +15,11 @@
  */
 package org.terasology.web.resources;
 
-import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.network.Client;
 
 public interface WritableResource<T> extends Resource {
 
     Class<T> getDataType();
 
-    void write(EntityRef clientEntity, T data);
+    void write(Client requestingClient, T data);
 }

@@ -53,7 +53,7 @@ public class OnlinePlayersResourceTest {
         context.put(NetworkSystem.class, networkSystemMock);
         OnlinePlayersResource onlinePlayersResource = new OnlinePlayersResource();
         InjectionHelper.inject(onlinePlayersResource, context);
-        assertEquals(Arrays.asList("client1", "client2"), onlinePlayersResource.read(EntityRef.NULL));
+        assertEquals(Arrays.asList("client1", "client2"), onlinePlayersResource.read(null));
     }
 
     @Test

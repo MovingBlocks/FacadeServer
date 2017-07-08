@@ -54,4 +54,12 @@ public final class EngineStateMetadata {
     public static EngineStateMetadata build(GameState state) {
         return METADATA_BUILDERS.get(state.getClass()).apply(state);
     }
+
+    public State getState() {
+        return state;
+    }
+
+    public String getGameName() {
+        return gameName;
+    }
 }

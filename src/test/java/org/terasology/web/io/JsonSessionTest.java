@@ -29,6 +29,7 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.identity.PublicIdentityCertificate;
 import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
+import org.terasology.network.Client;
 import org.terasology.network.ClientComponent;
 import org.terasology.network.ClientInfoComponent;
 import org.terasology.registry.CoreRegistry;
@@ -87,7 +88,7 @@ public class JsonSessionTest {
             return "testResource";
         }
         @Override
-        public String read(EntityRef clientEntity) {
+        public String read(Client requestingClient) {
             return "test";
         }
     }
@@ -100,13 +101,11 @@ public class JsonSessionTest {
     }
 
     private static class ClientEntityMockBundle {
-        private EntityRef entity;
+        private HeadlessClient client;
         private HeadlessClientFactory factoryMock;
 
         private ClientEntityMockBundle() {
-            entity = mock(EntityRef.class);
-            HeadlessClient client = mock(HeadlessClient.class);
-            when(client.getEntity()).thenReturn(entity);
+            client = mock(HeadlessClient.class);
             factoryMock = mock(HeadlessClientFactory.class);
             when(factoryMock.connectNewHeadlessClient("testPlayerId")).thenReturn(client);
             when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(mock(AnonymousHeadlessClient.class));
@@ -114,13 +113,11 @@ public class JsonSessionTest {
     }
 
     private static class AnonymousClientEntityMockBundle {
-        private EntityRef entity;
+        private AnonymousHeadlessClient client;
         private HeadlessClientFactory factoryMock;
 
         private AnonymousClientEntityMockBundle() {
-            entity = mock(EntityRef.class);
-            AnonymousHeadlessClient client = mock(AnonymousHeadlessClient.class);
-            when(client.getEntity()).thenReturn(entity);
+            client = mock(AnonymousHeadlessClient.class);
             factoryMock = mock(HeadlessClientFactory.class);
             when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(client);
         }
@@ -221,7 +218,7 @@ public class JsonSessionTest {
         ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
 
         ReadableResource<String> readableResource = mock(ReadableResource.class);
-        when(readableResource.read(clientMock.entity)).thenReturn("testValue");
+        when(readableResource.read(clientMock.client)).thenReturn("testValue");
         ResourceManager resourceManager = mock(ResourceManager.class);
         when(resourceManager.getAs("testResource", ReadableResource.class)).thenReturn(readableResource);
 
@@ -241,7 +238,7 @@ public class JsonSessionTest {
 
         JsonSession session = setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, null, null);
         assertEquals(ActionResult.Status.OK, session.writeResource("testResource", new JsonPrimitive("testValue")).getStatus());
-        verify(writableResource).write(clientMock.entity, "testValue");
+        verify(writableResource).write(clientMock.client, "testValue");
     }
 
     @Test
@@ -257,7 +254,7 @@ public class JsonSessionTest {
 
         setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, observer, null);
         verify(observer, times(0)).accept(any(), any());
-        observableReadableResource.notifyChanged(clientMock.entity);
+        observableReadableResource.notifyChanged(clientMock.client.getEntity());
         verify(observer, times(1)).accept(observableReadableResource.getName(), new JsonPrimitive("test"));
     }
 
@@ -274,7 +271,7 @@ public class JsonSessionTest {
 
         setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, null, observer);
         verify(observer, times(0)).accept(any(), any());
-        eventEmittingResource.notifyEvent(clientMock.entity, "test");
+        eventEmittingResource.notifyEvent(clientMock.client.getEntity(), "test");
         verify(observer, times(1)).accept(eventEmittingResource.getName(), new JsonPrimitive("test"));
     }
 
@@ -284,7 +281,7 @@ public class JsonSessionTest {
         AnonymousClientEntityMockBundle clientMock = new AnonymousClientEntityMockBundle();
 
         ReadableResource<String> readableResource = mock(ReadableResource.class);
-        when(readableResource.read(clientMock.entity)).thenReturn("testValue");
+        when(readableResource.read(clientMock.client)).thenReturn("testValue");
         ResourceManager resourceManager = mock(ResourceManager.class);
         when(resourceManager.getAs("testResource", ReadableResource.class)).thenReturn(readableResource);
 
@@ -304,6 +301,6 @@ public class JsonSessionTest {
 
         JsonSession session = new JsonSession(null, clientMock.factoryMock, resourceManager);
         assertEquals(ActionResult.Status.UNAUTHORIZED, session.writeResource("testResource", new JsonPrimitive("testValue")).getStatus());
-        verify(writableResource, times(0)).write(clientMock.entity, "testValue");
+        verify(writableResource, times(0)).write(clientMock.client, "testValue");
     }
 }

@@ -141,7 +141,7 @@ public class JsonSession {
     }
 
     JsonElement readResource(ReadableResource resource) {
-        return GSON.toJsonTree(resource.read(client.getEntity()));
+        return GSON.toJsonTree(resource.read(client));
     }
 
     public ActionResult readResource(String resourceName) {
@@ -164,7 +164,7 @@ public class JsonSession {
         } catch (ResourceAccessException ex) {
             return ex.getResultToSend();
         }
-        resource.write(client.getEntity(), GSON.fromJson(data, resource.getDataType()));
+        resource.write(client, GSON.fromJson(data, resource.getDataType()));
         return ActionResult.OK;
     }
 

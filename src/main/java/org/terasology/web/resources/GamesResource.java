@@ -15,7 +15,7 @@
  */
 package org.terasology.web.resources;
 
-import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.network.Client;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 
@@ -29,7 +29,7 @@ public class GamesResource implements ReadableResource<List<GameInfo>> {
     }
 
     @Override
-    public List<GameInfo> read(EntityRef clientEntity) {
+    public List<GameInfo> read(Client requestingClient) {
         return GameProvider.getSavedGames();
     }
 }

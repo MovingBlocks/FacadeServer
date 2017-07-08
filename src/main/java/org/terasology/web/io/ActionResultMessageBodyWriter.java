@@ -61,8 +61,10 @@ public class ActionResultMessageBodyWriter implements MessageBodyWriter<ActionRe
         if (actionResult.getStatus() != ActionResult.Status.OK) {
             throw new JsonWebApplicationException(actionResult.getMessage(), ERRORMAP.get(actionResult.getStatus()));
         }
-        try (Writer writer = new OutputStreamWriter(entityStream, StandardCharsets.UTF_8)) {
-            writer.write(actionResult.getData().toString());
+        if (actionResult.getData() != null) {
+            try (Writer writer = new OutputStreamWriter(entityStream, StandardCharsets.UTF_8)) {
+                writer.write(actionResult.getData().toString());
+            }
         }
     }
 }
