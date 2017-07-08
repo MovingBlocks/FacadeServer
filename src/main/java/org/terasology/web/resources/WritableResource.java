@@ -21,5 +21,5 @@ public interface WritableResource<T> extends Resource {
 
     Class<T> getDataType();
 
-    void write(Client requestingClient, T data);
+    void write(Client requestingClient, T data) throws ResourceAccessException;
 }

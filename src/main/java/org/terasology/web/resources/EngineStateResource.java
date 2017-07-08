@@ -26,6 +26,7 @@ import org.terasology.network.NetworkMode;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.StateEngineIdle;
+import org.terasology.web.io.ActionResult;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -80,23 +81,26 @@ public class EngineStateResource implements ReadableResource<EngineStateMetadata
     }
 
     @Override
-    public void write(Client requestingClient, String data) {
+    public void write(Client requestingClient, String data) throws ResourceAccessException {
         // if the supplied string is a savegame name, the engine will switch to run this game;
         // if it's empty, it will switch to the idle state.
-        if (serverAdmins.contains(requestingClient.getId())) {
-            if (data == null || data.length() == 0) {
-                gameEngine.changeState(new StateEngineIdle());
-            } else {
-                Stream<GameInfo> saveGames = GameProvider.getSavedGames().stream();
-                Optional<GameInfo> game = saveGames.filter((gameInfo) -> gameInfo.getManifest().getTitle().equals(data)).findFirst();
-                if (game.isPresent()) {
-                    gameEngine.changeState(new StateLoading(game.get().getManifest(), NetworkMode.LISTEN_SERVER));
-                } else {
-                    // TODO throw appropriate exception
-                }
-            }
+        checkClientIsServerAdmin(requestingClient.getId());
+        if (data == null || data.length() == 0) {
+            gameEngine.changeState(new StateEngineIdle());
         } else {
-            //TODO throw appropriate exception
+            Stream<GameInfo> saveGames = GameProvider.getSavedGames().stream();
+            Optional<GameInfo> game = saveGames.filter((gameInfo) -> gameInfo.getManifest().getTitle().equals(data)).findFirst();
+            if (game.isPresent()) {
+                gameEngine.changeState(new StateLoading(game.get().getManifest(), NetworkMode.LISTEN_SERVER));
+            } else {
+                throw new ResourceAccessException(new ActionResult(ActionResult.Status.NOT_FOUND, "No savegame with the specified name exists on this server"));
+            }
+        }
+    }
+
+    private void checkClientIsServerAdmin(String clientId) throws ResourceAccessException {
+        if (!serverAdmins.contains(clientId)) {
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only server admins can perform this action"));
         }
     }
 }

@@ -19,5 +19,5 @@ import org.terasology.network.Client;
 
 public interface ReadableResource<T> extends Resource {
 
-    T read(Client requestingClient);
+    T read(Client requestingClient) throws ResourceAccessException;
 }

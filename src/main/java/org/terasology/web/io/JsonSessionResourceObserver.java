@@ -18,6 +18,7 @@ package org.terasology.web.io;
 import com.google.gson.JsonElement;
 import org.terasology.web.resources.EventEmittingResource;
 import org.terasology.web.resources.ObservableReadableResource;
+import org.terasology.web.resources.ResourceAccessException;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -44,7 +45,13 @@ class JsonSessionResourceObserver implements Consumer<ObservableReadableResource
     @Override
     public void accept(ObservableReadableResource resource) {
         if (readableResourceObserver != null) {
-            readableResourceObserver.accept(resource.getName(), session.readResource(resource));
+            JsonElement newData;
+            try {
+                newData = session.readResource(resource);
+            } catch (ResourceAccessException ex) {
+                return;
+            }
+            readableResourceObserver.accept(resource.getName(), newData);
         }
     }
 

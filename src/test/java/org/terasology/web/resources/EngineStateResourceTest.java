@@ -24,7 +24,6 @@ import org.terasology.web.StateEngineIdle;
 
 import java.util.Arrays;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -44,14 +43,13 @@ public class EngineStateResourceTest {
         engineStateResource = new EngineStateResource(engineMock, Arrays.asList("serverAdm1", "admin"));
     }
 
-    @Test
-    public void testWriteFail() {
+    @Test(expected = ResourceAccessException.class)
+    public void testWriteFail() throws ResourceAccessException{
         engineStateResource.write(mockClient("someUser"), "");
-        verify(engineMock, times(0)).changeState(any());
     }
 
     @Test
-    public void testWriteOk() {
+    public void testWriteOk() throws ResourceAccessException {
         engineStateResource.write(mockClient("serverAdm1"), "");
         verify(engineMock, times(1)).changeState(isA(StateEngineIdle.class));
     }

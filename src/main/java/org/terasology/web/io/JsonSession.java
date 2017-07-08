@@ -140,32 +140,29 @@ public class JsonSession {
         return GSON.toJsonTree(eventData);
     }
 
-    JsonElement readResource(ReadableResource resource) {
+    JsonElement readResource(ReadableResource resource) throws ResourceAccessException {
         return GSON.toJsonTree(resource.read(client));
     }
 
     public ActionResult readResource(String resourceName) {
-        ReadableResource resource;
         try {
-            resource = resourceManager.getAs(resourceName, ReadableResource.class);
+            return new ActionResult(readResource(resourceManager.getAs(resourceName, ReadableResource.class)));
         } catch (ResourceAccessException ex) {
             return ex.getResultToSend();
         }
-        return new ActionResult(readResource(resource));
     }
 
     public ActionResult writeResource(String resourceName, JsonElement data) {
         if (!isAuthenticated()) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to resources.");
         }
-        WritableResource resource;
         try {
-            resource = resourceManager.getAs(resourceName, WritableResource.class);
+            WritableResource resource = resourceManager.getAs(resourceName, WritableResource.class);
+            resource.write(client, GSON.fromJson(data, resource.getDataType()));
+            return ActionResult.OK;
         } catch (ResourceAccessException ex) {
             return ex.getResultToSend();
         }
-        resource.write(client, GSON.fromJson(data, resource.getDataType()));
-        return ActionResult.OK;
     }
 
 }
