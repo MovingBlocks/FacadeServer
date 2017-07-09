@@ -17,16 +17,18 @@ package org.terasology.web.io;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonSyntaxException;
 
 public class ActionResult {
 
     public static final ActionResult OK = new ActionResult(Status.OK);
-    public static final ActionResult JSON_PARSE_ERROR = new ActionResult(Status.BAD_REQUEST, "Failed to parse JSON message");
 
     public enum Status {
         OK,
         BAD_REQUEST,
-        UNAUTHORIZED
+        UNAUTHORIZED,
+        ACTION_NOT_ALLOWED,
+        NOT_FOUND
     }
 
     private Status status;
@@ -51,6 +53,18 @@ public class ActionResult {
         this(Status.OK, null, data);
     }
 
+    public ActionResult(JsonSyntaxException ex) {
+        this(Status.BAD_REQUEST, getExceptionMessage(ex), null);
+    }
+
+    private static String getExceptionMessage(JsonSyntaxException ex) {
+        Throwable cause = ex.getCause();
+        if (cause != null) {
+            return cause.getMessage();
+        }
+        return ex.getMessage();
+    }
+
     public Status getStatus() {
         return status;
     }
@@ -63,7 +77,7 @@ public class ActionResult {
         return data;
     }
 
-    public String toJsonString(Gson gson) {
-        return gson.toJson(this);
+    public JsonElement toJsonTree(Gson gson) {
+        return gson.toJsonTree(this);
     }
 }

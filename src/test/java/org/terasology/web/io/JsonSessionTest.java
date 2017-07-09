@@ -15,11 +15,13 @@
  */
 package org.terasology.web.io;
 
-import com.google.common.base.Preconditions;
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import com.google.gson.JsonPrimitive;
+import org.junit.BeforeClass;
 import org.junit.Test;
 import org.terasology.context.Context;
 import org.terasology.context.internal.ContextImpl;
@@ -34,17 +36,29 @@ import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.ClientAuthenticationMessage;
 import org.terasology.web.authentication.HandshakeHello;
+import org.terasology.web.client.AnonymousHeadlessClient;
 import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
+import org.terasology.web.io.gsonUtils.ByteArrayBase64Serializer;
+import org.terasology.web.resources.EventEmittingResource;
+import org.terasology.web.resources.ObservableReadableResource;
+import org.terasology.web.resources.ReadableResource;
+import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.ResourceManager;
+import org.terasology.web.resources.WritableResource;
 
 
 import java.math.BigInteger;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.function.BiConsumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -60,8 +74,6 @@ public class JsonSessionTest {
 
         @Override
         public byte[] authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
-            Preconditions.checkNotNull(authenticationMessage.getClientHello());
-            Preconditions.checkNotNull(authenticationMessage.getSignature());
             if (!nextResult) {
                 throw new AuthenticationFailedException(AuthenticationFailedException.INVALID_CLIENT_CERT);
             }
@@ -69,20 +81,80 @@ public class JsonSessionTest {
         }
     }
 
+    private static class ObservableReadableResourceMock extends ObservableReadableResource<String> {
+        @Override
+        public String getName() {
+            return "testResource";
+        }
+        @Override
+        public String read(EntityRef clientEntity) {
+            return "test";
+        }
+    }
+
+    private static class EventEmittingResourceMock extends EventEmittingResource<String> {
+        @Override
+        public String getName() {
+            return "testResource";
+        }
+    }
+
+    private static class ClientEntityMockBundle {
+        private EntityRef entity;
+        private HeadlessClientFactory factoryMock;
+
+        private ClientEntityMockBundle() {
+            entity = mock(EntityRef.class);
+            HeadlessClient client = mock(HeadlessClient.class);
+            when(client.getEntity()).thenReturn(entity);
+            factoryMock = mock(HeadlessClientFactory.class);
+            when(factoryMock.connectNewHeadlessClient("testPlayerId")).thenReturn(client);
+            when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(mock(AnonymousHeadlessClient.class));
+        }
+    }
+
+    private static class AnonymousClientEntityMockBundle {
+        private EntityRef entity;
+        private HeadlessClientFactory factoryMock;
+
+        private AnonymousClientEntityMockBundle() {
+            entity = mock(EntityRef.class);
+            AnonymousHeadlessClient client = mock(AnonymousHeadlessClient.class);
+            when(client.getEntity()).thenReturn(entity);
+            factoryMock = mock(HeadlessClientFactory.class);
+            when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(client);
+        }
+    }
+
+    private static final BigInteger ZERO = BigInteger.ZERO;
+    private static final byte[] EMPTY = new byte[]{};
     private static final Gson GSON = new GsonBuilder()
             .registerTypeHierarchyAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
             .create();
+    private static ResourceManager resourceManagerMock;
+
+    @BeforeClass
+    public static void setUpResourceManagerMock() {
+        resourceManagerMock = mock(ResourceManager.class);
+        when(resourceManagerMock.getAll(any())).thenReturn(new HashSet<>());
+    }
+
+    private void assertResult(ActionResult.Status expectedStatus, JsonElement expectedData, ActionResult actual) {
+        assertEquals(expectedStatus, actual.getStatus());
+        assertEquals(expectedData, actual.getData());
+    }
 
     @Test
     public void testAuthentication() {
         AuthenticationHandshakeHandlerMock authHandlerMock = new AuthenticationHandshakeHandlerMock();
         HeadlessClientFactory headlessClientFactoryMock = mock(HeadlessClientFactory.class);
         when(headlessClientFactoryMock.connectNewHeadlessClient("testId")).thenReturn(new HeadlessClient("testId"));
-        JsonSession session = new JsonSession(authHandlerMock, headlessClientFactoryMock);
+        when(headlessClientFactoryMock.connectNewAnonymousHeadlessClient()).thenReturn(mock(AnonymousHeadlessClient.class));
+        JsonSession session = new JsonSession(authHandlerMock, headlessClientFactoryMock, resourceManagerMock);
         JsonElement dummyClientMessage = GSON.toJsonTree(new ClientAuthenticationMessage(
-                new HandshakeHello(null, new PublicIdentityCertificate("testId", null, null, null), 0),
-                new byte[2]));
+                new HandshakeHello(EMPTY, new PublicIdentityCertificate("testId", ZERO, ZERO, ZERO), 0),
+                EMPTY));
 
         assertFalse(session.isAuthenticated());
         assertEquals(ActionResult.Status.OK, session.initAuthentication().getStatus());
@@ -99,14 +171,21 @@ public class JsonSessionTest {
         assertEquals(ActionResult.Status.UNAUTHORIZED, session.finishAuthentication(dummyClientMessage).getStatus()); //already authenticated
     }
 
-    private JsonSession setupAlwaysAccepting(String playerId, EntityManager entityManager) {
+    private JsonSession setupAlwaysAccepting(String playerId, HeadlessClientFactory clientFactory, ResourceManager resourceManager,
+                                             BiConsumer<String, JsonElement> readableResourceObserver, BiConsumer<String, JsonElement> eventResourceObserver) {
         AuthenticationHandshakeHandler authHandlerMock = mock(AuthenticationHandshakeHandler.class); //always accept, don't check for nulls
-        JsonSession session = new JsonSession(authHandlerMock, new HeadlessClientFactory(entityManager));
-        PublicIdentityCertificate cert = new PublicIdentityCertificate(playerId, null, null, null);
-        ClientAuthenticationMessage message = new ClientAuthenticationMessage(new HandshakeHello(null, cert, 0), null);
+        JsonSession session = new JsonSession(authHandlerMock, clientFactory, resourceManager);
+        session.setReadableResourceObserver(readableResourceObserver);
+        session.setEventResourceObserver(eventResourceObserver);
+        PublicIdentityCertificate cert = new PublicIdentityCertificate(playerId, ZERO, ZERO, ZERO);
+        ClientAuthenticationMessage message = new ClientAuthenticationMessage(new HandshakeHello(EMPTY, cert, 0), EMPTY);
         session.initAuthentication();
-        session.finishAuthentication(GSON.toJsonTree(message));
+        assertEquals(ActionResult.Status.OK, session.finishAuthentication(GSON.toJsonTree(message)).getStatus());
         return session;
+    }
+
+    private JsonSession setupAlwaysAccepting(String playerId, EntityManager entityManager) {
+        return setupAlwaysAccepting(playerId, new HeadlessClientFactory(entityManager), resourceManagerMock, null, null);
     }
 
     @Test
@@ -131,11 +210,100 @@ public class JsonSessionTest {
 
         JsonSession session = setupAlwaysAccepting("testUserId", entityManagerMock);
         assertTrue(session.isAuthenticated());
-        verify(entityManagerMock).create("engine:client");
+        verify(entityManagerMock, times(2)).create("engine:client"); //2 because one is for the anonymous client
         session.disconnect();
         assertFalse(session.isAuthenticated());
+    }
 
-        session = setupAlwaysAccepting("nonExistingUserId", entityManagerMock);
-        assertFalse(session.isAuthenticated());
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testReadResource() throws ResourceAccessException {
+        ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
+
+        ReadableResource<String> readableResource = mock(ReadableResource.class);
+        when(readableResource.read(clientMock.entity)).thenReturn("testValue");
+        ResourceManager resourceManager = mock(ResourceManager.class);
+        when(resourceManager.getAs("testResource", ReadableResource.class)).thenReturn(readableResource);
+
+        JsonSession session = setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, null, null);
+        assertResult(ActionResult.Status.OK, new JsonPrimitive("testValue"), session.readResource("testResource"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testWriteResource() throws ResourceAccessException {
+        ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
+
+        WritableResource<String> writableResource = mock(WritableResource.class);
+        when(writableResource.getDataType()).thenReturn(String.class);
+        ResourceManager resourceManager = mock(ResourceManager.class);
+        when(resourceManager.getAs("testResource", WritableResource.class)).thenReturn(writableResource);
+
+        JsonSession session = setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, null, null);
+        assertEquals(ActionResult.Status.OK, session.writeResource("testResource", new JsonPrimitive("testValue")).getStatus());
+        verify(writableResource).write(clientMock.entity, "testValue");
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testObservableReadableResource() throws ResourceAccessException {
+        ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
+
+        ObservableReadableResource<String> observableReadableResource = new ObservableReadableResourceMock();
+        ResourceManager resourceManager = mock(ResourceManager.class);
+        when(resourceManager.getAll(ObservableReadableResource.class)).thenReturn(Sets.newHashSet(observableReadableResource));
+
+        BiConsumer<String, JsonElement> observer = mock(BiConsumer.class);
+
+        setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, observer, null);
+        verify(observer, times(0)).accept(any(), any());
+        observableReadableResource.notifyChanged(clientMock.entity);
+        verify(observer, times(1)).accept(observableReadableResource.getName(), new JsonPrimitive("test"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testEventEmittingResource() throws ResourceAccessException {
+        ClientEntityMockBundle clientMock = new ClientEntityMockBundle();
+
+        EventEmittingResource<String> eventEmittingResource = new EventEmittingResourceMock();
+        ResourceManager resourceManager = mock(ResourceManager.class);
+        when(resourceManager.getAll(EventEmittingResource.class)).thenReturn(Sets.newHashSet(eventEmittingResource));
+
+        BiConsumer<String, JsonElement> observer = mock(BiConsumer.class);
+
+        setupAlwaysAccepting("testPlayerId", clientMock.factoryMock, resourceManager, null, observer);
+        verify(observer, times(0)).accept(any(), any());
+        eventEmittingResource.notifyEvent(clientMock.entity, "test");
+        verify(observer, times(1)).accept(eventEmittingResource.getName(), new JsonPrimitive("test"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testAnonymousReadResource() throws ResourceAccessException {
+        AnonymousClientEntityMockBundle clientMock = new AnonymousClientEntityMockBundle();
+
+        ReadableResource<String> readableResource = mock(ReadableResource.class);
+        when(readableResource.read(clientMock.entity)).thenReturn("testValue");
+        ResourceManager resourceManager = mock(ResourceManager.class);
+        when(resourceManager.getAs("testResource", ReadableResource.class)).thenReturn(readableResource);
+
+        JsonSession session = new JsonSession(null, clientMock.factoryMock, resourceManager);
+        assertResult(ActionResult.Status.OK, new JsonPrimitive("testValue"), session.readResource("testResource"));
+    }
+
+    @Test
+    @SuppressWarnings("unchecked")
+    public void testAnonymousCantWriteResource() throws ResourceAccessException {
+        AnonymousClientEntityMockBundle clientMock = new AnonymousClientEntityMockBundle();
+
+        WritableResource<String> writableResource = mock(WritableResource.class);
+        when(writableResource.getDataType()).thenReturn(String.class);
+        ResourceManager resourceManager = mock(ResourceManager.class);
+        when(resourceManager.getAs("testResource", WritableResource.class)).thenReturn(writableResource);
+
+        JsonSession session = new JsonSession(null, clientMock.factoryMock, resourceManager);
+        assertEquals(ActionResult.Status.UNAUTHORIZED, session.writeResource("testResource", new JsonPrimitive("testValue")).getStatus());
+        verify(writableResource, times(0)).write(clientMock.entity, "testValue");
     }
 }

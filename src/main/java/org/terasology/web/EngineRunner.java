@@ -18,13 +18,16 @@ package org.terasology.web;
 import org.terasology.context.Context;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
+import org.terasology.engine.modes.GameState;
+import org.terasology.engine.modes.StateIngame;
+import org.terasology.engine.modes.StateMainMenu;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
 import org.terasology.engine.subsystem.headless.HeadlessAudio;
 import org.terasology.engine.subsystem.headless.HeadlessGraphics;
 import org.terasology.engine.subsystem.headless.HeadlessInput;
 import org.terasology.engine.subsystem.headless.HeadlessTimer;
-import org.terasology.engine.subsystem.headless.mode.HeadlessStateChangeListener;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
+import org.terasology.web.resources.ResourceManager;
 
 public final class EngineRunner {
 
@@ -37,7 +40,14 @@ public final class EngineRunner {
         TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
         populateSubsystems(builder);
         engine = builder.build();
-        engine.subscribeToStateChange(new HeadlessStateChangeListener(engine));
+        engine.subscribeToStateChange(() -> {
+            GameState state = engine.getState();
+            if (state instanceof StateIngame) {
+                ResourceManager.getInstance().initialize(state.getContext());
+            } else if (state instanceof StateMainMenu) {
+                engine.shutdown();
+            }
+        });
         engine.run(new StateHeadlessSetup());
     }
 

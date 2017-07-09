@@ -19,18 +19,28 @@ import org.terasology.entitySystem.entity.EntityManager;
 
 public class HeadlessClientFactory {
 
-    private EntityManager entityManager;
+    private final EntityManager entityManager;
 
     public HeadlessClientFactory(EntityManager entityManager) {
         this.entityManager = entityManager;
     }
 
     /**
-     * @return a new instance of {@link HeadlessClient} connected to the {@link org.terasology.entitySystem.entity.EntityManager}
+     * @return a new instance of {@link HeadlessClient} connected to the {@link EntityManager}
      * passed to the constructor of this class.
      */
     public HeadlessClient connectNewHeadlessClient(String id) {
         HeadlessClient result = new HeadlessClient(id);
+        result.connect(entityManager);
+        return result;
+    }
+
+    /**
+     * @return a new instance of {@link AnonymousHeadlessClient}, which entity has no correspondent clientInfo entity and components;
+     * thus, it's data is not persisted in the save files. Used to provide anonymous read-only access to certain resources.
+     */
+    public AnonymousHeadlessClient connectNewAnonymousHeadlessClient() {
+        AnonymousHeadlessClient result = new AnonymousHeadlessClient();
         result.connect(entityManager);
         return result;
     }

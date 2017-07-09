@@ -29,7 +29,7 @@ public class WsConnectionServlet extends WebSocketServlet {
 
     @Override
     public void configure(WebSocketServletFactory factory) {
-        factory.getPolicy().setIdleTimeout(10000);        // set a 10 second timeout
+        factory.getPolicy().setIdleTimeout(60000);        // set a 60 second timeout
         factory.register(WebSocketHandler.class);
     }
 }

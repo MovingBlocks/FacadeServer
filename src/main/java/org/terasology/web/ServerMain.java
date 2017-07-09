@@ -38,7 +38,7 @@ import org.terasology.engine.LoggingContext;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.engine.subsystem.common.ConfigurationSubsystem;
 import org.terasology.web.io.ActionResultMessageBodyWriter;
-import org.terasology.web.io.GsonMessageBodyHandler;
+import org.terasology.web.io.gsonUtils.GsonMessageBodyHandler;
 import org.terasology.web.servlet.AboutServlet;
 import org.terasology.web.servlet.HttpAPIServlet;
 import org.terasology.web.servlet.LogServlet;

@@ -16,13 +16,15 @@
 package org.terasology.web.webSocket;
 
 import com.google.gson.JsonElement;
+import org.terasology.web.io.gsonUtils.InvalidClientMessageException;
+import org.terasology.web.io.gsonUtils.Validable;
 
-public class ClientMessage {
+public class ClientToServerMessage implements Validable {
 
     public enum MessageType {
         AUTHENTICATION_REQUEST,
         AUTHENTICATION_DATA,
-        RESOURCE
+        RESOURCE_REQUEST
     }
 
     private MessageType messageType;
@@ -36,13 +38,14 @@ public class ClientMessage {
         return data;
     }
 
-    public void checkValid() throws InvalidClientMessageException {
+    @Override
+    public void validate() throws InvalidClientMessageException {
         if (messageType == null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.MESSAGETYPE_EMPTY);
+            throw new InvalidClientMessageException("messageType is empty or not valid");
         } else if (messageType == MessageType.AUTHENTICATION_REQUEST && data != null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.DATA_NOT_REQUIRED);
+            throw new InvalidClientMessageException("no data must be sent");
         } else if (messageType != MessageType.AUTHENTICATION_REQUEST && data == null) {
-            throw new InvalidClientMessageException(InvalidClientMessageException.Reason.DATA_REQUIRED);
+            throw new InvalidClientMessageException("data is required");
         }
     }
 }

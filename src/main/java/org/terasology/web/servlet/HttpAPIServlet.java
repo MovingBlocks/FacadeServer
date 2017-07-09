@@ -26,37 +26,45 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-@Path("http")
+@Path("api")
 public class HttpAPIServlet {
 
     private static final String SESSION_TOKEN_HEADER = "Session-Token";
-    private final Map<String, JsonSession> sessions = new HashMap<>(); //maps session tokens with the active sessions
+    private final Map<String, JsonSessionWithEventQueue> sessions = new HashMap<>(); //maps session tokens with the active sessions
     private JsonSession anonymousSession;
 
-    // TODO: call this after engine initialization
-    public void initAnonymousSession() {
-         anonymousSession = new JsonSession();
+    private JsonSessionWithEventQueue getSessionWithEventQueue(String token) {
+        JsonSessionWithEventQueue session = sessions.get(token);
+        if (session == null) {
+            //non-existing token -> forbidden
+            throw new JsonWebApplicationException("Invalid session token", Response.Status.FORBIDDEN);
+        }
+        return session;
+    }
+
+    private JsonSessionWithEventQueue getSessionWithEventQueue(HttpServletRequest request) {
+        return getSessionWithEventQueue(request.getHeader(SESSION_TOKEN_HEADER));
     }
 
     private JsonSession getSession(HttpServletRequest request) {
         String token = request.getHeader(SESSION_TOKEN_HEADER);
         if (token == null) {
+            if (anonymousSession == null) {
+                anonymousSession = new JsonSession();
+            }
             return anonymousSession;
         }
-        JsonSession session = sessions.get(token);
-        if (session == null) {
-            //non-existing token -> access is forbidden
-            throw new JsonWebApplicationException("Invalid session token", Response.Status.FORBIDDEN);
-        }
-        return session;
+        return getSessionWithEventQueue(token).getSession();
     }
 
     @GET
@@ -65,10 +73,10 @@ public class HttpAPIServlet {
     public ActionResult initAuthentication(@Context HttpServletResponse response) {
         //initialize new session
         String sessionId = UUID.randomUUID().toString();
-        JsonSession session = new JsonSession();
+        JsonSessionWithEventQueue session = new JsonSessionWithEventQueue();
         sessions.put(sessionId, session);
         response.setHeader(SESSION_TOKEN_HEADER, sessionId);
-        return session.initAuthentication();
+        return session.getSession().initAuthentication();
     }
 
     @POST
@@ -92,8 +100,31 @@ public class HttpAPIServlet {
         if (!sessions.containsKey(token)) {
             throw new JsonWebApplicationException("Invalid session token", Response.Status.NOT_FOUND);
         }
+        sessions.get(token).getSession().disconnect();
         sessions.remove(token);
         return ActionResult.OK;
+    }
+
+    @GET
+    @Path("events")
+    @Produces(MediaType.APPLICATION_JSON)
+    public List<JsonSessionWithEventQueue.ResourceEvent> getEvents(@Context HttpServletRequest request) {
+        return getSessionWithEventQueue(request).drainEventQueue();
+    }
+
+    @GET
+    @Path("resources/{resourceName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    public ActionResult readResource(@Context HttpServletRequest request, @PathParam("resourceName") String resourceName) {
+        return getSession(request).readResource(resourceName);
+    }
+
+    @POST
+    @Path("resources/{resourceName}")
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult writeResource(JsonElement data, @Context HttpServletRequest request, @PathParam("resourceName") String resourceName) {
+        return getSession(request).writeResource(resourceName, data);
     }
 
 }

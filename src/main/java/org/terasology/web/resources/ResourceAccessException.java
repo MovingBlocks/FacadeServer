@@ -13,27 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.webSocket;
+package org.terasology.web.resources;
 
-public class InvalidClientMessageException extends Exception {
+import org.terasology.web.io.ActionResult;
 
-    public enum Reason {
-        MESSAGETYPE_EMPTY("messageType is empty or not valid"),
-        DATA_REQUIRED("data is required"),
-        DATA_NOT_REQUIRED("no data must be sent");
+public class ResourceAccessException extends Exception {
 
-        private final String message;
+    private final ActionResult resultToSend;
 
-        Reason(String message) {
-            this.message = message;
-        }
-
-        public String getMessage() {
-            return message;
-        }
+    public ResourceAccessException(ActionResult resultToSend) {
+        super("Failed to access requested resource: " + resultToSend.getMessage());
+        this.resultToSend = resultToSend;
     }
 
-    public InvalidClientMessageException(Reason reason) {
-        super("The received message is not valid: " + reason.getMessage());
+    public ActionResult getResultToSend() {
+        return resultToSend;
     }
 }
