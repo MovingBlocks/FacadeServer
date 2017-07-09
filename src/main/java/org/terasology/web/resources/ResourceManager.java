@@ -48,6 +48,7 @@ public class ResourceManager {
         registerAndPutResource(context, new EngineStateResource(gameEngine));
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
+            registerAndPutResource(context, new GamesResource());
             registerAndPutResource(context, new OnlinePlayersResource());
         } else if (gameState instanceof StateEngineIdle) {
             registerAndPutResource(context, new GamesResource());
