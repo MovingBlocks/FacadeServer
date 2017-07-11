@@ -27,13 +27,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Consumer;
 
 public class ResourceManager {
 
     private static final ResourceManager INSTANCE = new ResourceManager();
     private Map<String, Resource> resources;
-    private Set<Consumer<ReadableResource>> stateChangeObservers = new HashSet<>();
+    private Set<EngineStateChangeObserver> stateChangeObservers = new HashSet<>();
 
     private ResourceManager() {
     }
@@ -55,8 +54,10 @@ public class ResourceManager {
             registerAndPutResource(context, new GamesResource());
             //TODO: add server config resource
         }
-        //all the resources have been re-initialize, so notify all the clients
-        updateAllClients();
+        if (gameState != null) {
+            //all the resources have been re-initialize, so notify all the clients
+            updateAllClients(gameState);
+        }
     }
 
     private void registerAndPutResource(Context context, Resource resource) {
@@ -91,19 +92,18 @@ public class ResourceManager {
         return result;
     }
 
-    public void addEngineStateChangeObserver(Consumer<ReadableResource> observer) {
+    public void addEngineStateChangeObserver(EngineStateChangeObserver observer) {
         stateChangeObservers.add(observer);
     }
 
-    public void removeEngineStateChangeObserver(Consumer<ReadableResource> observer) {
+    public void removeEngineStateChangeObserver(EngineStateChangeObserver observer) {
         stateChangeObservers.remove(observer);
     }
 
-    private void updateAllClients() {
-        for (Consumer<ReadableResource> client: stateChangeObservers) {
-            for (ReadableResource resource: getAll(ReadableResource.class)) {
-                client.accept(resource);
-            }
+    private void updateAllClients(GameState newState) {
+        Set<ReadableResource> readableResources = getAll(ReadableResource.class);
+        for (EngineStateChangeObserver observer: stateChangeObservers) {
+            observer.notifyUpdate(newState, readableResources);
         }
     }
 }

@@ -20,6 +20,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.terasology.config.Config;
+import org.terasology.engine.modes.GameState;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
 import org.terasology.network.Client;
@@ -33,6 +34,7 @@ import org.terasology.web.client.AnonymousHeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.io.gsonUtils.ByteArrayBase64Serializer;
 import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
+import org.terasology.web.resources.EngineStateChangeObserver;
 import org.terasology.web.resources.EventEmittingResource;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ReadableResource;
@@ -52,11 +54,12 @@ public class JsonSession {
             .create();
 
     private final AuthenticationHandshakeHandler authHandler;
-    private final HeadlessClientFactory headlessClientFactory;
     private final ResourceManager resourceManager;
     private final JsonSessionResourceObserver resourceObserver;
 
+    private HeadlessClientFactory headlessClientFactory;
     private Client client;
+    private EngineStateChangeObserver engineStateObserver;
 
     JsonSession(AuthenticationHandshakeHandler authHandler, HeadlessClientFactory headlessClientFactory, ResourceManager resourceManager) {
         this.authHandler = authHandler;
@@ -64,12 +67,22 @@ public class JsonSession {
         this.resourceManager = resourceManager;
         this.resourceObserver = new JsonSessionResourceObserver(this);
         this.client = headlessClientFactory.connectNewAnonymousHeadlessClient();
+        this.engineStateObserver = new EngineStateChangeObserver(resourceObserver, this::handleEngineStateChanged);
         setResourceObservers(); //observe the notifications sent for the anonymous client
     }
 
     public JsonSession() {
         this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getFromEngineContext(Config.class).getSecurity()),
                 new HeadlessClientFactory(EngineRunner.getFromEngineContext(EntityManager.class)), ResourceManager.getInstance());
+    }
+
+    private void handleEngineStateChanged(GameState newEngineState) {
+        headlessClientFactory = new HeadlessClientFactory(newEngineState.getContext().get(EntityManager.class));
+        if (client != null) {
+            client = headlessClientFactory.connectNewAnonymousHeadlessClient();
+        } else {
+            client = headlessClientFactory.connectNewAnonymousHeadlessClient();
+        }
     }
 
     @SuppressWarnings("unchecked")
@@ -80,7 +93,7 @@ public class JsonSession {
         for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
             eventResource.setObserver(client.getEntity(), resourceObserver);
         }
-        ResourceManager.getInstance().addEngineStateChangeObserver(resourceObserver);
+        ResourceManager.getInstance().addEngineStateChangeObserver(engineStateObserver);
     }
 
     private void removeResourceObservers() {
@@ -90,7 +103,7 @@ public class JsonSession {
         for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
             eventResource.removeObserver(client.getEntity());
         }
-        ResourceManager.getInstance().addEngineStateChangeObserver(resourceObserver);
+        ResourceManager.getInstance().removeEngineStateChangeObserver(engineStateObserver);
     }
 
     public void setReadableResourceObserver(BiConsumer<String, JsonElement> observer) {
