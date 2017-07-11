@@ -68,10 +68,11 @@ public class JsonSession {
     }
 
     public JsonSession() {
-        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getContext().get(Config.class).getSecurity()),
-                new HeadlessClientFactory(EngineRunner.getContext().get(EntityManager.class)), ResourceManager.getInstance());
+        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getFromEngineContext(Config.class).getSecurity()),
+                new HeadlessClientFactory(EngineRunner.getFromEngineContext(EntityManager.class)), ResourceManager.getInstance());
     }
 
+    @SuppressWarnings("unchecked")
     private void setResourceObservers() {
         for (ObservableReadableResource observableResource: resourceManager.getAll(ObservableReadableResource.class)) {
             observableResource.setObserver(client.getEntity(), resourceObserver);
@@ -79,6 +80,7 @@ public class JsonSession {
         for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
             eventResource.setObserver(client.getEntity(), resourceObserver);
         }
+        ResourceManager.getInstance().addEngineStateChangeObserver(resourceObserver);
     }
 
     private void removeResourceObservers() {
@@ -88,6 +90,7 @@ public class JsonSession {
         for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
             eventResource.removeObserver(client.getEntity());
         }
+        ResourceManager.getInstance().addEngineStateChangeObserver(resourceObserver);
     }
 
     public void setReadableResourceObserver(BiConsumer<String, JsonElement> observer) {
@@ -152,6 +155,7 @@ public class JsonSession {
         }
     }
 
+    @SuppressWarnings("unchecked")
     public ActionResult writeResource(String resourceName, JsonElement data) {
         if (!isAuthenticated()) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to resources.");

@@ -42,12 +42,10 @@ public class EngineStateResource implements ReadableResource<EngineStateMetadata
 
     private GameEngine gameEngine;
     private List<String> serverAdmins;
-    private EngineStateMetadata state;
 
     EngineStateResource(GameEngine gameEngine, List<String> serverAdmins) {
         this.gameEngine = gameEngine;
         this.serverAdmins = serverAdmins;
-        this.state = EngineStateMetadata.build(gameEngine.getState());
     }
 
     EngineStateResource(GameEngine gameEngine) {
@@ -72,7 +70,7 @@ public class EngineStateResource implements ReadableResource<EngineStateMetadata
 
     @Override
     public EngineStateMetadata read(Client requestingClient) {
-        return state;
+        return EngineStateMetadata.build(gameEngine.getState());
     }
 
     @Override

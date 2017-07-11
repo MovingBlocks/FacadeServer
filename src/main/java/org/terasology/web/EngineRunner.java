@@ -15,7 +15,6 @@
  */
 package org.terasology.web;
 
-import org.terasology.context.Context;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
 import org.terasology.engine.modes.StateMainMenu;
@@ -56,8 +55,8 @@ public final class EngineRunner {
                 .add(new HibernationSubsystem());
     }
 
-    public static Context getContext() {
-        return engine.getState().getContext();
+    public static <T> T getFromEngineContext(Class<T> clazz) {
+        return engine.getFromEngineContext(clazz);
     }
 
 }

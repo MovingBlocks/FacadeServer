@@ -21,18 +21,19 @@ import org.terasology.engine.GameEngine;
 import org.terasology.engine.modes.GameState;
 import org.terasology.engine.modes.StateIngame;
 import org.terasology.entitySystem.systems.ComponentSystem;
-import org.terasology.web.StateEngineIdle;
 import org.terasology.web.io.ActionResult;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.function.Consumer;
 
 public class ResourceManager {
 
     private static final ResourceManager INSTANCE = new ResourceManager();
     private Map<String, Resource> resources;
+    private Set<Consumer<ReadableResource>> stateChangeObservers = new HashSet<>();
 
     private ResourceManager() {
     }
@@ -43,22 +44,24 @@ public class ResourceManager {
 
     public void initialize(GameEngine gameEngine) {
         GameState gameState = gameEngine.getState();
-        Context context = gameState.getContext();
+        Context context = gameState != null ? gameState.getContext() : null;
         resources = new HashMap<>();
         registerAndPutResource(context, new EngineStateResource(gameEngine));
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
             registerAndPutResource(context, new GamesResource());
             registerAndPutResource(context, new OnlinePlayersResource());
-        } else if (gameState instanceof StateEngineIdle) {
+        } else {
             registerAndPutResource(context, new GamesResource());
             //TODO: add server config resource
         }
+        //all the resources have been re-initialize, so notify all the clients
+        updateAllClients();
     }
 
     private void registerAndPutResource(Context context, Resource resource) {
         if (!resources.containsValue(resource)) {
-            if (resource instanceof ComponentSystem) {
+            if (context != null && resource instanceof ComponentSystem) {
                 context.get(ComponentSystemManager.class).register((ComponentSystem) resource);
             }
             resources.put(resource.getName(), resource);
@@ -86,5 +89,21 @@ public class ResourceManager {
             }
         }
         return result;
+    }
+
+    public void addEngineStateChangeObserver(Consumer<ReadableResource> observer) {
+        stateChangeObservers.add(observer);
+    }
+
+    public void removeEngineStateChangeObserver(Consumer<ReadableResource> observer) {
+        stateChangeObservers.remove(observer);
+    }
+
+    private void updateAllClients() {
+        for (Consumer<ReadableResource> client: stateChangeObservers) {
+            for (ReadableResource resource: getAll(ReadableResource.class)) {
+                client.accept(resource);
+            }
+        }
     }
 }
