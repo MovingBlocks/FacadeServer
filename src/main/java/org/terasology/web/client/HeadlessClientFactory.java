@@ -16,6 +16,7 @@
 package org.terasology.web.client;
 
 import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.web.EngineRunner;
 
 public class HeadlessClientFactory {
 
@@ -26,12 +27,12 @@ public class HeadlessClientFactory {
     }
 
     /**
-     * @return a new instance of {@link HeadlessClient} connected to the {@link EntityManager}
+     * @return a new instance of {@link AuthenticatedHeadlessClient} connected to the {@link EntityManager}
      * passed to the constructor of this class.
      */
-    public HeadlessClient connectNewHeadlessClient(String id) {
-        HeadlessClient result = new HeadlessClient(id);
-        result.connect(entityManager);
+    public AuthenticatedHeadlessClient connectNewHeadlessClient(String id) {
+        AuthenticatedHeadlessClient result = new AuthenticatedHeadlessClient(id);
+        connectIfGameIsRunning(result);
         return result;
     }
 
@@ -41,7 +42,13 @@ public class HeadlessClientFactory {
      */
     public AnonymousHeadlessClient connectNewAnonymousHeadlessClient() {
         AnonymousHeadlessClient result = new AnonymousHeadlessClient();
-        result.connect(entityManager);
+        connectIfGameIsRunning(result);
         return result;
+    }
+
+    private void connectIfGameIsRunning(HeadlessClient client) {
+        if (EngineRunner.isRunningGame()) {
+            client.connect(entityManager);
+        }
     }
 }

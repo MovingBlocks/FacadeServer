@@ -17,6 +17,8 @@ package org.terasology.web;
 
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
+import org.terasology.engine.modes.GameState;
+import org.terasology.engine.modes.StateIngame;
 import org.terasology.engine.modes.StateMainMenu;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
 import org.terasology.engine.subsystem.headless.HeadlessAudio;
@@ -55,8 +57,13 @@ public final class EngineRunner {
                 .add(new HibernationSubsystem());
     }
 
-    public static <T> T getFromEngineContext(Class<T> clazz) {
-        return engine.getFromEngineContext(clazz);
+    public static <T> T getFromCurrentContext(Class<T> clazz) {
+        GameState state = engine.getState();
+        return state == null ? engine.getFromEngineContext(clazz) : engine.getState().getContext().get(clazz);
+    }
+
+    public static boolean isRunningGame() {
+        return engine.getState() instanceof StateIngame;
     }
 
 }

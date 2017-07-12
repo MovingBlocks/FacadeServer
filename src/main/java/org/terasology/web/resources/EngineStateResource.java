@@ -27,6 +27,7 @@ import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.StateEngineIdle;
 import org.terasology.web.io.ActionResult;
+import org.terasology.web.io.JsonSession;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -83,6 +84,7 @@ public class EngineStateResource implements ReadableResource<EngineStateMetadata
         // if the supplied string is a savegame name, the engine will switch to run this game;
         // if it's empty, it will switch to the idle state.
         checkClientIsServerAdmin(requestingClient.getId());
+        JsonSession.disconnectAllClients();
         if (data == null || data.length() == 0) {
             gameEngine.changeState(new StateEngineIdle());
         } else {

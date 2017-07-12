@@ -17,49 +17,52 @@ package org.terasology.web.client;
 
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.network.internal.AbstractClient;
 import org.terasology.rendering.nui.Color;
 
-public class AnonymousHeadlessClient implements HeadlessClient {
+public class AuthenticatedHeadlessClient extends AbstractClient implements HeadlessClient {
 
-    private EntityRef entity = EntityRef.NULL;
+    private String id;
+    private boolean connectedToEntityManager;
 
-    public AnonymousHeadlessClient() {
+    public AuthenticatedHeadlessClient(String id) {
+        this.id = id;
     }
 
+    @Override
     public void connect(EntityManager entityManager) {
-        //only the client entity is created to identify the client in the engine and receive events
-        //no clientInfo entity is created because this client's data must not be persistent
-        entity = entityManager.create("engine:client");
+        createEntity(id, Color.BLACK, entityManager);
+        connectedToEntityManager = true;
     }
 
     @Override
     public boolean isAnonymous() {
-        return true;
+        return false;
     }
+
 
     @Override
     public void disconnect() {
-        entity.destroy();
-        entity = EntityRef.NULL;
-    }
-
-    @Override
-    public EntityRef getEntity() {
-        return entity;
+        if (connectedToEntityManager && getEntity() != EntityRef.NULL) {
+            super.disconnect();
+            connectedToEntityManager = false;
+        }
     }
 
     @Override
     public String getName() {
-        return "anonymousHeadlessClient";
+        return id; //TODO temporary
     }
 
     @Override
     public String getId() {
-        return "anonymousHeadlessClient";
+        return id;
     }
 
     @Override
     public Color getColor() {
-        return Color.BLACK;
+        return Color.BLACK; //TODO temporary default
     }
+
+
 }

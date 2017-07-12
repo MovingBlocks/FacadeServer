@@ -23,14 +23,13 @@ import org.terasology.config.Config;
 import org.terasology.engine.modes.GameState;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
-import org.terasology.network.Client;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.AuthenticationHandshakeHandlerImpl;
 import org.terasology.web.authentication.ClientAuthenticationMessage;
 import org.terasology.web.authentication.HandshakeHello;
-import org.terasology.web.client.AnonymousHeadlessClient;
+import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.io.gsonUtils.ByteArrayBase64Serializer;
 import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
@@ -43,6 +42,8 @@ import org.terasology.web.resources.ResourceManager;
 import org.terasology.web.resources.WritableResource;
 
 import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 public class JsonSession {
@@ -52,13 +53,14 @@ public class JsonSession {
             .registerTypeAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
             .create();
+    private static Set<JsonSession> allSessions = new HashSet<>();
 
     private final AuthenticationHandshakeHandler authHandler;
     private final ResourceManager resourceManager;
     private final JsonSessionResourceObserver resourceObserver;
 
     private HeadlessClientFactory headlessClientFactory;
-    private Client client;
+    private HeadlessClient client;
     private EngineStateChangeObserver engineStateObserver;
 
     JsonSession(AuthenticationHandshakeHandler authHandler, HeadlessClientFactory headlessClientFactory, ResourceManager resourceManager) {
@@ -69,20 +71,30 @@ public class JsonSession {
         this.client = headlessClientFactory.connectNewAnonymousHeadlessClient();
         this.engineStateObserver = new EngineStateChangeObserver(resourceObserver, this::handleEngineStateChanged);
         setResourceObservers(); //observe the notifications sent for the anonymous client
+        allSessions.add(this);
     }
 
     public JsonSession() {
-        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getFromEngineContext(Config.class).getSecurity()),
-                new HeadlessClientFactory(EngineRunner.getFromEngineContext(EntityManager.class)), ResourceManager.getInstance());
+        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getFromCurrentContext(Config.class).getSecurity()),
+                new HeadlessClientFactory(EngineRunner.getFromCurrentContext(EntityManager.class)), ResourceManager.getInstance());
+    }
+
+    public static void disconnectAllClients() {
+        for (JsonSession session: allSessions) {
+            session.client.disconnect();
+        }
     }
 
     private void handleEngineStateChanged(GameState newEngineState) {
         headlessClientFactory = new HeadlessClientFactory(newEngineState.getContext().get(EntityManager.class));
-        if (client != null) {
-            client = headlessClientFactory.connectNewAnonymousHeadlessClient();
+        removeResourceObservers();
+        client.disconnect();
+        if (isAuthenticated()) {
+            client = headlessClientFactory.connectNewHeadlessClient(client.getId());
         } else {
             client = headlessClientFactory.connectNewAnonymousHeadlessClient();
         }
+        setResourceObservers();
     }
 
     @SuppressWarnings("unchecked")
@@ -115,21 +127,21 @@ public class JsonSession {
     }
 
     public boolean isAuthenticated() {
-        return client != null && !(client instanceof AnonymousHeadlessClient);
+        return client != null && !client.isAnonymous();
     }
 
     public ActionResult initAuthentication() {
-        if (isAuthenticated()) {
+        /*if (isAuthenticated()) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
-        }
+        }*/
         HandshakeHello serverHello = authHandler.initServerHello();
         return new ActionResult(GSON.toJsonTree(serverHello));
     }
 
     public ActionResult finishAuthentication(JsonElement clientMessage) {
-        if (isAuthenticated()) {
+        /*if (isAuthenticated()) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
-        }
+        }*/
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);
             byte[] serverVerification = authHandler.authenticate(clientAuthentication);
@@ -150,6 +162,7 @@ public class JsonSession {
         removeResourceObservers();
         client.disconnect();
         client = null;
+        allSessions.remove(this);
     }
 
     JsonElement serializeEvent(Object eventData) {
