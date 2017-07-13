@@ -32,6 +32,7 @@ import org.terasology.web.authentication.HandshakeHello;
 import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.io.gsonUtils.ByteArrayBase64Serializer;
+import org.terasology.web.io.gsonUtils.HierarchyDeserializer;
 import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
 import org.terasology.web.resources.EngineStateChangeObserver;
 import org.terasology.web.resources.EventEmittingResource;
@@ -40,6 +41,7 @@ import org.terasology.web.resources.ReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.ResourceManager;
 import org.terasology.web.resources.WritableResource;
+import org.terasology.web.resources.games.Action;
 
 import java.math.BigInteger;
 import java.util.HashSet;
@@ -52,6 +54,8 @@ public class JsonSession {
             .registerTypeAdapterFactory(ValidatorTypeAdapterFactory.getInstance())
             .registerTypeAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
+            //the following adapter is only used for the Games writable resource
+            .registerTypeAdapter(Action.class, new HierarchyDeserializer<Action>("org.terasology.web.resources.games.%sGameAction"))
             .create();
     private static Set<JsonSession> allSessions = new HashSet<>();
 

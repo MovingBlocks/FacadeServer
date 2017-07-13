@@ -13,23 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.games;
 
-import org.terasology.network.Client;
-import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
-import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
+import org.terasology.web.io.ActionResult;
 
-import java.util.List;
+public interface Action {
 
-public class GamesResource implements ReadableResource<List<GameInfo>> {
-
-    @Override
-    public String getName() {
-        return "games";
-    }
-
-    @Override
-    public List<GameInfo> read(Client requestingClient) {
-        return GameProvider.getSavedGames();
-    }
+    ActionResult perform();
 }

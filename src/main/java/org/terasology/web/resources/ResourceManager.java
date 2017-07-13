@@ -22,6 +22,7 @@ import org.terasology.engine.modes.GameState;
 import org.terasology.engine.modes.StateIngame;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.web.io.ActionResult;
+import org.terasology.web.resources.games.GamesResource;
 
 import java.util.HashMap;
 import java.util.HashSet;
