@@ -15,9 +15,9 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.web.io.ActionResult;
+import org.terasology.web.resources.ResourceAccessException;
 
 public interface Action {
 
-    ActionResult perform();
+    void perform() throws ResourceAccessException;
 }

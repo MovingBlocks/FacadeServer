@@ -17,6 +17,7 @@ package org.terasology.web.resources.games;
 
 import org.terasology.engine.paths.PathManager;
 import org.terasology.web.io.ActionResult;
+import org.terasology.web.resources.ResourceAccessException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,14 +31,13 @@ public class BackupGameAction implements Action {
     private String gameName;
 
     @Override
-    public ActionResult perform() {
+    public void perform() throws ResourceAccessException {
         Path srcGamePath = PathManager.getInstance().getSavePath(gameName);
         Path dstGamePath = PathManager.getInstance().getSavePath(gameName + "_backup_" + LocalDateTime.now().toString());
         try {
             copyRecursive(srcGamePath, dstGamePath);
-            return ActionResult.OK;
         } catch (IOException ex) {
-            return new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage());
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
         }
     }
 

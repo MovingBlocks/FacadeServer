@@ -66,6 +66,7 @@ public final class ServerMain {
 
         handleArgs(args);
         setupLogging();
+        ServerAdminsManager.loadAdminList();
 
         String portEnv = System.getenv("PORT");
         if (portEnv == null) {

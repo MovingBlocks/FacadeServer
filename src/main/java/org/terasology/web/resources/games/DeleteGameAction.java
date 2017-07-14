@@ -18,6 +18,7 @@ package org.terasology.web.resources.games;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.utilities.FilesUtil;
 import org.terasology.web.io.ActionResult;
+import org.terasology.web.resources.ResourceAccessException;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -27,13 +28,12 @@ public class DeleteGameAction implements Action {
     private String gameName;
 
     @Override
-    public ActionResult perform() {
+    public void perform() throws ResourceAccessException {
         Path gamePath = PathManager.getInstance().getSavePath(gameName);
         try {
             FilesUtil.recursiveDelete(gamePath);
-            return ActionResult.OK;
         } catch (IOException ex) {
-            return new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage());
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
         }
     }
 }

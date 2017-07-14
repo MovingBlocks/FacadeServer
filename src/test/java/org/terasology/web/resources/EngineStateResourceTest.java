@@ -20,6 +20,7 @@ import org.junit.Test;
 import org.terasology.engine.GameEngine;
 import org.terasology.engine.modes.GameState;
 import org.terasology.network.Client;
+import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.StateEngineIdle;
 
 import java.util.Arrays;
@@ -40,7 +41,8 @@ public class EngineStateResourceTest {
         engineMock = mock(GameEngine.class);
         GameState state = new StateEngineIdle();
         when(engineMock.getState()).thenReturn(state);
-        engineStateResource = new EngineStateResource(engineMock, Arrays.asList("serverAdm1", "admin"));
+        ServerAdminsManager.setAdminList(Arrays.asList("serverAdm1", "admin"));
+        engineStateResource = new EngineStateResource(engineMock);
     }
 
     @Test(expected = ResourceAccessException.class)

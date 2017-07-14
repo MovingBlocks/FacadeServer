@@ -15,53 +15,26 @@
  */
 package org.terasology.web.resources;
 
-import com.google.gson.Gson;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.terasology.engine.GameEngine;
 import org.terasology.engine.modes.StateLoading;
-import org.terasology.engine.paths.PathManager;
 import org.terasology.network.Client;
 import org.terasology.network.NetworkMode;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
+import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.StateEngineIdle;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.io.JsonSession;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.stream.Stream;
 
 public class EngineStateResource implements ReadableResource<EngineStateMetadata>, WritableResource<String> {
 
-    private static final Logger logger = LoggerFactory.getLogger(EngineStateResource.class);
-
     private GameEngine gameEngine;
-    private List<String> serverAdmins;
-
-    EngineStateResource(GameEngine gameEngine, List<String> serverAdmins) {
-        this.gameEngine = gameEngine;
-        this.serverAdmins = serverAdmins;
-    }
 
     EngineStateResource(GameEngine gameEngine) {
-        this(gameEngine, loadServerAdminList());
-    }
-
-    @SuppressWarnings("unchecked")
-    private static List<String> loadServerAdminList() {
-        Path filePath = PathManager.getInstance().getHomePath().resolve("serverAdmins.json");
-        try {
-            return new Gson().fromJson(Files.newBufferedReader(filePath), List.class);
-        } catch (IOException ex) {
-            logger.warn("Failed to load serverAdmins.json, no client will be able to change the engine state");
-            return new ArrayList<>();
-        }
+        this.gameEngine = gameEngine;
     }
 
     @Override
@@ -83,7 +56,7 @@ public class EngineStateResource implements ReadableResource<EngineStateMetadata
     public void write(Client requestingClient, String data) throws ResourceAccessException {
         // if the supplied string is a savegame name, the engine will switch to run this game;
         // if it's empty, it will switch to the idle state.
-        checkClientIsServerAdmin(requestingClient.getId());
+        ServerAdminsManager.checkClientIsServerAdmin(requestingClient.getId());
         JsonSession.disconnectAllClients();
         if (data == null || data.length() == 0) {
             gameEngine.changeState(new StateEngineIdle());
@@ -98,9 +71,4 @@ public class EngineStateResource implements ReadableResource<EngineStateMetadata
         }
     }
 
-    private void checkClientIsServerAdmin(String clientId) throws ResourceAccessException {
-        if (!serverAdmins.contains(clientId)) {
-            throw new ResourceAccessException(new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only server admins can perform this action"));
-        }
-    }
 }
