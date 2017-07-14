@@ -19,6 +19,7 @@ import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
 import org.terasology.engine.modes.GameState;
 import org.terasology.engine.modes.StateIngame;
+import org.terasology.engine.modes.StateLoading;
 import org.terasology.engine.modes.StateMainMenu;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
 import org.terasology.engine.subsystem.headless.HeadlessAudio;
@@ -64,6 +65,18 @@ public final class EngineRunner {
 
     public static boolean isRunningGame() {
         return engine.getState() instanceof StateIngame;
+    }
+
+    public static String getRunningOrLoadingGameName() {
+        GameState currentState = engine.getState();
+        if (currentState instanceof StateIngame || currentState instanceof StateLoading) {
+            // TODO: works but doesn't really make sense from a semantic point of view
+            // TODO: it just happens that StateInGame's getLoggingPhase() implementation
+            // TODO: returns the running game's title, but maybe a getGameTitle() method
+            // TODO: would be more appropriate
+            return currentState.getLoggingPhase();
+        }
+        return null;
     }
 
 }

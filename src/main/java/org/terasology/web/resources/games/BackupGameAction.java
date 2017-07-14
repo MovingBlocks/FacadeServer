@@ -28,12 +28,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BackupGameAction implements Action {
-
-    private String gameName;
+public class BackupGameAction extends ExistingGameAction {
 
     @Override
-    public void perform() throws ResourceAccessException {
+    public void perform(String gameName) throws ResourceAccessException {
         String backupName = gameName + "_backup_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss"));
         Path srcGamePath = PathManager.getInstance().getSavePath(gameName);
         Path dstGamePath = PathManager.getInstance().getSavePath(backupName);

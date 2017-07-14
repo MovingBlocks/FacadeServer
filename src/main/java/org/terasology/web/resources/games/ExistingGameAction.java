@@ -15,23 +15,26 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.paths.PathManager;
-import org.terasology.utilities.FilesUtil;
+import org.terasology.web.EngineRunner;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.ResourceAccessException;
 
-import java.io.IOException;
-import java.nio.file.Path;
+public abstract class ExistingGameAction implements Action {
 
-public class DeleteGameAction extends ExistingGameAction {
+    private String gameName;
 
     @Override
-    public void perform(String gameName) throws ResourceAccessException {
-        Path gamePath = PathManager.getInstance().getSavePath(gameName);
-        try {
-            FilesUtil.recursiveDelete(gamePath);
-        } catch (IOException ex) {
-            throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
+    public final void perform() throws ResourceAccessException {
+        checkGameIsNotRunningOrLoading();
+        perform(gameName);
+    }
+
+    private void checkGameIsNotRunningOrLoading() throws ResourceAccessException {
+        if (gameName.equals(EngineRunner.getRunningOrLoadingGameName())) {
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR,
+                    "This action cannot be performed on a game which is running or loading."));
         }
     }
+
+    protected abstract void perform(String savegameName) throws ResourceAccessException;
 }
