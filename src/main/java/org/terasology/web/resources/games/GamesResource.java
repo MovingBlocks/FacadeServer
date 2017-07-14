@@ -19,13 +19,13 @@ import org.terasology.network.Client;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.ServerAdminsManager;
-import org.terasology.web.resources.ReadableResource;
+import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.WritableResource;
 
 import java.util.List;
 
-public class GamesResource implements ReadableResource<List<GameInfo>>, WritableResource<Action> {
+public class GamesResource extends ObservableReadableResource<List<GameInfo>> implements WritableResource<Action> {
 
     @Override
     public String getName() {
@@ -46,6 +46,7 @@ public class GamesResource implements ReadableResource<List<GameInfo>>, Writable
     public void write(Client requestingClient, Action data) throws ResourceAccessException {
         ServerAdminsManager.checkClientIsServerAdmin(requestingClient.getId());
         data.perform();
+        notifyChangedAll();
     }
 
 }

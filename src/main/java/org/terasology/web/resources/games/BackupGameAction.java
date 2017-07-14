@@ -16,6 +16,7 @@
 package org.terasology.web.resources.games;
 
 import org.terasology.engine.paths.PathManager;
+import org.terasology.game.GameManifest;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.ResourceAccessException;
 
@@ -23,6 +24,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -32,10 +34,15 @@ public class BackupGameAction implements Action {
 
     @Override
     public void perform() throws ResourceAccessException {
+        String backupName = gameName + "_backup_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss"));
         Path srcGamePath = PathManager.getInstance().getSavePath(gameName);
-        Path dstGamePath = PathManager.getInstance().getSavePath(gameName + "_backup_" + LocalDateTime.now().toString());
+        Path dstGamePath = PathManager.getInstance().getSavePath(backupName);
         try {
             copyRecursive(srcGamePath, dstGamePath);
+            Path backupManifestPath = dstGamePath.resolve(GameManifest.DEFAULT_FILE_NAME);
+            GameManifest backupManifest = GameManifest.load(backupManifestPath);
+            backupManifest.setTitle(backupName);
+            GameManifest.save(backupManifestPath, backupManifest);
         } catch (IOException ex) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
         }
