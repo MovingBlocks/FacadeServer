@@ -15,16 +15,20 @@
  */
 package org.terasology.web.resources.games;
 
+import org.terasology.engine.module.ModuleManager;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.ResourceAccessException;
 
-public abstract class ExistingGameAction implements Action {
+import static org.terasology.web.resources.InputCheckUtils.checkNotNullOrEmpty;
+
+public abstract class AbstractExistingGameAction implements Action {
 
     private String gameName;
 
     @Override
-    public final void perform() throws ResourceAccessException {
+    public final void perform(ModuleManager moduleManager) throws ResourceAccessException {
+        checkNotNullOrEmpty(gameName, "A game name must be specified.");
         checkGameIsNotRunningOrLoading();
         perform(gameName);
     }

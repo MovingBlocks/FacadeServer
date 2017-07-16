@@ -15,9 +15,10 @@
  */
 package org.terasology.web.resources.games;
 
+import org.terasology.engine.module.ModuleManager;
 import org.terasology.web.resources.ResourceAccessException;
 
 public interface Action {
 
-    void perform() throws ResourceAccessException;
+    void perform(ModuleManager moduleManager) throws ResourceAccessException;
 }

@@ -23,7 +23,7 @@ import org.terasology.web.resources.ResourceAccessException;
 import java.io.IOException;
 import java.nio.file.Path;
 
-public class DeleteGameAction extends ExistingGameAction {
+public class DeleteGameAction extends AbstractExistingGameAction {
 
     @Override
     public void perform(String gameName) throws ResourceAccessException {

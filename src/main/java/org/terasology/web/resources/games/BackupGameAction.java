@@ -28,7 +28,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BackupGameAction extends ExistingGameAction {
+public class BackupGameAction extends AbstractExistingGameAction {
 
     @Override
     public void perform(String gameName) throws ResourceAccessException {

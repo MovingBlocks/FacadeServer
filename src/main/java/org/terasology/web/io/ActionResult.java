@@ -29,7 +29,8 @@ public class ActionResult {
         UNAUTHORIZED,
         ACTION_NOT_ALLOWED,
         NOT_FOUND,
-        GENERIC_ERROR
+        GENERIC_ERROR,
+        CONFLICT
     }
 
     private Status status;
