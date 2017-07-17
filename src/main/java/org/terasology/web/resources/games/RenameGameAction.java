@@ -15,7 +15,6 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.paths.PathManager;
 import org.terasology.game.GameManifest;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.ResourceAccessException;
@@ -33,8 +32,8 @@ public class RenameGameAction extends AbstractExistingGameAction {
     @Override
     protected void perform(String oldGameName) throws ResourceAccessException {
         checkNotNullOrEmpty(newGameName, "A new name must be specified.");
-        Path oldGameDir = PathManager.getInstance().getSavePath(oldGameName);
-        Path newGameDir = PathManager.getInstance().getSavePath(newGameName);
+        Path oldGameDir = getPathManager().getSavePath(oldGameName);
+        Path newGameDir = getPathManager().getSavePath(newGameName);
         Path newManifestFile = newGameDir.resolve(GameManifest.DEFAULT_FILE_NAME);
         if (Files.exists(newGameDir)) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.CONFLICT, "A game with the specified name already exists"));
@@ -47,5 +46,9 @@ public class RenameGameAction extends AbstractExistingGameAction {
         } catch (IOException ex) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
         }
+    }
+
+    void setNewGameName(String newGameName) {
+        this.newGameName = newGameName;
     }
 }

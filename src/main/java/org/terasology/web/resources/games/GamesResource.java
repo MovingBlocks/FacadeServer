@@ -26,7 +26,7 @@ import org.terasology.web.resources.WritableResource;
 
 import java.util.List;
 
-public class GamesResource extends ObservableReadableResource<List<GameInfo>> implements WritableResource<Action> {
+public class GamesResource extends ObservableReadableResource<List<GameInfo>> implements WritableResource<AbstractAction> {
 
     private final ModuleManager moduleManager;
 
@@ -45,12 +45,12 @@ public class GamesResource extends ObservableReadableResource<List<GameInfo>> im
     }
 
     @Override
-    public Class<Action> getDataType() {
-        return Action.class;
+    public Class<AbstractAction> getDataType() {
+        return AbstractAction.class;
     }
 
     @Override
-    public void write(Client requestingClient, Action data) throws ResourceAccessException {
+    public void write(Client requestingClient, AbstractAction data) throws ResourceAccessException {
         ServerAdminsManager.checkClientIsServerAdmin(requestingClient.getId());
         data.perform(moduleManager);
         notifyChangedAll();

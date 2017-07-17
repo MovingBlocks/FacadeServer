@@ -44,7 +44,7 @@ import org.terasology.web.resources.ReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.ResourceManager;
 import org.terasology.web.resources.WritableResource;
-import org.terasology.web.resources.games.Action;
+import org.terasology.web.resources.games.AbstractAction;
 
 import java.math.BigInteger;
 import java.util.HashSet;
@@ -60,7 +60,7 @@ public class JsonSession {
             .registerTypeAdapter(Name.class, new NameTypeAdapter())
             .registerTypeAdapterFactory(new UriTypeAdapterFactory())
             //the following adapter is only used for the Games writable resource
-            .registerTypeAdapter(Action.class, new HierarchyDeserializer<Action>("org.terasology.web.resources.games.%sGameAction"))
+            .registerTypeAdapter(AbstractAction.class, new HierarchyDeserializer<AbstractAction>("org.terasology.web.resources.games.%sGameAction"))
             .create();
     private static Set<JsonSession> allSessions = new HashSet<>();
 

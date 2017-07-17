@@ -15,19 +15,22 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.paths.PathManager;
 import org.terasology.utilities.FilesUtil;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.ResourceAccessException;
 
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 public class DeleteGameAction extends AbstractExistingGameAction {
 
     @Override
     public void perform(String gameName) throws ResourceAccessException {
-        Path gamePath = PathManager.getInstance().getSavePath(gameName);
+        Path gamePath = getPathManager().getSavePath(gameName);
+        if (!Files.isDirectory(gamePath)) {
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.NOT_FOUND, "The specified path does not exist or isn't a valid savegame."));
+        }
         try {
             FilesUtil.recursiveDelete(gamePath);
         } catch (IOException ex) {

@@ -22,7 +22,7 @@ import org.terasology.web.resources.ResourceAccessException;
 
 import static org.terasology.web.resources.InputCheckUtils.checkNotNullOrEmpty;
 
-public abstract class AbstractExistingGameAction implements Action {
+public abstract class AbstractExistingGameAction extends AbstractAction {
 
     private String gameName;
 

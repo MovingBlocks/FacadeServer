@@ -15,7 +15,6 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.paths.PathManager;
 import org.terasology.game.GameManifest;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.ResourceAccessException;
@@ -33,8 +32,8 @@ public class BackupGameAction extends AbstractExistingGameAction {
     @Override
     public void perform(String gameName) throws ResourceAccessException {
         String backupName = gameName + "_backup_" + LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss"));
-        Path srcGamePath = PathManager.getInstance().getSavePath(gameName);
-        Path dstGamePath = PathManager.getInstance().getSavePath(backupName);
+        Path srcGamePath = getPathManager().getSavePath(gameName);
+        Path dstGamePath = getPathManager().getSavePath(backupName);
         try {
             copyRecursive(srcGamePath, dstGamePath);
             Path backupManifestPath = dstGamePath.resolve(GameManifest.DEFAULT_FILE_NAME);

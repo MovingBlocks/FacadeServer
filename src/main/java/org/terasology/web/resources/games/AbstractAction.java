@@ -16,9 +16,26 @@
 package org.terasology.web.resources.games;
 
 import org.terasology.engine.module.ModuleManager;
+import org.terasology.engine.paths.PathManager;
 import org.terasology.web.resources.ResourceAccessException;
 
-public interface Action {
+public abstract class AbstractAction {
 
-    void perform(ModuleManager moduleManager) throws ResourceAccessException;
+    private transient PathManager pathManager;
+
+    public AbstractAction() {
+        pathManager = PathManager.getInstance();
+    }
+
+    public abstract void perform(ModuleManager moduleManager) throws ResourceAccessException;
+
+    // for use by subclasses
+    public PathManager getPathManager() {
+        return pathManager;
+    }
+
+    //for unit testing
+    void setPathManager(PathManager pathManager) {
+        this.pathManager = pathManager;
+    }
 }
