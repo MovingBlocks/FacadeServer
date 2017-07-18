@@ -48,7 +48,7 @@ import org.terasology.web.resources.WritableResource;
 
 
 import java.math.BigInteger;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.function.BiConsumer;
 
@@ -62,66 +62,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class JsonSessionTest {
-
-    private static class AuthenticationHandshakeHandlerMock implements AuthenticationHandshakeHandler {
-        private boolean nextResult;
-
-        @Override
-        public HandshakeHello initServerHello() {
-            return null;
-        }
-
-        @Override
-        public byte[] authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
-            if (!nextResult) {
-                throw new AuthenticationFailedException(AuthenticationFailedException.INVALID_CLIENT_CERT);
-            }
-            return new byte[]{0, 0, 0};
-        }
-    }
-
-    private static class ObservableReadableResourceMock extends ObservableReadableResource<String> {
-        @Override
-        public String getName() {
-            return "testResource";
-        }
-        @Override
-        public String read(Client requestingClient) {
-            return "test";
-        }
-    }
-
-    private static class EventEmittingResourceMock extends EventEmittingResource<String> {
-        @Override
-        public String getName() {
-            return "testResource";
-        }
-    }
-
-    private static class ClientEntityMockBundle {
-        private AuthenticatedHeadlessClient client;
-        private HeadlessClientFactory factoryMock;
-
-        private ClientEntityMockBundle() {
-            client = mock(AuthenticatedHeadlessClient.class);
-            when(client.isAnonymous()).thenCallRealMethod();
-            factoryMock = mock(HeadlessClientFactory.class);
-            when(factoryMock.connectNewHeadlessClient("testPlayerId")).thenReturn(client);
-            when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(mock(AnonymousHeadlessClient.class));
-        }
-    }
-
-    private static class AnonymousClientEntityMockBundle {
-        private AnonymousHeadlessClient client;
-        private HeadlessClientFactory factoryMock;
-
-        private AnonymousClientEntityMockBundle() {
-            client = mock(AnonymousHeadlessClient.class);
-            when(client.isAnonymous()).thenCallRealMethod();
-            factoryMock = mock(HeadlessClientFactory.class);
-            when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(client);
-        }
-    }
 
     private static final BigInteger ZERO = BigInteger.ZERO;
     private static final byte[] EMPTY = new byte[]{};
@@ -199,7 +139,7 @@ public class JsonSessionTest {
         clientInfo.playerId = "testUserId";
         when(clientInfoEntityRefMock.exists()).thenReturn(true);
         when(clientInfoEntityRefMock.getComponent(ClientInfoComponent.class)).thenReturn(clientInfo);
-        when(entityManagerMock.getEntitiesWith(ClientInfoComponent.class)).thenReturn(Arrays.asList(clientInfoEntityRefMock));
+        when(entityManagerMock.getEntitiesWith(ClientInfoComponent.class)).thenReturn(Collections.singletonList(clientInfoEntityRefMock));
 
         JsonSession session = setupAlwaysAccepting("testUserId", entityManagerMock);
         assertTrue(session.isAuthenticated());
@@ -298,5 +238,65 @@ public class JsonSessionTest {
         JsonSession session = new JsonSession(null, clientMock.factoryMock, resourceManager);
         assertEquals(ActionResult.Status.UNAUTHORIZED, session.writeResource("testResource", new JsonPrimitive("testValue")).getStatus());
         verify(writableResource, times(0)).write(clientMock.client, "testValue");
+    }
+
+    private static class AuthenticationHandshakeHandlerMock implements AuthenticationHandshakeHandler {
+        private boolean nextResult;
+
+        @Override
+        public HandshakeHello initServerHello() {
+            return null;
+        }
+
+        @Override
+        public byte[] authenticate(ClientAuthenticationMessage authenticationMessage) throws AuthenticationFailedException {
+            if (!nextResult) {
+                throw new AuthenticationFailedException(AuthenticationFailedException.INVALID_CLIENT_CERT);
+            }
+            return new byte[]{0, 0, 0};
+        }
+    }
+
+    private static class ObservableReadableResourceMock extends ObservableReadableResource<String> {
+        @Override
+        public String getName() {
+            return "testResource";
+        }
+        @Override
+        public String read(Client requestingClient) {
+            return "test";
+        }
+    }
+
+    private static class EventEmittingResourceMock extends EventEmittingResource<String> {
+        @Override
+        public String getName() {
+            return "testResource";
+        }
+    }
+
+    private static final class ClientEntityMockBundle {
+        private AuthenticatedHeadlessClient client;
+        private HeadlessClientFactory factoryMock;
+
+        private ClientEntityMockBundle() {
+            client = mock(AuthenticatedHeadlessClient.class);
+            when(client.isAnonymous()).thenCallRealMethod();
+            factoryMock = mock(HeadlessClientFactory.class);
+            when(factoryMock.connectNewHeadlessClient("testPlayerId")).thenReturn(client);
+            when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(mock(AnonymousHeadlessClient.class));
+        }
+    }
+
+    private static final class AnonymousClientEntityMockBundle {
+        private AnonymousHeadlessClient client;
+        private HeadlessClientFactory factoryMock;
+
+        private AnonymousClientEntityMockBundle() {
+            client = mock(AnonymousHeadlessClient.class);
+            when(client.isAnonymous()).thenCallRealMethod();
+            factoryMock = mock(HeadlessClientFactory.class);
+            when(factoryMock.connectNewAnonymousHeadlessClient()).thenReturn(client);
+        }
     }
 }

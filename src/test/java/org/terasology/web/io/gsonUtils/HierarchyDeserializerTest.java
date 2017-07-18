@@ -25,17 +25,6 @@ import static org.junit.Assert.assertTrue;
 
 public class HierarchyDeserializerTest {
 
-    private interface Parent {
-    }
-
-    private class Child1 implements Parent {
-        private String field;
-    }
-
-    private class Child2 implements Parent {
-        private int field;
-    }
-
     private static final String CLASS1NAME = "Child1";
     private static final String CLASS2NAME = "Child2";
     private Gson gson = new GsonBuilder()
@@ -46,11 +35,11 @@ public class HierarchyDeserializerTest {
     public void testDeserializeOk() {
         Parent test1 = gson.fromJson("{\"type\":\"" + CLASS1NAME + "\", \"data\":{\"field\":\"test\"}}", Parent.class);
         assertTrue(test1 instanceof Child1);
-        assertEquals("test", ((Child1)test1).field);
+        assertEquals("test", ((Child1) test1).field);
 
         Parent test2 = gson.fromJson("{\"type\":\"" + CLASS2NAME + "\", \"data\":{\"field\":1}}", Parent.class);
         assertTrue(test2 instanceof Child2);
-        assertEquals(1, ((Child2)test2).field);
+        assertEquals(1, ((Child2) test2).field);
     }
 
     @Test(expected = JsonParseException.class)
@@ -58,4 +47,14 @@ public class HierarchyDeserializerTest {
         gson.fromJson("{\"type\":\"java.lang.String\", \"data\":\"this is a string\"}", Parent.class);
     }
 
+    private interface Parent {
+    }
+
+    private class Child1 implements Parent {
+        private String field;
+    }
+
+    private class Child2 implements Parent {
+        private int field;
+    }
 }

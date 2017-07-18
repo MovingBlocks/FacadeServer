@@ -36,8 +36,10 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -66,10 +68,10 @@ public class NewGameActionTest {
         Module moduleMock1 = mock(Module.class);
         Module moduleMock2 = mock(Module.class);
         when(moduleMock1.getId()).thenReturn(new Name("module1"));
-        when(moduleMock1.getVersion()).thenReturn(new Version(1,0,0));
+        when(moduleMock1.getVersion()).thenReturn(new Version(1, 0, 0));
         when(moduleMock2.getId()).thenReturn(new Name("module2"));
-        when(moduleMock2.getVersion()).thenReturn(new Version(2,0,1));
-        HashSet<Module> moduleMockSet = new HashSet<>(Arrays.asList(moduleMock1, moduleMock2));
+        when(moduleMock2.getVersion()).thenReturn(new Version(2, 0, 1));
+        Set<Module> moduleMockSet = new HashSet<>(Arrays.asList(moduleMock1, moduleMock2));
         when(dependencyResolverMock.resolve(any())).thenReturn(new ResolutionResult(true, moduleMockSet));
         newGameAction.setDependencyResolver(dependencyResolverMock);
     }
@@ -77,7 +79,7 @@ public class NewGameActionTest {
     @Test
     public void testNewOk() throws ResourceAccessException, IOException {
         List<Name> inputModuleList = Arrays.asList(new Name("a"), new Name("b"));
-        newGameAction.setFields("game1", "gameSeed",inputModuleList, new SimpleUri("testModule", "testGenerator"));
+        newGameAction.setFields("game1", "gameSeed", inputModuleList, new SimpleUri("testModule", "testGenerator"));
 
         newGameAction.perform(null);
         verify(dependencyResolverMock, times(1)).resolve(inputModuleList);
@@ -90,7 +92,7 @@ public class NewGameActionTest {
         assertEquals("game1", gameManifest.getTitle());
         assertEquals("gameSeed", gameManifest.getSeed());
         assertEquals(2, gameManifest.getModules().size());
-        assertTrue(gameManifest.getModules().contains(new NameVersion(new Name("module1"), new Version(1,0,0))));
+        assertTrue(gameManifest.getModules().contains(new NameVersion(new Name("module1"), new Version(1, 0, 0))));
         assertEquals(1, Iterables.size(gameManifest.getWorlds()));
         WorldInfo worldInfo = gameManifest.getWorldInfo("main");
         assertEquals("gameSeed", worldInfo.getSeed());
@@ -100,13 +102,13 @@ public class NewGameActionTest {
 
     @Test(expected = ResourceAccessException.class)
     public void testNewEmptyName() throws ResourceAccessException {
-        newGameAction.setFields("", "gameSeed", Arrays.asList(), new SimpleUri("testModule", "testGenerator"));
+        newGameAction.setFields("", "gameSeed", Collections.emptyList(), new SimpleUri("testModule", "testGenerator"));
         newGameAction.perform(null);
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testNewEmptySeed() throws ResourceAccessException {
-        newGameAction.setFields("game1", "", Arrays.asList(), new SimpleUri("testModule", "testGenerator"));
+        newGameAction.setFields("game1", "", Collections.emptyList(), new SimpleUri("testModule", "testGenerator"));
         newGameAction.perform(null);
     }
 
@@ -118,7 +120,7 @@ public class NewGameActionTest {
 
     @Test(expected = ResourceAccessException.class)
     public void testNewNullWorldGenerator() throws ResourceAccessException {
-        newGameAction.setFields("game1", "gameSeed", Arrays.asList(), null);
+        newGameAction.setFields("game1", "gameSeed", Collections.emptyList(), null);
         newGameAction.perform(null);
     }
 

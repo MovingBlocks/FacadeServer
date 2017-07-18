@@ -46,7 +46,7 @@ public class EngineStateResourceTest {
     }
 
     @Test(expected = ResourceAccessException.class)
-    public void testWriteFail() throws ResourceAccessException{
+    public void testWriteFail() throws ResourceAccessException {
         engineStateResource.write(mockClient("someUser"), "");
     }
 

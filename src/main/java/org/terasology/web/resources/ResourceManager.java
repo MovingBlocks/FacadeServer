@@ -30,7 +30,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class ResourceManager {
+public final class ResourceManager {
 
     private static final ResourceManager INSTANCE = new ResourceManager();
     private Map<String, Resource> resources;
