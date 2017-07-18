@@ -21,9 +21,15 @@ import org.terasology.web.EngineRunner;
 public class HeadlessClientFactory {
 
     private final EntityManager entityManager;
+    private final EngineRunner engineRunner;
+
+    public HeadlessClientFactory(EntityManager entityManager, EngineRunner engineRunner) {
+        this.entityManager = entityManager;
+        this.engineRunner = engineRunner;
+    }
 
     public HeadlessClientFactory(EntityManager entityManager) {
-        this.entityManager = entityManager;
+        this(entityManager, EngineRunner.getInstance());
     }
 
     /**
@@ -47,7 +53,7 @@ public class HeadlessClientFactory {
     }
 
     private void connectIfGameIsRunning(HeadlessClient client) {
-        if (EngineRunner.isRunningGame()) {
+        if (engineRunner.isRunningGame()) {
             client.connect(entityManager);
         }
     }

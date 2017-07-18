@@ -84,8 +84,8 @@ public class JsonSession {
     }
 
     public JsonSession() {
-        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getFromCurrentContext(Config.class).getSecurity()),
-                new HeadlessClientFactory(EngineRunner.getFromCurrentContext(EntityManager.class)), ResourceManager.getInstance());
+        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getInstance().getFromCurrentContext(Config.class).getSecurity()),
+                new HeadlessClientFactory(EngineRunner.getInstance().getFromCurrentContext(EntityManager.class)), ResourceManager.getInstance());
     }
 
     public static void disconnectAllClients() {

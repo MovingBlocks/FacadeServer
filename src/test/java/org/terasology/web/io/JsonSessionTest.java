@@ -22,10 +22,7 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
 import com.google.gson.JsonPrimitive;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.terasology.context.Context;
-import org.terasology.context.internal.ContextImpl;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.identity.PublicIdentityCertificate;
@@ -33,7 +30,7 @@ import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
 import org.terasology.network.Client;
 import org.terasology.network.ClientComponent;
 import org.terasology.network.ClientInfoComponent;
-import org.terasology.registry.CoreRegistry;
+import org.terasology.web.EngineRunner;
 import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.ClientAuthenticationMessage;
@@ -185,11 +182,12 @@ public class JsonSessionTest {
     }
 
     private JsonSession setupAlwaysAccepting(String playerId, EntityManager entityManager) {
-        return setupAlwaysAccepting(playerId, new HeadlessClientFactory(entityManager), resourceManagerMock, null, null);
+        EngineRunner engineRunnerMock = mock(EngineRunner.class);
+        when(engineRunnerMock.isRunningGame()).thenReturn(true);
+        return setupAlwaysAccepting(playerId, new HeadlessClientFactory(entityManager, engineRunnerMock), resourceManagerMock, null, null);
     }
 
     @Test
-    @Ignore //TODO: either remove this test or refactor EngineRunner to be a singleton that can be mocked instead of a class with static methods
     public void testEntityRegistration() {
         EntityManager entityManagerMock = mock(EntityManager.class);
         EntityRef clientEntityRefMock = mock(EntityRef.class);

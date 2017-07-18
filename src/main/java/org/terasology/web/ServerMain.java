@@ -88,7 +88,7 @@ public final class ServerMain {
         server.start();
         logger.info("Web server started on port {}!", port);
 
-        EngineRunner.runEngine(autoStart);
+        EngineRunner.getInstance().runEngine(autoStart);
 
         server.join();
     }

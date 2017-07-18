@@ -34,7 +34,7 @@ public abstract class AbstractExistingGameAction extends AbstractAction {
     }
 
     private void checkGameIsNotRunningOrLoading() throws ResourceAccessException {
-        if (gameName.equals(EngineRunner.getRunningOrLoadingGameName())) {
+        if (gameName.equals(EngineRunner.getInstance().getRunningOrLoadingGameName())) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR,
                     "This action cannot be performed on a game which is running or loading."));
         }

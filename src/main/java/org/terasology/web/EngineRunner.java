@@ -31,12 +31,18 @@ import org.terasology.web.resources.ResourceManager;
 
 public final class EngineRunner {
 
-    private static TerasologyEngine engine;
+    private static final EngineRunner INSTANCE = new EngineRunner();
+
+    private TerasologyEngine engine;
 
     private EngineRunner() {
     }
 
-    static void runEngine(boolean autoStart) {
+    public static EngineRunner getInstance() {
+        return INSTANCE;
+    }
+
+    void runEngine(boolean autoStart) {
         TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
         populateSubsystems(builder);
         engine = builder.build();
@@ -50,7 +56,7 @@ public final class EngineRunner {
         engine.run(autoStart ? new StateHeadlessSetup() : new StateEngineIdle());
     }
 
-    private static void populateSubsystems(TerasologyEngineBuilder builder) {
+    private void populateSubsystems(TerasologyEngineBuilder builder) {
         builder.add(new HeadlessGraphics())
                 .add(new HeadlessTimer())
                 .add(new HeadlessAudio())
@@ -58,16 +64,16 @@ public final class EngineRunner {
                 .add(new HibernationSubsystem());
     }
 
-    public static <T> T getFromCurrentContext(Class<T> clazz) {
+    public <T> T getFromCurrentContext(Class<T> clazz) {
         GameState state = engine.getState();
         return state == null ? engine.getFromEngineContext(clazz) : engine.getState().getContext().get(clazz);
     }
 
-    public static boolean isRunningGame() {
+    public boolean isRunningGame() {
         return engine.getState() instanceof StateIngame;
     }
 
-    public static String getRunningOrLoadingGameName() {
+    public String getRunningOrLoadingGameName() {
         GameState currentState = engine.getState();
         if (currentState instanceof StateIngame || currentState instanceof StateLoading) {
             // TODO: works but doesn't really make sense from a semantic point of view
