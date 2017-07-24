@@ -22,9 +22,13 @@ import com.google.gson.JsonSyntaxException;
 import org.terasology.config.Config;
 import org.terasology.engine.modes.GameState;
 import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.i18n.I18nMap;
+import org.terasology.i18n.gson.I18nMapTypeAdapter;
 import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
 import org.terasology.naming.Name;
+import org.terasology.naming.Version;
 import org.terasology.naming.gson.NameTypeAdapter;
+import org.terasology.naming.gson.VersionTypeAdapter;
 import org.terasology.utilities.gson.UriTypeAdapterFactory;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.authentication.AuthenticationFailedException;
@@ -58,6 +62,8 @@ public class JsonSession {
             .registerTypeAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
             .registerTypeAdapter(Name.class, new NameTypeAdapter())
+            .registerTypeAdapter(Version.class, new VersionTypeAdapter())
+            .registerTypeAdapter(I18nMap.class, new I18nMapTypeAdapter())
             .registerTypeAdapterFactory(new UriTypeAdapterFactory())
             //the following adapter is only used for the Games writable resource
             .registerTypeAdapter(AbstractAction.class, new HierarchyDeserializer<AbstractAction>("org.terasology.web.resources.games.%sGameAction"))

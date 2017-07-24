@@ -24,6 +24,8 @@ import org.terasology.engine.module.ModuleManager;
 import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.games.GamesResource;
+import org.terasology.web.resources.modules.AvailableModulesResource;
+import org.terasology.world.generator.internal.WorldGeneratorManager;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -46,6 +48,7 @@ public final class ResourceManager {
     public void initialize(TerasologyEngine gameEngine) {
         GameState gameState = gameEngine.getState();
         ModuleManager moduleManager = gameEngine.getFromEngineContext(ModuleManager.class);
+        WorldGeneratorManager worldGeneratorManager = gameEngine.getFromEngineContext(WorldGeneratorManager.class);
         Context context = gameState != null ? gameState.getContext() : null;
 
         resources = new HashMap<>();
@@ -53,11 +56,11 @@ public final class ResourceManager {
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
             registerAndPutResource(context, new GamesResource(moduleManager));
-            registerAndPutResource(context, new AvailableModulesResource());
+            registerAndPutResource(context, new AvailableModulesResource(moduleManager, worldGeneratorManager));
             registerAndPutResource(context, new OnlinePlayersResource());
         } else {
             registerAndPutResource(context, new GamesResource(moduleManager));
-            registerAndPutResource(context, new AvailableModulesResource());
+            registerAndPutResource(context, new AvailableModulesResource(moduleManager, worldGeneratorManager));
             //TODO: add server config resource
         }
         if (gameState != null) {
