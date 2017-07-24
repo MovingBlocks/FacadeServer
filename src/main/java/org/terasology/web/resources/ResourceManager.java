@@ -20,12 +20,11 @@ import org.terasology.engine.ComponentSystemManager;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.modes.GameState;
 import org.terasology.engine.modes.StateIngame;
-import org.terasology.engine.module.ModuleManager;
 import org.terasology.entitySystem.systems.ComponentSystem;
+import org.terasology.registry.InjectionHelper;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.games.GamesResource;
 import org.terasology.web.resources.modules.AvailableModulesResource;
-import org.terasology.world.generator.internal.WorldGeneratorManager;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -47,37 +46,34 @@ public final class ResourceManager {
 
     public void initialize(TerasologyEngine gameEngine) {
         GameState gameState = gameEngine.getState();
-        ModuleManager moduleManager = gameEngine.getFromEngineContext(ModuleManager.class);
-        WorldGeneratorManager worldGeneratorManager = gameEngine.getFromEngineContext(WorldGeneratorManager.class);
-        Context context = gameState != null ? gameState.getContext() : null;
+        Context context = gameState.getContext();
 
         resources = new HashMap<>();
-        registerAndPutResource(context, new EngineStateResource(gameEngine));
+        registerAndPutResource(context, new EngineStateResource());
+        registerAndPutResource(context, new GamesResource());
+        registerAndPutResource(context, new AvailableModulesResource());
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
-            registerAndPutResource(context, new GamesResource(moduleManager));
-            registerAndPutResource(context, new AvailableModulesResource(moduleManager, worldGeneratorManager));
+            registerAndPutResource(context, new GamesResource());
+            registerAndPutResource(context, new AvailableModulesResource());
             registerAndPutResource(context, new OnlinePlayersResource());
-        } else {
-            registerAndPutResource(context, new GamesResource(moduleManager));
-            registerAndPutResource(context, new AvailableModulesResource(moduleManager, worldGeneratorManager));
-            //TODO: add server config resource
         }
-        if (gameState != null) {
-            //all the resources have been re-initialize, so notify all the clients
-            updateAllClients(gameState);
-        }
+        //all the resources have been re-initialized, so notify all the clients
+        updateAllClients(gameState);
     }
 
     private void registerAndPutResource(Context context, Resource resource) {
-        if (!resources.containsValue(resource)) {
-            if (context != null && resource instanceof ComponentSystem) {
-                context.get(ComponentSystemManager.class).register((ComponentSystem) resource);
-            }
-            resources.put(resource.getName(), resource);
-        } else {
+        if (resources.containsValue(resource)) {
             throw new IllegalArgumentException("This type of resource has already been registered");
         }
+        if (resource instanceof ComponentSystem) {
+            // this will both inject fields and register event handlers
+            context.get(ComponentSystemManager.class).register((ComponentSystem) resource);
+        } else {
+            // if it's not a ComponentSystem (thus no need to receive events) only field injection is performed
+            InjectionHelper.inject(resource, context);
+        }
+        resources.put(resource.getName(), resource);
     }
 
     public <T extends Resource> T getAs(String name, Class<T> type) throws ResourceAccessException {

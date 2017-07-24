@@ -17,9 +17,11 @@ package org.terasology.web.resources;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.terasology.context.Context;
 import org.terasology.engine.GameEngine;
 import org.terasology.engine.modes.GameState;
 import org.terasology.network.Client;
+import org.terasology.registry.InjectionHelper;
 import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.StateEngineIdle;
 
@@ -42,7 +44,10 @@ public class EngineStateResourceTest {
         GameState state = new StateEngineIdle();
         when(engineMock.getState()).thenReturn(state);
         ServerAdminsManager.setAdminList(Arrays.asList("serverAdm1", "admin"));
-        engineStateResource = new EngineStateResource(engineMock);
+        Context contextMock = mock(Context.class);
+        when(contextMock.get(GameEngine.class)).thenReturn(engineMock);
+        engineStateResource = new EngineStateResource();
+        InjectionHelper.inject(engineStateResource, contextMock);
     }
 
     @Test(expected = ResourceAccessException.class)

@@ -17,6 +17,7 @@ package org.terasology.web.resources.games;
 
 import org.terasology.engine.module.ModuleManager;
 import org.terasology.network.Client;
+import org.terasology.registry.In;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.ServerAdminsManager;
@@ -28,11 +29,8 @@ import java.util.List;
 
 public class GamesResource extends ObservableReadableResource<List<GameInfo>> implements WritableResource<AbstractAction> {
 
-    private final ModuleManager moduleManager;
-
-    public GamesResource(ModuleManager moduleManager) {
-        this.moduleManager = moduleManager;
-    }
+    @In
+    private ModuleManager moduleManager;
 
     @Override
     public String getName() {

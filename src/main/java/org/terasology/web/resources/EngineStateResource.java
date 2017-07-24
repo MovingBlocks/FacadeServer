@@ -19,6 +19,7 @@ import org.terasology.engine.GameEngine;
 import org.terasology.engine.modes.StateLoading;
 import org.terasology.network.Client;
 import org.terasology.network.NetworkMode;
+import org.terasology.registry.In;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.ServerAdminsManager;
@@ -31,11 +32,8 @@ import java.util.stream.Stream;
 
 public class EngineStateResource implements ReadableResource<EngineStateMetadata>, WritableResource<String> {
 
+    @In
     private GameEngine gameEngine;
-
-    EngineStateResource(GameEngine gameEngine) {
-        this.gameEngine = gameEngine;
-    }
 
     @Override
     public String getName() {

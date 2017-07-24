@@ -36,6 +36,10 @@ import org.terasology.rendering.nui.NUIManager;
 import org.terasology.rendering.nui.internal.CanvasRenderer;
 import org.terasology.rendering.nui.internal.NUIManagerInternal;
 
+/**
+ * An engine state similar to {@link org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup} which doesn't
+ * automatically load or generate a savegame
+ */
 public class StateEngineIdle implements GameState {
 
     private EngineEntityManager entityManager;

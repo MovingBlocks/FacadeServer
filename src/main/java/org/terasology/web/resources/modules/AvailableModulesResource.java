@@ -20,6 +20,7 @@ import org.terasology.i18n.I18nMap;
 import org.terasology.module.Module;
 import org.terasology.module.ModuleMetadata;
 import org.terasology.network.Client;
+import org.terasology.registry.In;
 import org.terasology.web.resources.ReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.world.generator.internal.WorldGeneratorManager;
@@ -30,13 +31,11 @@ import java.util.stream.Stream;
 
 public class AvailableModulesResource implements ReadableResource<AvailableModulesData> {
 
+    @In
     private ModuleManager moduleManager;
-    private WorldGeneratorManager worldGeneratorManager;
 
-    public AvailableModulesResource(ModuleManager moduleManager, WorldGeneratorManager worldGeneratorManager) {
-        this.moduleManager = moduleManager;
-        this.worldGeneratorManager = worldGeneratorManager;
-    }
+    @In
+    private WorldGeneratorManager worldGeneratorManager;
 
     @Override
     public String getName() {

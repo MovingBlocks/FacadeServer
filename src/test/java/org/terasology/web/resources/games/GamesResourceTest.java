@@ -17,8 +17,10 @@ package org.terasology.web.resources.games;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.terasology.context.Context;
 import org.terasology.engine.module.ModuleManager;
 import org.terasology.network.Client;
+import org.terasology.registry.InjectionHelper;
 import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.resources.ResourceAccessException;
 
@@ -40,7 +42,10 @@ public class GamesResourceTest {
         ServerAdminsManager.setAdminList(Arrays.asList("admin1", "admin2"));
         moduleManagerMock = mock(ModuleManager.class);
         actionMock = mock(AbstractAction.class);
-        gamesResource = new GamesResource(moduleManagerMock);
+        Context contextMock = mock(Context.class);
+        when(contextMock.get(ModuleManager.class)).thenReturn(moduleManagerMock);
+        gamesResource = new GamesResource();
+        InjectionHelper.inject(gamesResource, contextMock);
     }
 
     @Test(expected = ResourceAccessException.class)
