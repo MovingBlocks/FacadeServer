@@ -29,4 +29,12 @@ public class AvailableModulesData {
         this.modules = modules;
         this.worldGenerators = worldGenerators;
     }
+
+    public List<ModuleMetadata> getModules() {
+        return modules;
+    }
+
+    public List<WorldGeneratorInfo> getWorldGenerators() {
+        return worldGenerators;
+    }
 }
