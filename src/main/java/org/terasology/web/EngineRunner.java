@@ -27,6 +27,7 @@ import org.terasology.engine.subsystem.headless.HeadlessGraphics;
 import org.terasology.engine.subsystem.headless.HeadlessInput;
 import org.terasology.engine.subsystem.headless.HeadlessTimer;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
+import org.terasology.game.Game;
 import org.terasology.web.resources.ResourceManager;
 
 public final class EngineRunner {
@@ -76,11 +77,7 @@ public final class EngineRunner {
     public String getRunningOrLoadingGameName() {
         GameState currentState = engine.getState();
         if (currentState instanceof StateIngame || currentState instanceof StateLoading) {
-            // TODO: works but doesn't really make sense from a semantic point of view
-            // TODO: it just happens that StateInGame's getLoggingPhase() implementation
-            // TODO: returns the running game's title, but maybe a getGameTitle() method
-            // TODO: would be more appropriate
-            return currentState.getLoggingPhase();
+            return currentState.getContext().get(Game.class).getName();
         }
         return null;
     }

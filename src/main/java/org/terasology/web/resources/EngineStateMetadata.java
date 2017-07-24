@@ -20,6 +20,7 @@ import org.terasology.engine.modes.GameState;
 import org.terasology.engine.modes.StateIngame;
 import org.terasology.engine.modes.StateLoading;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
+import org.terasology.game.Game;
 import org.terasology.web.StateEngineIdle;
 
 import java.util.Map;
@@ -39,8 +40,8 @@ public final class EngineStateMetadata {
             ImmutableMap.<Class<? extends GameState>, Function<GameState, EngineStateMetadata>>builder()
                     .put(StateHeadlessSetup.class, RETURN_IDLE)
                     .put(StateEngineIdle.class, RETURN_IDLE)
-                    .put(StateLoading.class, (state) -> new EngineStateMetadata(State.LOADING, state.getLoggingPhase()))
-                    .put(StateIngame.class, (state) -> new EngineStateMetadata(State.RUNNING, state.getLoggingPhase()))
+                    .put(StateLoading.class, (state) -> new EngineStateMetadata(State.LOADING, state.getContext().get(Game.class).getName()))
+                    .put(StateIngame.class, (state) -> new EngineStateMetadata(State.RUNNING, state.getContext().get(Game.class).getName()))
                     .build();
 
     private State state;
