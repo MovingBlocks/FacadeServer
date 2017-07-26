@@ -54,8 +54,6 @@ public final class ResourceManager {
         registerAndPutResource(context, new AvailableModulesResource());
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
-            registerAndPutResource(context, new GamesResource());
-            registerAndPutResource(context, new AvailableModulesResource());
             registerAndPutResource(context, new OnlinePlayersResource());
         }
         //all the resources have been re-initialized, so notify all the clients
@@ -63,7 +61,7 @@ public final class ResourceManager {
     }
 
     private void registerAndPutResource(Context context, Resource resource) {
-        if (resources.containsValue(resource)) {
+        if (resources.containsKey(resource.getName())) {
             throw new IllegalArgumentException("This type of resource has already been registered");
         }
         if (resource instanceof ComponentSystem) {
