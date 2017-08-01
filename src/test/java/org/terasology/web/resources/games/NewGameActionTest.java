@@ -51,18 +51,18 @@ import static org.mockito.Mockito.when;
 
 public class NewGameActionTest {
 
+    private static final SimpleUri DEFAULT_WORLD_GENERATOR = new SimpleUri("testModule", "testGenerator");
+
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
-
-    private NewGameAction newGameAction = new NewGameAction();
+    private PathManager pathManagerMock;
     private DependencyResolver dependencyResolverMock;
 
     @Before
     public void setUp() throws IOException {
-        PathManager pathManagerMock = mock(PathManager.class);
+        pathManagerMock = mock(PathManager.class);
         Path gamePath = tempFolder.getRoot().toPath().resolve("game1");
         when(pathManagerMock.getSavePath("game1")).thenReturn(gamePath);
-        newGameAction.setPathManager(pathManagerMock);
 
         dependencyResolverMock = mock(DependencyResolver.class);
         Module moduleMock1 = mock(Module.class);
@@ -73,15 +73,17 @@ public class NewGameActionTest {
         when(moduleMock2.getVersion()).thenReturn(new Version(2, 0, 1));
         Set<Module> moduleMockSet = new HashSet<>(Arrays.asList(moduleMock1, moduleMock2));
         when(dependencyResolverMock.resolve(any())).thenReturn(new ResolutionResult(true, moduleMockSet));
-        newGameAction.setDependencyResolver(dependencyResolverMock);
+    }
+
+    private void performAction(String name, String seed, List<Name> modules, SimpleUri worldGenerator) throws ResourceAccessException {
+        NewGameAction newGameAction = new NewGameAction(name, seed, modules, worldGenerator, dependencyResolverMock);
+        newGameAction.perform(pathManagerMock, null);
     }
 
     @Test
     public void testNewOk() throws ResourceAccessException, IOException {
         List<Name> inputModuleList = Arrays.asList(new Name("a"), new Name("b"));
-        newGameAction.setFields("game1", "gameSeed", inputModuleList, new SimpleUri("testModule", "testGenerator"));
-
-        newGameAction.perform(null);
+        performAction("game1", "gameSeed", inputModuleList, DEFAULT_WORLD_GENERATOR);
         verify(dependencyResolverMock, times(1)).resolve(inputModuleList);
 
         Path gamePath = tempFolder.getRoot().toPath().resolve("game1");
@@ -102,26 +104,22 @@ public class NewGameActionTest {
 
     @Test(expected = ResourceAccessException.class)
     public void testNewEmptyName() throws ResourceAccessException {
-        newGameAction.setFields("", "gameSeed", Collections.emptyList(), new SimpleUri("testModule", "testGenerator"));
-        newGameAction.perform(null);
+        performAction("", "gameSeed", Collections.emptyList(), DEFAULT_WORLD_GENERATOR);
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testNewEmptySeed() throws ResourceAccessException {
-        newGameAction.setFields("game1", "", Collections.emptyList(), new SimpleUri("testModule", "testGenerator"));
-        newGameAction.perform(null);
+        performAction("game1", "", Collections.emptyList(), DEFAULT_WORLD_GENERATOR);
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testNewNullModules() throws ResourceAccessException {
-        newGameAction.setFields("game1", "gameSeed", null, new SimpleUri("testModule", "testGenerator"));
-        newGameAction.perform(null);
+        performAction("game1", "gameSeed", null, DEFAULT_WORLD_GENERATOR);
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testNewNullWorldGenerator() throws ResourceAccessException {
-        newGameAction.setFields("game1", "gameSeed", Collections.emptyList(), null);
-        newGameAction.perform(null);
+        performAction("game1", "gameSeed", Collections.emptyList(), null);
     }
 
 }

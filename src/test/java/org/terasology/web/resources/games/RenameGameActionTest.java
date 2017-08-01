@@ -38,11 +38,11 @@ public class RenameGameActionTest {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private RenameGameAction renameGameAction = new RenameGameAction();
+    private PathManager pathManagerMock;
 
     @Before
     public void setUp() throws IOException {
-        PathManager pathManagerMock = mock(PathManager.class);
+        pathManagerMock = mock(PathManager.class);
         Path game1Path = tempFolder.getRoot().toPath().resolve("game1");
         Path game1NewPath = tempFolder.getRoot().toPath().resolve("game1New");
         Path game2Path = tempFolder.getRoot().toPath().resolve("game2");
@@ -57,7 +57,6 @@ public class RenameGameActionTest {
         GameManifest gameManifest = new GameManifest("game1", "testSeed", 0);
         GameManifest.save(game1Path.resolve(GameManifest.DEFAULT_FILE_NAME), gameManifest);
         Files.createDirectory(game3Path);
-        renameGameAction.setPathManager(pathManagerMock);
     }
 
     @Test
@@ -68,8 +67,7 @@ public class RenameGameActionTest {
         assertTrue(Files.exists(oldPath));
         assertFalse(Files.exists(newPath));
 
-        renameGameAction.setNewGameName("game1New");
-        renameGameAction.perform("game1");
+        new RenameGameAction("game1New").perform(pathManagerMock, "game1");
 
         assertFalse(Files.exists(oldPath));
         assertTrue(Files.exists(newPath));
@@ -80,19 +78,16 @@ public class RenameGameActionTest {
 
     @Test(expected = ResourceAccessException.class)
     public void testRenameNotExisting() throws ResourceAccessException {
-        renameGameAction.setNewGameName("game2New");
-        renameGameAction.perform("game2");
+        new RenameGameAction("game2New").perform(pathManagerMock, "game2");
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testRenameConflict() throws ResourceAccessException {
-        renameGameAction.setNewGameName("game3");
-        renameGameAction.perform("game1");
+        new RenameGameAction("game3").perform(pathManagerMock, "game1");
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testRenameEmptyName() throws ResourceAccessException {
-        renameGameAction.setNewGameName("");
-        renameGameAction.perform("game1");
+        new RenameGameAction("").perform(pathManagerMock, "game1");
     }
 }

@@ -37,30 +37,29 @@ public class DeleteGameActionTest {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private DeleteGameAction deleteGameAction = new DeleteGameAction();
+    private PathManager pathManagerMock;
 
     @Before
     public void setUp() throws IOException {
-        PathManager pathManagerMock = mock(PathManager.class);
+        pathManagerMock = mock(PathManager.class);
         Path game1Path = tempFolder.getRoot().toPath().resolve("game1");
         Path game2Path = tempFolder.getRoot().toPath().resolve("game2");
         when(pathManagerMock.getSavePath("game1")).thenReturn(game1Path);
         when(pathManagerMock.getSavePath("game2")).thenReturn(game2Path);
         Files.createDirectory(game1Path);
         Files.createFile(game1Path.resolve(Paths.get("someFile")));
-        deleteGameAction.setPathManager(pathManagerMock);
     }
 
     @Test
     public void testDeleteOk() throws ResourceAccessException {
         Path gamePath = tempFolder.getRoot().toPath().resolve("game1");
         assertTrue(Files.exists(gamePath));
-        deleteGameAction.perform("game1");
+        new DeleteGameAction().perform(pathManagerMock, "game1");
         assertFalse(Files.exists(gamePath));
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testDeleteNotExisting() throws ResourceAccessException {
-        deleteGameAction.perform("game2");
+        new DeleteGameAction().perform(pathManagerMock, "game2");
     }
 }
