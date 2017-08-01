@@ -25,6 +25,7 @@ import org.terasology.registry.InjectionHelper;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.games.GamesResource;
 import org.terasology.web.resources.modules.AvailableModulesResource;
+import org.terasology.web.resources.modules.ModuleInstallerResource;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +53,7 @@ public final class ResourceManager {
         registerAndPutResource(context, new EngineStateResource());
         registerAndPutResource(context, new GamesResource());
         registerAndPutResource(context, new AvailableModulesResource());
+        registerAndPutResource(context, new ModuleInstallerResource());
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
             registerAndPutResource(context, new OnlinePlayersResource());
