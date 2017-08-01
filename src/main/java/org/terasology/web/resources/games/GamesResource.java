@@ -16,6 +16,7 @@
 package org.terasology.web.resources.games;
 
 import org.terasology.engine.module.ModuleManager;
+import org.terasology.engine.paths.PathManager;
 import org.terasology.network.Client;
 import org.terasology.registry.In;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
@@ -27,7 +28,7 @@ import org.terasology.web.resources.WritableResource;
 
 import java.util.List;
 
-public class GamesResource extends ObservableReadableResource<List<GameInfo>> implements WritableResource<AbstractAction> {
+public class GamesResource extends ObservableReadableResource<List<GameInfo>> implements WritableResource<GameAction> {
 
     @In
     private ModuleManager moduleManager;
@@ -43,14 +44,14 @@ public class GamesResource extends ObservableReadableResource<List<GameInfo>> im
     }
 
     @Override
-    public Class<AbstractAction> getDataType() {
-        return AbstractAction.class;
+    public Class<GameAction> getDataType() {
+        return GameAction.class;
     }
 
     @Override
-    public void write(Client requestingClient, AbstractAction data) throws ResourceAccessException {
+    public void write(Client requestingClient, GameAction data) throws ResourceAccessException {
         ServerAdminsManager.checkClientIsServerAdmin(requestingClient.getId());
-        data.perform(moduleManager);
+        data.perform(PathManager.getInstance(), moduleManager);
         notifyChangedAll();
     }
 

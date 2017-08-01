@@ -18,6 +18,7 @@ package org.terasology.web.resources.games;
 import org.terasology.engine.SimpleUri;
 import org.terasology.engine.TerasologyConstants;
 import org.terasology.engine.module.ModuleManager;
+import org.terasology.engine.paths.PathManager;
 import org.terasology.game.GameManifest;
 import org.terasology.module.DependencyResolver;
 import org.terasology.module.Module;
@@ -36,7 +37,7 @@ import java.util.List;
 import static org.terasology.web.resources.InputCheckUtils.checkNotNull;
 import static org.terasology.web.resources.InputCheckUtils.checkNotNullOrEmpty;
 
-public class NewGameAction extends AbstractAction {
+public class NewGameAction implements GameAction {
 
     private String gameName;
     private String seed;
@@ -45,20 +46,31 @@ public class NewGameAction extends AbstractAction {
 
     private transient DependencyResolver dependencyResolver;
 
+    public NewGameAction() {
+    }
+
+    NewGameAction(String gameName, String seed, List<Name> modules, SimpleUri worldGenerator, DependencyResolver dependencyResolver) {
+        this.gameName = gameName;
+        this.seed = seed;
+        this.modules = modules;
+        this.worldGenerator = worldGenerator;
+        this.dependencyResolver = dependencyResolver;
+    }
+
     @Override
-    public void perform(ModuleManager moduleManager) throws ResourceAccessException {
+    public void perform(PathManager pathManager, ModuleManager moduleManager) throws ResourceAccessException {
         checkNotNullOrEmpty(gameName, "A name for the new game must be specified.");
         checkNotNullOrEmpty(seed, "A seed must be specified.");
         checkNotNull(modules, "A list of modules must be specified");
         checkNotNull(worldGenerator, "A world generator must be specified.");
-        if (Files.exists(getPathManager().getSavePath(gameName))) {
+        if (Files.exists(pathManager.getSavePath(gameName))) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.CONFLICT, "A game with the specified name already exists"));
         }
         if (dependencyResolver == null) {
             dependencyResolver = new DependencyResolver(moduleManager.getRegistry());
         }
         GameManifest newGameManifest = buildGameManifest();
-        Path saveDir = getPathManager().getSavePath(newGameManifest.getTitle());
+        Path saveDir = pathManager.getSavePath(newGameManifest.getTitle());
         Path saveFile = saveDir.resolve(GameManifest.DEFAULT_FILE_NAME);
         try {
             Files.createDirectory(saveDir);
@@ -86,16 +98,5 @@ public class NewGameAction extends AbstractAction {
         newGameManifest.addWorld(worldInfo);
 
         return newGameManifest;
-    }
-
-    void setFields(String fGameName, String fSeed, List<Name> fModules, SimpleUri fWorldGenerator) {
-        gameName = fGameName;
-        seed = fSeed;
-        modules = fModules;
-        worldGenerator = fWorldGenerator;
-    }
-
-    void setDependencyResolver(DependencyResolver dependencyResolver) {
-        this.dependencyResolver = dependencyResolver;
     }
 }

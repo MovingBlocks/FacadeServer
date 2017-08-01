@@ -38,11 +38,11 @@ public class BackupGameActionTest {
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
 
-    private BackupGameAction backupGameAction = new BackupGameAction();
+    private PathManager pathManagerMock;
 
     @Before
     public void setUp() throws IOException {
-        PathManager pathManagerMock = mock(PathManager.class);
+        pathManagerMock = mock(PathManager.class);
         Path game1Path = tempFolder.getRoot().toPath().resolve("game1");
         Path game2Path = tempFolder.getRoot().toPath().resolve("game2");
         when(pathManagerMock.getSavePath("game1")).thenReturn(game1Path);
@@ -52,7 +52,6 @@ public class BackupGameActionTest {
         Files.createFile(game1Path.resolve("someFile"));
         GameManifest gameManifest = new GameManifest("game1", "", 0);
         GameManifest.save(game1Path.resolve(GameManifest.DEFAULT_FILE_NAME), gameManifest);
-        backupGameAction.setPathManager(pathManagerMock);
     }
 
     @Test
@@ -64,7 +63,7 @@ public class BackupGameActionTest {
         assertTrue(Files.exists(gamePath));
         assertFalse(Files.exists(backupPath));
 
-        backupGameAction.perform("game1");
+        new BackupGameAction().perform(pathManagerMock, "game1");
 
         assertTrue(Files.exists(gamePath));
         assertTrue(Files.exists(backupPath));
@@ -74,6 +73,6 @@ public class BackupGameActionTest {
 
     @Test(expected = ResourceAccessException.class)
     public void testBackupNotExisting() throws ResourceAccessException {
-        backupGameAction.perform("game2");
+        new BackupGameAction().perform(pathManagerMock, "game2");
     }
 }

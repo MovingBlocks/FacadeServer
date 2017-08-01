@@ -19,6 +19,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.terasology.context.Context;
 import org.terasology.engine.module.ModuleManager;
+import org.terasology.engine.paths.PathManager;
 import org.terasology.network.Client;
 import org.terasology.registry.InjectionHelper;
 import org.terasology.web.ServerAdminsManager;
@@ -34,14 +35,14 @@ import static org.mockito.Mockito.when;
 public class GamesResourceTest {
 
     private ModuleManager moduleManagerMock;
-    private AbstractAction actionMock;
+    private GameAction actionMock;
     private GamesResource gamesResource;
 
     @Before
     public void setUp() {
         ServerAdminsManager.setAdminList(Arrays.asList("admin1", "admin2"));
         moduleManagerMock = mock(ModuleManager.class);
-        actionMock = mock(AbstractAction.class);
+        actionMock = mock(GameAction.class);
         Context contextMock = mock(Context.class);
         when(contextMock.get(ModuleManager.class)).thenReturn(moduleManagerMock);
         gamesResource = new GamesResource();
@@ -56,7 +57,7 @@ public class GamesResourceTest {
     @Test
     public void testWriteOk() throws ResourceAccessException {
         gamesResource.write(mockClient("admin2"), actionMock);
-        verify(actionMock, times(1)).perform(moduleManagerMock);
+        verify(actionMock, times(1)).perform(PathManager.getInstance(), moduleManagerMock);
     }
 
     private Client mockClient(String clientId) {
