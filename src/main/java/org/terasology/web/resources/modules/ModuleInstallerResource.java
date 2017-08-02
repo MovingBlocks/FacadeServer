@@ -28,10 +28,14 @@ import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.WritableResource;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class ModuleInstallerResource extends ObservableReadableResource<String> implements WritableResource<Name[]> {
 
@@ -39,7 +43,7 @@ public class ModuleInstallerResource extends ObservableReadableResource<String> 
     private ModuleManager moduleManager;
 
     private ExecutorService installExecutor = Executors.newSingleThreadExecutor();
-    private String status = "Idle";
+    private String status = "Ready";
 
     @Override
     public String getName() {
@@ -67,7 +71,7 @@ public class ModuleInstallerResource extends ObservableReadableResource<String> 
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
         }
         installExecutor.submit(() -> setStatus("Initializing installation"));
-        installExecutor.submit(moduleManager.getInstallManager().createInstaller(allModules, new MultiFileTransferProgressListener() {
+        Future<List<Module>> installResult = installExecutor.submit(moduleManager.getInstallManager().createInstaller(allModules, new MultiFileTransferProgressListener() {
             @Override
             public void onSizeMetadataProgress(int index, int totalUrls) {
                 setStatus(String.format("Retrieving file size information - %d of %d", index, totalUrls));
@@ -79,8 +83,17 @@ public class ModuleInstallerResource extends ObservableReadableResource<String> 
                         completedFiles, nFiles, totalTransferredBytes, totalBytes, globalPercentage));
             }
         }));
-        // the executor is single-threaded and tasks run sequentially, so the following one sets the status back to "Idle" after the install finishes
-        installExecutor.submit(() -> setStatus("Idle"));
+        // the executor is single-threaded and tasks run sequentially, so the following one sets the status message after the install finishes
+        installExecutor.submit(() -> {
+            String newStatus = "Ready. Last operation result: ";
+            try {
+                List<Module> installedModules = installResult.get();
+                newStatus += "successfully installed " + installedModules.size() + " modules.";
+            } catch (CancellationException | ExecutionException | InterruptedException ex) {
+                newStatus += "installation failed for this reason: " + ex.getMessage();
+            }
+            setStatus(newStatus);
+        });
     }
 
     private void setStatus(String value) {
