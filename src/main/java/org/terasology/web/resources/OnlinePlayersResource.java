@@ -52,7 +52,7 @@ public class OnlinePlayersResource extends ObservableReadableResource<List<Strin
     }
 
     @Override
-    public List<String> read(EntityRef clientEntity) {
+    public List<String> read(Client requestingClient) {
         List<String> result = new ArrayList<>();
         for (Client client: networkSystem.getPlayers()) {
             result.add(client.getName());

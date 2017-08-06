@@ -15,11 +15,11 @@
  */
 package org.terasology.web;
 
-import org.terasology.context.Context;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
 import org.terasology.engine.modes.GameState;
 import org.terasology.engine.modes.StateIngame;
+import org.terasology.engine.modes.StateLoading;
 import org.terasology.engine.modes.StateMainMenu;
 import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
 import org.terasology.engine.subsystem.headless.HeadlessAudio;
@@ -27,31 +27,37 @@ import org.terasology.engine.subsystem.headless.HeadlessGraphics;
 import org.terasology.engine.subsystem.headless.HeadlessInput;
 import org.terasology.engine.subsystem.headless.HeadlessTimer;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
+import org.terasology.game.Game;
 import org.terasology.web.resources.ResourceManager;
 
 public final class EngineRunner {
 
-    private static TerasologyEngine engine;
+    private static final EngineRunner INSTANCE = new EngineRunner();
+
+    private TerasologyEngine engine;
 
     private EngineRunner() {
     }
 
-    static void runEngine() {
+    public static EngineRunner getInstance() {
+        return INSTANCE;
+    }
+
+    void runEngine(boolean autoStart) {
         TerasologyEngineBuilder builder = new TerasologyEngineBuilder();
         populateSubsystems(builder);
         engine = builder.build();
         engine.subscribeToStateChange(() -> {
-            GameState state = engine.getState();
-            if (state instanceof StateIngame) {
-                ResourceManager.getInstance().initialize(state.getContext());
-            } else if (state instanceof StateMainMenu) {
+            if (engine.getState() instanceof StateMainMenu) {
                 engine.shutdown();
+            } else {
+                ResourceManager.getInstance().initialize(engine);
             }
         });
-        engine.run(new StateHeadlessSetup());
+        engine.run(autoStart ? new StateHeadlessSetup() : new StateEngineIdle());
     }
 
-    private static void populateSubsystems(TerasologyEngineBuilder builder) {
+    private void populateSubsystems(TerasologyEngineBuilder builder) {
         builder.add(new HeadlessGraphics())
                 .add(new HeadlessTimer())
                 .add(new HeadlessAudio())
@@ -59,8 +65,21 @@ public final class EngineRunner {
                 .add(new HibernationSubsystem());
     }
 
-    public static Context getContext() {
-        return engine.getState().getContext();
+    public <T> T getFromCurrentContext(Class<T> clazz) {
+        GameState state = engine.getState();
+        return state == null ? engine.getFromEngineContext(clazz) : engine.getState().getContext().get(clazz);
+    }
+
+    public boolean isRunningGame() {
+        return engine.getState() instanceof StateIngame;
+    }
+
+    public String getRunningOrLoadingGameName() {
+        GameState currentState = engine.getState();
+        if (currentState instanceof StateIngame || currentState instanceof StateLoading) {
+            return currentState.getContext().get(Game.class).getName();
+        }
+        return null;
     }
 
 }

@@ -13,13 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.games;
 
-import org.terasology.network.Client;
+import org.terasology.engine.module.ModuleManager;
+import org.terasology.engine.paths.PathManager;
+import org.terasology.web.resources.ResourceAccessException;
 
-public interface WritableResource<T> extends Resource {
+public interface GameAction {
 
-    Class<T> getDataType();
-
-    void write(Client requestingClient, T data) throws ResourceAccessException;
+    void perform(PathManager pathManager, ModuleManager moduleManager) throws ResourceAccessException;
 }

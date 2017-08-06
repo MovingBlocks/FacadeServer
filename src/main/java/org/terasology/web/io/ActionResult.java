@@ -28,7 +28,9 @@ public class ActionResult {
         BAD_REQUEST,
         UNAUTHORIZED,
         ACTION_NOT_ALLOWED,
-        NOT_FOUND
+        NOT_FOUND,
+        GENERIC_ERROR,
+        CONFLICT
     }
 
     private Status status;

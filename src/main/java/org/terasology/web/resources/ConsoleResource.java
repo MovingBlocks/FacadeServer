@@ -21,6 +21,7 @@ import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.console.Console;
 import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
+import org.terasology.network.Client;
 import org.terasology.network.ClientComponent;
 import org.terasology.registry.In;
 
@@ -49,7 +50,7 @@ public class ConsoleResource extends EventEmittingResource<Message> implements D
     }
 
     @Override
-    public void write(EntityRef clientEntity, String data) {
-        console.execute(data, clientEntity);
+    public void write(Client requestingClient, String data) {
+        console.execute(data, requestingClient.getEntity());
     }
 }

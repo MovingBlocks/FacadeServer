@@ -20,27 +20,39 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 import org.terasology.config.Config;
+import org.terasology.engine.modes.GameState;
 import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.i18n.I18nMap;
+import org.terasology.i18n.gson.I18nMapTypeAdapter;
 import org.terasology.identity.storageServiceClient.BigIntegerBase64Serializer;
-import org.terasology.network.Client;
+import org.terasology.naming.Name;
+import org.terasology.naming.Version;
+import org.terasology.naming.gson.NameTypeAdapter;
+import org.terasology.naming.gson.VersionTypeAdapter;
+import org.terasology.utilities.gson.UriTypeAdapterFactory;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.AuthenticationHandshakeHandlerImpl;
 import org.terasology.web.authentication.ClientAuthenticationMessage;
 import org.terasology.web.authentication.HandshakeHello;
-import org.terasology.web.client.AnonymousHeadlessClient;
+import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.io.gsonUtils.ByteArrayBase64Serializer;
+import org.terasology.web.io.gsonUtils.HierarchyDeserializer;
 import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
+import org.terasology.web.resources.EngineStateChangeObserver;
 import org.terasology.web.resources.EventEmittingResource;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.ResourceManager;
 import org.terasology.web.resources.WritableResource;
+import org.terasology.web.resources.games.GameAction;
 
 import java.math.BigInteger;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.BiConsumer;
 
 public class JsonSession {
@@ -49,14 +61,22 @@ public class JsonSession {
             .registerTypeAdapterFactory(ValidatorTypeAdapterFactory.getInstance())
             .registerTypeAdapter(BigInteger.class, BigIntegerBase64Serializer.getInstance())
             .registerTypeAdapter(byte[].class, ByteArrayBase64Serializer.getInstance())
+            .registerTypeAdapter(Name.class, new NameTypeAdapter())
+            .registerTypeAdapter(Version.class, new VersionTypeAdapter())
+            .registerTypeAdapter(I18nMap.class, new I18nMapTypeAdapter())
+            .registerTypeAdapterFactory(new UriTypeAdapterFactory())
+            //the following adapter is only used for the Games writable resource
+            .registerTypeAdapter(GameAction.class, new HierarchyDeserializer<GameAction>("org.terasology.web.resources.games.%sGameAction"))
             .create();
+    private static Set<JsonSession> allSessions = new HashSet<>();
 
     private final AuthenticationHandshakeHandler authHandler;
-    private final HeadlessClientFactory headlessClientFactory;
     private final ResourceManager resourceManager;
     private final JsonSessionResourceObserver resourceObserver;
 
-    private Client client;
+    private HeadlessClientFactory headlessClientFactory;
+    private HeadlessClient client;
+    private EngineStateChangeObserver engineStateObserver;
 
     JsonSession(AuthenticationHandshakeHandler authHandler, HeadlessClientFactory headlessClientFactory, ResourceManager resourceManager) {
         this.authHandler = authHandler;
@@ -64,14 +84,35 @@ public class JsonSession {
         this.resourceManager = resourceManager;
         this.resourceObserver = new JsonSessionResourceObserver(this);
         this.client = headlessClientFactory.connectNewAnonymousHeadlessClient();
+        this.engineStateObserver = new EngineStateChangeObserver(resourceObserver, this::handleEngineStateChanged);
         setResourceObservers(); //observe the notifications sent for the anonymous client
+        allSessions.add(this);
     }
 
     public JsonSession() {
-        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getContext().get(Config.class).getSecurity()),
-                new HeadlessClientFactory(EngineRunner.getContext().get(EntityManager.class)), ResourceManager.getInstance());
+        this(new AuthenticationHandshakeHandlerImpl(EngineRunner.getInstance().getFromCurrentContext(Config.class).getSecurity()),
+                new HeadlessClientFactory(EngineRunner.getInstance().getFromCurrentContext(EntityManager.class)), ResourceManager.getInstance());
     }
 
+    public static void disconnectAllClients() {
+        for (JsonSession session: allSessions) {
+            session.client.disconnect();
+        }
+    }
+
+    private void handleEngineStateChanged(GameState newEngineState) {
+        headlessClientFactory = new HeadlessClientFactory(newEngineState.getContext().get(EntityManager.class));
+        removeResourceObservers();
+        client.disconnect();
+        if (isAuthenticated()) {
+            client = headlessClientFactory.connectNewHeadlessClient(client.getId());
+        } else {
+            client = headlessClientFactory.connectNewAnonymousHeadlessClient();
+        }
+        setResourceObservers();
+    }
+
+    @SuppressWarnings("unchecked")
     private void setResourceObservers() {
         for (ObservableReadableResource observableResource: resourceManager.getAll(ObservableReadableResource.class)) {
             observableResource.setObserver(client.getEntity(), resourceObserver);
@@ -79,6 +120,7 @@ public class JsonSession {
         for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
             eventResource.setObserver(client.getEntity(), resourceObserver);
         }
+        ResourceManager.getInstance().addEngineStateChangeObserver(engineStateObserver);
     }
 
     private void removeResourceObservers() {
@@ -88,6 +130,7 @@ public class JsonSession {
         for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
             eventResource.removeObserver(client.getEntity());
         }
+        ResourceManager.getInstance().removeEngineStateChangeObserver(engineStateObserver);
     }
 
     public void setReadableResourceObserver(BiConsumer<String, JsonElement> observer) {
@@ -99,21 +142,21 @@ public class JsonSession {
     }
 
     public boolean isAuthenticated() {
-        return client != null && !(client instanceof AnonymousHeadlessClient);
+        return client != null && !client.isAnonymous();
     }
 
     public ActionResult initAuthentication() {
-        if (isAuthenticated()) {
+        /*if (isAuthenticated()) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
-        }
+        }*/
         HandshakeHello serverHello = authHandler.initServerHello();
         return new ActionResult(GSON.toJsonTree(serverHello));
     }
 
     public ActionResult finishAuthentication(JsonElement clientMessage) {
-        if (isAuthenticated()) {
+        /*if (isAuthenticated()) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
-        }
+        }*/
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);
             byte[] serverVerification = authHandler.authenticate(clientAuthentication);
@@ -134,38 +177,37 @@ public class JsonSession {
         removeResourceObservers();
         client.disconnect();
         client = null;
+        allSessions.remove(this);
     }
 
     JsonElement serializeEvent(Object eventData) {
         return GSON.toJsonTree(eventData);
     }
 
-    JsonElement readResource(ReadableResource resource) {
-        return GSON.toJsonTree(resource.read(client.getEntity()));
+    JsonElement readResource(ReadableResource resource) throws ResourceAccessException {
+        return GSON.toJsonTree(resource.read(client));
     }
 
     public ActionResult readResource(String resourceName) {
-        ReadableResource resource;
         try {
-            resource = resourceManager.getAs(resourceName, ReadableResource.class);
+            return new ActionResult(readResource(resourceManager.getAs(resourceName, ReadableResource.class)));
         } catch (ResourceAccessException ex) {
             return ex.getResultToSend();
         }
-        return new ActionResult(readResource(resource));
     }
 
+    @SuppressWarnings("unchecked")
     public ActionResult writeResource(String resourceName, JsonElement data) {
         if (!isAuthenticated()) {
             return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to resources.");
         }
-        WritableResource resource;
         try {
-            resource = resourceManager.getAs(resourceName, WritableResource.class);
+            WritableResource resource = resourceManager.getAs(resourceName, WritableResource.class);
+            resource.write(client, GSON.fromJson(data, resource.getDataType()));
+            return ActionResult.OK;
         } catch (ResourceAccessException ex) {
             return ex.getResultToSend();
         }
-        resource.write(client.getEntity(), GSON.fromJson(data, resource.getDataType()));
-        return ActionResult.OK;
     }
 
 }

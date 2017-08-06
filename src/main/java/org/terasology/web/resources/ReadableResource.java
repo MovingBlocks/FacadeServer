@@ -15,9 +15,9 @@
  */
 package org.terasology.web.resources;
 
-import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.network.Client;
 
 public interface ReadableResource<T> extends Resource {
 
-    T read(EntityRef clientEntity);
+    T read(Client requestingClient) throws ResourceAccessException;
 }

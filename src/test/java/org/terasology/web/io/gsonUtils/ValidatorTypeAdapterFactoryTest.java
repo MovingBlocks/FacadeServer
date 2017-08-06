@@ -31,31 +31,6 @@ public class ValidatorTypeAdapterFactoryTest {
             .registerTypeAdapterFactory(ValidatorTypeAdapterFactory.getInstance())
             .create();
 
-    private static final class ValidableMock implements Validable {
-        private String data;
-        private boolean mustThrow;
-
-        private ValidableMock(String data, boolean mustThrow) {
-            this.data = data;
-            this.mustThrow = mustThrow;
-        }
-
-        @Override
-        public void validate() throws InvalidClientMessageException {
-            if (mustThrow) {
-                throw new InvalidClientMessageException("");
-            }
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (other instanceof ValidableMock) {
-                return ((ValidableMock) other).data.equals(data) && ((ValidableMock) other).mustThrow == mustThrow;
-            }
-            return false;
-        }
-    }
-
     private ValidableMock alwaysValid;
     private ValidableMock alwaysInvalid;
     private JsonObject alwaysValidSerialized;
@@ -92,4 +67,33 @@ public class ValidatorTypeAdapterFactoryTest {
         gson.fromJson(alwaysInvalidSerialized, ValidableMock.class);
     }
 
+    private static final class ValidableMock implements Validable {
+        private String data;
+        private boolean mustThrow;
+
+        private ValidableMock(String data, boolean mustThrow) {
+            this.data = data;
+            this.mustThrow = mustThrow;
+        }
+
+        @Override
+        public void validate() throws InvalidClientMessageException {
+            if (mustThrow) {
+                throw new InvalidClientMessageException("");
+            }
+        }
+
+        @Override
+        public boolean equals(Object other) {
+            if (other instanceof ValidableMock) {
+                return ((ValidableMock) other).data.equals(data) && ((ValidableMock) other).mustThrow == mustThrow;
+            }
+            return false;
+        }
+
+        @Override
+        public int hashCode() {
+            return data.hashCode() + (mustThrow ? 0 : 1);
+        }
+    }
 }

@@ -19,70 +19,42 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.Event;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.network.internal.AbstractClient;
-import org.terasology.rendering.nui.Color;
+import org.terasology.network.Client;
 import org.terasology.rendering.world.viewDistance.ViewDistance;
 import org.terasology.world.chunks.Chunk;
 
-public class HeadlessClient extends AbstractClient {
+public interface HeadlessClient extends Client {
 
-    private String id;
+    void connect(EntityManager entityManager);
+    boolean isAnonymous();
 
-    public HeadlessClient(String id) {
-        this.id = id;
-    }
-
-    void connect(EntityManager entityManager) {
-        createEntity(id, Color.BLACK, entityManager);
+    @Override
+    default void onChunkRelevant(Vector3i pos, Chunk chunk) {
     }
 
     @Override
-    public void onChunkRelevant(Vector3i pos, Chunk chunk) {
-
+    default void onChunkIrrelevant(Vector3i pos) {
     }
 
     @Override
-    public String getName() {
-        return id; //TODO temporary
+    default void update(boolean netTick) {
     }
 
     @Override
-    public String getId() {
-        return id;
+    default void send(Event event, EntityRef target) {
     }
 
     @Override
-    public Color getColor() {
-        return Color.BLACK; //TODO temporary default
-    }
-
-    @Override
-    public void onChunkIrrelevant(Vector3i pos) {
-
-    }
-
-    @Override
-    public void update(boolean netTick) {
-
-    }
-
-    @Override
-    public void send(Event event, EntityRef target) {
-
-    }
-
-    @Override
-    public ViewDistance getViewDistance() {
+    default ViewDistance getViewDistance() {
         return ViewDistance.LEGALLY_BLIND;
     }
 
     @Override
-    public boolean isLocal() {
+    default boolean isLocal() {
         return false;
     }
 
     @Override
-    public void setViewDistanceMode(ViewDistance viewDistance) {
-
+    default void setViewDistanceMode(ViewDistance viewDistance) {
     }
 }

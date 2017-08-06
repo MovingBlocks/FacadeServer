@@ -17,12 +17,13 @@ package org.terasology.web.io;
 
 import com.google.gson.JsonElement;
 import org.terasology.web.resources.EventEmittingResource;
-import org.terasology.web.resources.ObservableReadableResource;
+import org.terasology.web.resources.ReadableResource;
+import org.terasology.web.resources.ResourceAccessException;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
-class JsonSessionResourceObserver implements Consumer<ObservableReadableResource>, BiConsumer<EventEmittingResource, Object> {
+class JsonSessionResourceObserver implements Consumer<ReadableResource>, BiConsumer<EventEmittingResource, Object> {
 
     private JsonSession session;
     private BiConsumer<String, JsonElement> readableResourceObserver;
@@ -42,9 +43,15 @@ class JsonSessionResourceObserver implements Consumer<ObservableReadableResource
 
     //for readable resource updates
     @Override
-    public void accept(ObservableReadableResource resource) {
+    public void accept(ReadableResource resource) {
         if (readableResourceObserver != null) {
-            readableResourceObserver.accept(resource.getName(), session.readResource(resource));
+            JsonElement newData;
+            try {
+                newData = session.readResource(resource);
+            } catch (ResourceAccessException ex) {
+                return;
+            }
+            readableResourceObserver.accept(resource.getName(), newData);
         }
     }
 
