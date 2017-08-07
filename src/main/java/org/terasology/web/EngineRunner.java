@@ -48,10 +48,11 @@ public final class EngineRunner {
         populateSubsystems(builder);
         engine = builder.build();
         engine.subscribeToStateChange(() -> {
+            ResourceManager.getInstance().initialize(engine);
             if (engine.getState() instanceof StateMainMenu) {
                 engine.shutdown();
-            } else {
-                ResourceManager.getInstance().initialize(engine);
+            } else if (engine.getState() instanceof StateIngame) {
+                // TODO: add event listeners for onConnected to add the first connected client to the admin list if it's empty
             }
         });
         engine.run(autoStart ? new StateHeadlessSetup() : new StateEngineIdle());

@@ -31,6 +31,7 @@ import org.terasology.naming.gson.NameTypeAdapter;
 import org.terasology.naming.gson.VersionTypeAdapter;
 import org.terasology.utilities.gson.UriTypeAdapterFactory;
 import org.terasology.web.EngineRunner;
+import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.AuthenticationHandshakeHandlerImpl;
@@ -203,6 +204,9 @@ public class JsonSession {
         }
         try {
             WritableResource resource = resourceManager.getAs(resourceName, WritableResource.class);
+            if (resource.writeIsAdminRestricted()) {
+                ServerAdminsManager.checkClientIsServerAdmin(client.getId());
+            }
             resource.write(client, GSON.fromJson(data, resource.getDataType()));
             return ActionResult.OK;
         } catch (ResourceAccessException ex) {

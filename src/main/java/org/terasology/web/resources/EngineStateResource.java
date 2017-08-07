@@ -22,7 +22,6 @@ import org.terasology.network.NetworkMode;
 import org.terasology.registry.In;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
-import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.StateEngineIdle;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.io.JsonSession;
@@ -51,10 +50,14 @@ public class EngineStateResource implements ReadableResource<EngineStateMetadata
     }
 
     @Override
+    public boolean writeIsAdminRestricted() {
+        return true;
+    }
+
+    @Override
     public void write(Client requestingClient, String data) throws ResourceAccessException {
         // if the supplied string is a savegame name, the engine will switch to run this game;
         // if it's empty, it will switch to the idle state.
-        ServerAdminsManager.checkClientIsServerAdmin(requestingClient.getId());
         JsonSession.disconnectAllClients();
         if (data == null || data.length() == 0) {
             gameEngine.changeState(new StateEngineIdle());
