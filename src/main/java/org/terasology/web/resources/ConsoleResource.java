@@ -50,6 +50,11 @@ public class ConsoleResource extends EventEmittingResource<Message> implements D
     }
 
     @Override
+    public boolean writeRequiresAuthentication() {
+        return true;
+    }
+
+    @Override
     public boolean writeIsAdminRestricted() {
         return false;
     }

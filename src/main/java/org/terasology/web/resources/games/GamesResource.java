@@ -48,6 +48,11 @@ public class GamesResource extends ObservableReadableResource<List<GameInfo>> im
     }
 
     @Override
+    public boolean writeRequiresAuthentication() {
+        return false;
+    }
+
+    @Override
     public boolean writeIsAdminRestricted() {
         return true;
     }

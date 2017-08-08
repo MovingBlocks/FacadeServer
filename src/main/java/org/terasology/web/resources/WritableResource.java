@@ -21,6 +21,8 @@ public interface WritableResource<T> extends Resource {
 
     Class<T> getDataType();
 
+    boolean writeRequiresAuthentication();
+
     boolean writeIsAdminRestricted();
 
     void write(Client requestingClient, T data) throws ResourceAccessException;

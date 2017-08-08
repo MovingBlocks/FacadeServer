@@ -23,38 +23,66 @@ import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.ResourceAccessException;
 
 import java.io.IOException;
+import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardOpenOption;
 import java.util.ArrayList;
 import java.util.List;
 
 public final class ServerAdminsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerAdminsManager.class);
+    private static final String ADMIN_LIST_FILE_NAME = "serverAdmins.json";
     private static final Gson GSON = new Gson();
     private static List<String> serverAdminIds;
 
     private ServerAdminsManager() {
     }
 
-    public static void setAdminList(List<String> ids) {
-        serverAdminIds = ids;
+    private static Path getAdminListFilePath() {
+        return PathManager.getInstance().getHomePath().resolve(ADMIN_LIST_FILE_NAME);
     }
 
     @SuppressWarnings("unchecked")
     public static void loadAdminList() {
-        Path filePath = PathManager.getInstance().getHomePath().resolve("serverAdmins.json");
         try {
-            serverAdminIds = GSON.fromJson(Files.newBufferedReader(filePath), List.class);
+            serverAdminIds = GSON.fromJson(Files.newBufferedReader(getAdminListFilePath()), List.class);
         } catch (IOException ex) {
-            logger.warn("Failed to load serverAdmins.json, no client will be able to change the engine state");
+            logger.warn("Failed to load serverAdmins.json");
             serverAdminIds = new ArrayList<>();
         }
     }
 
-    public static void checkClientIsServerAdmin(String clientId) throws ResourceAccessException {
-        if (!serverAdminIds.contains(clientId)) {
+    public static void saveAdminList() {
+        try {
+            try (Writer writer = Files.newBufferedWriter(getAdminListFilePath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+                GSON.toJson(serverAdminIds, writer);
+            }
+        } catch (IOException ex) {
+            logger.warn("Failed to save serverAdmins.json", ex);
+        }
+    }
+
+    public static void checkClientHasAdminPermissions(String clientId) throws ResourceAccessException {
+        if (!(isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId))) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only server admins can perform this action"));
         }
+    }
+
+    public static boolean isAnonymousAdminAccessEnabled() {
+        return serverAdminIds.isEmpty();
+    }
+
+    private static boolean clientIsInAdminList(String clientId) {
+        return serverAdminIds.contains(clientId);
+    }
+
+    public static void addAdmin(String id) {
+        serverAdminIds.add(id);
+    }
+
+    public static void removeAdmin(String id) {
+        serverAdminIds.remove(id);
     }
 }

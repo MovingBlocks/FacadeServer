@@ -50,6 +50,11 @@ public class EngineStateResource implements ReadableResource<EngineStateMetadata
     }
 
     @Override
+    public boolean writeRequiresAuthentication() {
+        return false;
+    }
+
+    @Override
     public boolean writeIsAdminRestricted() {
         return true;
     }

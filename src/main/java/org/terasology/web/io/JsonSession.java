@@ -199,13 +199,13 @@ public class JsonSession {
 
     @SuppressWarnings("unchecked")
     public ActionResult writeResource(String resourceName, JsonElement data) {
-        if (!isAuthenticated()) {
-            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to resources.");
-        }
         try {
             WritableResource resource = resourceManager.getAs(resourceName, WritableResource.class);
+            if (resource.writeRequiresAuthentication() && !isAuthenticated()) {
+                return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to this resource.");
+            }
             if (resource.writeIsAdminRestricted()) {
-                ServerAdminsManager.checkClientIsServerAdmin(client.getId());
+                ServerAdminsManager.checkClientHasAdminPermissions(client.getId());
             }
             resource.write(client, GSON.fromJson(data, resource.getDataType()));
             return ActionResult.OK;

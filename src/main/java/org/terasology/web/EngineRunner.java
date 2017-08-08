@@ -15,6 +15,7 @@
  */
 package org.terasology.web;
 
+import org.terasology.engine.ComponentSystemManager;
 import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.TerasologyEngineBuilder;
 import org.terasology.engine.modes.GameState;
@@ -52,7 +53,7 @@ public final class EngineRunner {
             if (engine.getState() instanceof StateMainMenu) {
                 engine.shutdown();
             } else if (engine.getState() instanceof StateIngame) {
-                // TODO: add event listeners for onConnected to add the first connected client to the admin list if it's empty
+                engine.getState().getContext().get(ComponentSystemManager.class).register(new ServerAdminListUpdaterSystem());
             }
         });
         engine.run(autoStart ? new StateHeadlessSetup() : new StateEngineIdle());
