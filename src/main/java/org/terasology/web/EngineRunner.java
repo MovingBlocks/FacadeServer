@@ -30,6 +30,7 @@ import org.terasology.engine.subsystem.headless.HeadlessTimer;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
 import org.terasology.game.Game;
 import org.terasology.web.resources.ResourceManager;
+import org.terasology.web.serverAdminManagement.ServerAdminListUpdaterSystem;
 
 public final class EngineRunner {
 

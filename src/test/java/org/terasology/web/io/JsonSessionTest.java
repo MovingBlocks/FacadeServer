@@ -232,6 +232,8 @@ public class JsonSessionTest {
 
         WritableResource<String> writableResource = mock(WritableResource.class);
         when(writableResource.getDataType()).thenReturn(String.class);
+        when(writableResource.writeIsAdminRestricted()).thenReturn(false);
+        when(writableResource.writeRequiresAuthentication()).thenReturn(true);
         ResourceManager resourceManager = mock(ResourceManager.class);
         when(resourceManager.getAs("testResource", WritableResource.class)).thenReturn(writableResource);
 

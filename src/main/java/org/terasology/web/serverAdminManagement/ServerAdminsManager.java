@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web;
+package org.terasology.web.serverAdminManagement;
 
 import com.google.gson.Gson;
 import org.slf4j.Logger;
@@ -27,36 +27,48 @@ import java.io.Writer;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 public final class ServerAdminsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerAdminsManager.class);
-    private static final String ADMIN_LIST_FILE_NAME = "serverAdmins.json";
     private static final Gson GSON = new Gson();
-    private static List<String> serverAdminIds;
+    private static final ServerAdminsManager INSTANCE = new ServerAdminsManager(PathManager.getInstance().getHomePath().resolve("serverAdmins.json"));
 
-    private ServerAdminsManager() {
+    private final Path adminListFilePath;
+    private Set<String> serverAdminIds;
+
+    ServerAdminsManager(Path adminListFilePath) {
+        this.adminListFilePath = adminListFilePath;
+        setServerAdminIds(new HashSet<>());
     }
 
-    private static Path getAdminListFilePath() {
-        return PathManager.getInstance().getHomePath().resolve(ADMIN_LIST_FILE_NAME);
+    public static ServerAdminsManager getInstance() {
+        return INSTANCE;
+    }
+
+    private void setServerAdminIds(Set<String> value) {
+        serverAdminIds = Collections.synchronizedSet(value);
     }
 
     @SuppressWarnings("unchecked")
-    public static void loadAdminList() {
+    public void loadAdminList() {
+        Set<String> newValue;
         try {
-            serverAdminIds = GSON.fromJson(Files.newBufferedReader(getAdminListFilePath()), List.class);
+            newValue = GSON.fromJson(Files.newBufferedReader(adminListFilePath), Set.class);
         } catch (IOException ex) {
-            logger.warn("Failed to load serverAdmins.json");
-            serverAdminIds = new ArrayList<>();
+            logger.warn("Failed to load serverAdmins.json. " +
+                    "WARNING: anonymous admin access is now allowed until an user (which will be registered as admin) connects using the regular Terasology client!");
+            newValue = new HashSet<>();
         }
+        setServerAdminIds(newValue);
     }
 
-    public static void saveAdminList() {
+    public void saveAdminList() {
         try {
-            try (Writer writer = Files.newBufferedWriter(getAdminListFilePath(), StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
+            try (Writer writer = Files.newBufferedWriter(adminListFilePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 GSON.toJson(serverAdminIds, writer);
             }
         } catch (IOException ex) {
@@ -64,25 +76,35 @@ public final class ServerAdminsManager {
         }
     }
 
-    public static void checkClientHasAdminPermissions(String clientId) throws ResourceAccessException {
+    public void checkClientHasAdminPermissions(String clientId) throws ResourceAccessException {
         if (!(isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId))) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only server admins can perform this action"));
         }
     }
 
-    public static boolean isAnonymousAdminAccessEnabled() {
+    public boolean isAnonymousAdminAccessEnabled() {
         return serverAdminIds.isEmpty();
     }
 
-    private static boolean clientIsInAdminList(String clientId) {
+    private boolean clientIsInAdminList(String clientId) {
         return serverAdminIds.contains(clientId);
     }
 
-    public static void addAdmin(String id) {
+    public void addAdmin(String id) {
         serverAdminIds.add(id);
     }
 
-    public static void removeAdmin(String id) {
+    public void removeAdmin(String id) {
         serverAdminIds.remove(id);
+    }
+
+    public Set<String> getAdminIds() {
+        return Collections.unmodifiableSet(serverAdminIds);
+    }
+
+    public void addFirstAdminIfNecessary(String id) {
+        if (isAnonymousAdminAccessEnabled()) {
+            addAdmin(id);
+        }
     }
 }

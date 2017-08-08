@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web;
+package org.terasology.web.serverAdminManagement;
 
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
@@ -24,14 +24,12 @@ public class ServerAdminListUpdaterSystem extends BaseComponentSystem {
 
     @ReceiveEvent
     public void onConnected(ConnectedEvent event, EntityRef entityRef) {
-        if (ServerAdminsManager.isAnonymousAdminAccessEnabled()) {
-            ServerAdminsManager.addAdmin(event.getPlayerStore().getId());
-            ServerAdminsManager.saveAdminList();
-        }
+        ServerAdminsManager.getInstance().addFirstAdminIfNecessary(event.getPlayerStore().getId());
+        ServerAdminsManager.getInstance().saveAdminList();
     }
 
     @Override
     public void postSave() {
-        ServerAdminsManager.saveAdminList();
+        ServerAdminsManager.getInstance().saveAdminList();
     }
 }
