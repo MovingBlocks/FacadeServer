@@ -52,6 +52,7 @@ public final class ResourceManager {
         registerAndPutResource(context, new EngineStateResource());
         registerAndPutResource(context, new GamesResource());
         registerAndPutResource(context, new AvailableModulesResource());
+        registerAndPutResource(context, new ServerAdminsResource());
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
             registerAndPutResource(context, new OnlinePlayersResource());

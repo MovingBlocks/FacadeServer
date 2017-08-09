@@ -39,6 +39,7 @@ public final class ServerAdminsManager {
 
     private final Path adminListFilePath;
     private Set<String> serverAdminIds;
+    private Runnable onListChanged = () -> { };
 
     ServerAdminsManager(Path adminListFilePath) {
         this.adminListFilePath = adminListFilePath;
@@ -51,6 +52,10 @@ public final class ServerAdminsManager {
 
     private void setServerAdminIds(Set<String> value) {
         serverAdminIds = Collections.synchronizedSet(value);
+    }
+
+    public void setOnListChangedCallback(Runnable callback) {
+        onListChanged = callback;
     }
 
     @SuppressWarnings("unchecked")
@@ -92,10 +97,12 @@ public final class ServerAdminsManager {
 
     public void addAdmin(String id) {
         serverAdminIds.add(id);
+        onListChanged.run();
     }
 
     public void removeAdmin(String id) {
         serverAdminIds.remove(id);
+        onListChanged.run();
     }
 
     public Set<String> getAdminIds() {
