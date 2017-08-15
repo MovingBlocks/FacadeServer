@@ -16,8 +16,6 @@
 
 package org.terasology.web.webSocket;
 
-import java.io.IOException;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -36,6 +34,7 @@ import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
 public class WebSocketHandler extends WebSocketAdapter {
 
     private static final Logger logger = LoggerFactory.getLogger(WebSocketHandler.class);
+    private static final ErrorReportingWriteCallback ERROR_REPORTING_WRITE_CALLBACK = new ErrorReportingWriteCallback(logger);
     private static final Gson GSON = new GsonBuilder()
             .registerTypeAdapterFactory(ValidatorTypeAdapterFactory.getInstance())
             .disableHtmlEscaping()
@@ -48,9 +47,9 @@ public class WebSocketHandler extends WebSocketAdapter {
         logger.info("Connected: " + session.getRemoteAddress());
         jsonSession = new JsonSession();
         jsonSession.setEventResourceObserver((resourceName, eventData) ->
-                trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.RESOURCE_EVENT, resourceName, eventData)));
+                send(new ServerToClientMessage(ServerToClientMessage.MessageType.RESOURCE_EVENT, resourceName, eventData)));
         jsonSession.setReadableResourceObserver((resourceName, newData) ->
-                trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.RESOURCE_CHANGED, resourceName, newData)));
+                send(new ServerToClientMessage(ServerToClientMessage.MessageType.RESOURCE_CHANGED, resourceName, newData)));
     }
 
     @Override
@@ -91,20 +90,16 @@ public class WebSocketHandler extends WebSocketAdapter {
         }
     }
 
-    private void trySend(ServerToClientMessage message) {
-        try {
-            getSession().getRemote().sendString(GSON.toJson(message));
-        } catch (IOException e) {
-            logger.warn("Unable to send message!", e);
-        }
+    private void send(ServerToClientMessage message) {
+        getSession().getRemote().sendString(GSON.toJson(message), ERROR_REPORTING_WRITE_CALLBACK);
     }
 
     private void trySendResult(ActionResult result, String resourceName) {
-        trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, resourceName, result.toJsonTree(GSON)));
+        send(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, resourceName, result.toJsonTree(GSON)));
     }
 
     private void trySendResult(ActionResult result) {
-        trySend(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, result.toJsonTree(GSON)));
+        send(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, result.toJsonTree(GSON)));
     }
 
     private void parseAndHandleResourceRequest(JsonElement requestMessage) {

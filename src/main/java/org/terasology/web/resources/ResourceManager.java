@@ -27,6 +27,7 @@ import org.terasology.web.resources.config.ServerMotdResource;
 import org.terasology.web.resources.config.ServerPortResource;
 import org.terasology.web.resources.games.GamesResource;
 import org.terasology.web.resources.modules.AvailableModulesResource;
+import org.terasology.web.resources.modules.ModuleInstallerResource;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,6 +57,7 @@ public final class ResourceManager {
         registerAndPutResource(context, new AvailableModulesResource());
         registerAndPutResource(context, new ServerMotdResource());
         registerAndPutResource(context, new ServerPortResource());
+        registerAndPutResource(context, new ModuleInstallerResource());
         if (gameState instanceof StateIngame) {
             registerAndPutResource(context, new ConsoleResource());
             registerAndPutResource(context, new OnlinePlayersResource());
