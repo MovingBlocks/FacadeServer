@@ -18,7 +18,6 @@ package org.terasology.web.resources.config;
 import org.terasology.config.Config;
 import org.terasology.network.Client;
 import org.terasology.registry.In;
-import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.WritableResource;
@@ -29,13 +28,22 @@ public abstract class AbstractConfigEntryResource<T> extends ObservableReadableR
     private Config config;
 
     @Override
+    public boolean writeRequiresAuthentication() {
+        return false;
+    }
+
+    @Override
+    public boolean writeIsAdminRestricted() {
+        return true;
+    }
+
+    @Override
     public T read(Client requestingClient) throws ResourceAccessException {
         return get(config);
     }
 
     @Override
     public void write(Client requestingClient, T data) throws ResourceAccessException {
-        ServerAdminsManager.checkClientIsServerAdmin(requestingClient.getId());
         set(config, data);
         config.save();
         notifyChangedAll();

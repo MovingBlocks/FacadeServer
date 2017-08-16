@@ -22,7 +22,6 @@ import org.terasology.naming.Name;
 import org.terasology.network.Client;
 import org.terasology.registry.In;
 import org.terasology.utilities.download.MultiFileTransferProgressListener;
-import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
@@ -56,13 +55,22 @@ public class ModuleInstallerResource extends ObservableReadableResource<String> 
     }
 
     @Override
+    public boolean writeRequiresAuthentication() {
+        return false;
+    }
+
+    @Override
+    public boolean writeIsAdminRestricted() {
+        return true;
+    }
+
+    @Override
     public String read(Client requestingClient) throws ResourceAccessException {
         return status;
     }
 
     @Override
     public void write(Client requestingClient, Name[] data) throws ResourceAccessException {
-        ServerAdminsManager.checkClientIsServerAdmin(requestingClient.getId());
         executeCallable(moduleManager.getInstallManager().updateRemoteRegistry());
         Set<Module> allModules;
         try {
