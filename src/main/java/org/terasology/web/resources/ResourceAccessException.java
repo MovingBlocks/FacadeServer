@@ -19,6 +19,9 @@ import org.terasology.web.io.ActionResult;
 
 public class ResourceAccessException extends Exception {
 
+    public static final ResourceAccessException NOT_FOUND = new ResourceAccessException(new ActionResult(ActionResult.Status.NOT_FOUND));
+    public static final ResourceAccessException METHOD_NOT_ALLOWED = new ResourceAccessException(new ActionResult(ActionResult.Status.ACTION_NOT_ALLOWED));
+
     private final ActionResult resultToSend;
 
     public ResourceAccessException(ActionResult resultToSend) {
