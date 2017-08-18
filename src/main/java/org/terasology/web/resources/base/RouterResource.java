@@ -15,6 +15,7 @@
  */
 package org.terasology.web.resources.base;
 
+import org.terasology.network.Client;
 import org.terasology.web.resources.ResourceAccessException;
 
 import java.util.HashMap;
@@ -52,7 +53,7 @@ public final class RouterResource implements Resource {
                 }
 
                 @Override
-                public Void perform(Void data) throws ResourceAccessException {
+                public Void perform(Void data, Client client) throws ResourceAccessException {
                     throw ResourceAccessException.NOT_FOUND;
                 }
             };

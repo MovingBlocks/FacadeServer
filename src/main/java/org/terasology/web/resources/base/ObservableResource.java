@@ -15,11 +15,7 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.network.Client;
-import org.terasology.web.resources.ResourceAccessException;
+public interface ObservableResource extends Resource {
 
-@FunctionalInterface
-public interface ParameterlessMethodHandler<INTYPE, OUTTYPE> {
-
-    OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException;
+    ResourceObserverManager getObserverManager();
 }

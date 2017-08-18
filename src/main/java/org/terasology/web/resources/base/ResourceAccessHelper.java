@@ -15,6 +15,7 @@
  */
 package org.terasology.web.resources.base;
 
+import org.terasology.network.Client;
 import org.terasology.web.resources.ResourceAccessException;
 
 public class ResourceAccessHelper<GENERICINTYPE> {
@@ -25,9 +26,9 @@ public class ResourceAccessHelper<GENERICINTYPE> {
         this.inputParser = inputParser;
     }
 
-    public Object performAction(Resource resource, ResourceMethodName methodName, GENERICINTYPE data, ResourcePath path) throws ResourceAccessException {
-        ResourceMethod method = resource.getMethod(methodName, path);
-        return method.perform(inputParser.parse(data, method.getInType()));
+    public Object performAction(Resource rootResource, ResourceMethodName methodName, GENERICINTYPE data, ResourcePath path, Client client) throws ResourceAccessException {
+        ResourceMethod method = rootResource.getMethod(methodName, path);
+        return method.perform(inputParser.parse(data, method.getInType()), client);
     }
 
     private interface InputParser<GENERICINTYPE> {

@@ -15,10 +15,11 @@
  */
 package org.terasology.web.resources.base;
 
+import org.terasology.network.Client;
 import org.terasology.web.resources.ResourceAccessException;
 
 @FunctionalInterface
 public interface ParametrizedMethodHandler<INTYPE, OUTTYPE> {
 
-    OUTTYPE perform(INTYPE data, String parameter) throws ResourceAccessException;
+    OUTTYPE perform(INTYPE data, String parameter, Client client) throws ResourceAccessException;
 }

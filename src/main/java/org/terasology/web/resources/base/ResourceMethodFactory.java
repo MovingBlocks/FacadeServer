@@ -15,6 +15,7 @@
  */
 package org.terasology.web.resources.base;
 
+import org.terasology.network.Client;
 import org.terasology.web.resources.ResourceAccessException;
 
 public final class ResourceMethodFactory {
@@ -32,8 +33,8 @@ public final class ResourceMethodFactory {
             }
 
             @Override
-            public OUTTYPE perform(INTYPE data) throws ResourceAccessException {
-                return handler.perform(data, parameter);
+            public OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException {
+                return handler.perform(data, parameter, client);
             }
         };
     }
@@ -48,8 +49,8 @@ public final class ResourceMethodFactory {
             }
 
             @Override
-            public OUTTYPE perform(INTYPE data) throws ResourceAccessException {
-                return handler.perform(data);
+            public OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException {
+                return handler.perform(data, client);
             }
         };
     }

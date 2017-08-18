@@ -15,11 +15,12 @@
  */
 package org.terasology.web.resources.base;
 
+import org.terasology.network.Client;
 import org.terasology.web.resources.ResourceAccessException;
 
 public interface ResourceMethod<INTYPE, OUTTYPE> {
 
     Class<INTYPE> getInType();
 
-    OUTTYPE perform(INTYPE data) throws ResourceAccessException;
+    OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException;
 }
