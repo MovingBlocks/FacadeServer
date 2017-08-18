@@ -17,13 +17,30 @@ package org.terasology.web.resources.base;
 
 import org.terasology.web.resources.ResourceAccessException;
 
+import java.util.Collections;
+import java.util.Map;
+import java.util.function.Function;
+
 public abstract class AbstractItemCollectionResource implements Resource {
+
+    private Map<String, Function<String, Resource>> itemSubResourceProviders;
+
+    protected AbstractItemCollectionResource(Map<String, Function<String, Resource>> itemSubResourceProviders) {
+        this.itemSubResourceProviders = itemSubResourceProviders;
+    }
+
+    protected AbstractItemCollectionResource() {
+        this(Collections.emptyMap());
+    }
 
     @Override
     public final ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
         String itemId = null;
         if (!path.isEmpty()) {
             itemId = path.consumeNextItem();
+            if (!path.isEmpty()) {
+                return getItemSubResourceMethod(methodName, path, itemId);
+            }
         }
         switch (methodName) {
             case GET:
@@ -38,6 +55,16 @@ public abstract class AbstractItemCollectionResource implements Resource {
                 return itemId == null ? getPatchCollectionMethod() : getPatchItemMethod(itemId);
         }
         throw ResourceAccessException.METHOD_NOT_ALLOWED;
+    }
+
+    private ResourceMethod getItemSubResourceMethod(ResourceMethodName methodName, ResourcePath path, String itemId) throws ResourceAccessException {
+        String subResourceName = path.consumeNextItem();
+        Function<String, Resource> subResourceProvider = itemSubResourceProviders.get(subResourceName);
+        if (subResourceProvider != null) {
+            return subResourceProvider.apply(itemId).getMethod(methodName, path);
+        } else {
+            throw ResourceAccessException.NOT_FOUND;
+        }
     }
 
     // in subclasses, override the methods supported by the resource
