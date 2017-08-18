@@ -31,7 +31,7 @@ public final class RouterResource implements Resource {
     }
 
     @Override
-    public <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
+    public ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
         if (path.isEmpty()) {
             return rootResource.getMethod(methodName, path);
         } else {
@@ -44,15 +44,15 @@ public final class RouterResource implements Resource {
     private static final class NullResource implements Resource {
 
         @Override
-        public <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
-            return new ResourceMethod<INTYPE, OUTTYPE>() {
+        public ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
+            return new ResourceMethod<Void, Void>() {
                 @Override
-                public Class<INTYPE> getInType() {
-                    return null;
+                public Class<Void> getInType() {
+                    return Void.class;
                 }
 
                 @Override
-                public OUTTYPE perform(INTYPE data) throws ResourceAccessException {
+                public Void perform(Void data) throws ResourceAccessException {
                     throw ResourceAccessException.NOT_FOUND;
                 }
             };
@@ -60,6 +60,7 @@ public final class RouterResource implements Resource {
     }
 
     public static final class Builder {
+
         private final RouterResource result;
 
         public Builder() {
@@ -70,8 +71,9 @@ public final class RouterResource implements Resource {
             result = new RouterResource(rootResource);
         }
 
-        public void addSubResource(String name, Resource resource) {
+        public Builder addSubResource(String name, Resource resource) {
             result.subResources.put(name, resource);
+            return this;
         }
 
         public RouterResource build() {

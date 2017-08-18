@@ -17,7 +17,8 @@ package org.terasology.web.resources.base;
 
 import org.terasology.web.resources.ResourceAccessException;
 
-public interface Resource {
+@FunctionalInterface
+public interface ParametrizedMethodHandler<INTYPE, OUTTYPE> {
 
-    ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException;
+    OUTTYPE perform(INTYPE data, String parameter) throws ResourceAccessException;
 }

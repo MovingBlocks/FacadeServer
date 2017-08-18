@@ -20,7 +20,7 @@ import org.terasology.web.resources.ResourceAccessException;
 public abstract class AbstractResource implements Resource {
 
     @Override
-    public final <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
+    public final ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
         switch (methodName) {
             case GET:
                 return getGetMethod(path);
@@ -36,23 +36,25 @@ public abstract class AbstractResource implements Resource {
         throw ResourceAccessException.METHOD_NOT_ALLOWED;
     }
 
-    public <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> getGetMethod(ResourcePath path) throws ResourceAccessException {
+    // in subclasses, override the methods supported by the resource
+
+    protected ResourceMethod getGetMethod(ResourcePath path) throws ResourceAccessException {
         throw ResourceAccessException.METHOD_NOT_ALLOWED;
     }
 
-    public <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> getPostMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod getPostMethod(ResourcePath path) throws ResourceAccessException {
         throw ResourceAccessException.METHOD_NOT_ALLOWED;
     }
 
-    public <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> getPutMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod getPutMethod(ResourcePath path) throws ResourceAccessException {
         throw ResourceAccessException.METHOD_NOT_ALLOWED;
     }
 
-    public <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> getDeleteMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod getDeleteMethod(ResourcePath path) throws ResourceAccessException {
         throw ResourceAccessException.METHOD_NOT_ALLOWED;
     }
 
-    public <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> getPatchMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod getPatchMethod(ResourcePath path) throws ResourceAccessException {
         throw ResourceAccessException.METHOD_NOT_ALLOWED;
     }
 }
