@@ -16,11 +16,13 @@
 package org.terasology.web.resources.base;
 
 import org.terasology.network.Client;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.client.ClientSecurityInfo;
 
 public interface ResourceMethod<INTYPE, OUTTYPE> {
 
     Class<INTYPE> getInType();
+
+    boolean clientIsAllowed(ClientSecurityInfo securityInfo);
 
     OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException;
 }

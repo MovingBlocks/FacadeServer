@@ -15,7 +15,11 @@
  */
 package org.terasology.web.resources.base;
 
-public interface EventEmittingResource<T> {
+import org.terasology.entitySystem.entity.EntityRef;
 
-    ResourceEventEmitter<T> getEventEmitter();
+public interface ResourceObserver {
+
+    void onEvent(ResourcePath senderPath, Object eventData, EntityRef targetClientEntity);
+    void onChangedForClient(ResourcePath senderPath, Resource sender, EntityRef targetClientEntity);
+    void onChangedForAllClients(ResourcePath senderPath, Resource sender);
 }

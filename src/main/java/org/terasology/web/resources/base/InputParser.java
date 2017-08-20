@@ -13,23 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.base;
 
-class ServerAdminsResourceAction {
-
-    enum Action {
-        ADD,
-        REMOVE
-    }
-
-    private Action action;
-    private String clientId;
-
-    public Action getAction() {
-        return action;
-    }
-
-    public String getClientId() {
-        return clientId;
-    }
+@FunctionalInterface
+public interface InputParser<GENERICINTYPE> {
+    <T> T parse(GENERICINTYPE input, Class<T> outputType); //TODO allow implementor to throw an appropriate exception
 }

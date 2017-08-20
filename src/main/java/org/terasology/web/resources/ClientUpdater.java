@@ -15,15 +15,8 @@
  */
 package org.terasology.web.resources;
 
-import org.terasology.network.Client;
+public interface ClientUpdater {
 
-public interface WritableResource<T> extends Resource {
-
-    Class<T> getDataType();
-
-    boolean writeRequiresAuthentication();
-
-    boolean writeIsAdminRestricted();
-
-    void write(Client requestingClient, T data) throws ResourceAccessException;
+    void onEvent(Object eventData);
+    void onResourceUpdated();
 }

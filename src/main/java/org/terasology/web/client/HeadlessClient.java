@@ -21,12 +21,17 @@ import org.terasology.entitySystem.event.Event;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.network.Client;
 import org.terasology.rendering.world.viewDistance.ViewDistance;
+import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.world.chunks.Chunk;
 
 public interface HeadlessClient extends Client {
 
     void connect(EntityManager entityManager);
     boolean isAnonymous();
+
+    default ClientSecurityInfo getSecurityInfo() {
+        return new ClientSecurityInfo(!isAnonymous(), ServerAdminsManager.getInstance().clientHasAdminPermissions(getId()));
+    }
 
     @Override
     default void onChunkRelevant(Vector3i pos, Chunk chunk) {

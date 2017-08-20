@@ -17,7 +17,7 @@ package org.terasology.web.resources;
 
 import org.terasology.entitySystem.systems.ComponentSystem;
 
-interface DefaultComponentSystem extends ComponentSystem {
+public interface DefaultComponentSystem extends ComponentSystem {
 
     @Override
     default void initialise() {

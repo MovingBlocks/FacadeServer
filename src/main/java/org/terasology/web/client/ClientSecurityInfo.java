@@ -13,13 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources.games;
+package org.terasology.web.client;
 
-import org.terasology.engine.module.ModuleManager;
-import org.terasology.engine.paths.PathManager;
-import org.terasology.web.resources.ResourceAccessException;
+public class ClientSecurityInfo {
 
-public interface GameAction {
+    private boolean isAuthenticated;
+    private boolean hasAdminPermission;
 
-    void perform(PathManager pathManager, ModuleManager moduleManager) throws ResourceAccessException;
+    public ClientSecurityInfo(boolean isAuthenticated, boolean hasAdminPermission) {
+        this.isAuthenticated = isAuthenticated;
+        this.hasAdminPermission = hasAdminPermission;
+    }
+
+    public boolean isAuthenticated() {
+        return isAuthenticated;
+    }
+
+    public boolean hasAdminPermission() {
+        return hasAdminPermission;
+    }
 }

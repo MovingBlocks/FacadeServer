@@ -13,18 +13,27 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.engineState;
 
 import com.google.common.collect.ImmutableMap;
+import org.terasology.engine.GameEngine;
 import org.terasology.engine.modes.GameState;
 import org.terasology.engine.modes.StateIngame;
 import org.terasology.engine.modes.StateLoading;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
 import org.terasology.game.Game;
+import org.terasology.network.NetworkMode;
+import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
+import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.StateEngineIdle;
+import org.terasology.web.io.ActionResult;
+import org.terasology.web.io.JsonSession;
+import org.terasology.web.resources.base.ResourceAccessException;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Stream;
 
 public final class EngineStateMetadata {
 
@@ -62,5 +71,28 @@ public final class EngineStateMetadata {
 
     public String getGameName() {
         return gameName;
+    }
+
+    public void switchEngineToThisState(GameEngine engine) throws ResourceAccessException {
+        // if the supplied string is a savegame name, the engine will switch to run this game;
+        // if it's empty, it will switch to the idle state.
+        GameState newState;
+        switch (state) {
+            case IDLE:
+                newState = new StateEngineIdle();
+                break;
+            case LOADING:
+                Stream<GameInfo> saveGames = GameProvider.getSavedGames().stream();
+                Optional<GameInfo> game = saveGames.filter((gameInfo) -> gameInfo.getManifest().getTitle().equals(gameName)).findFirst();
+                if (!game.isPresent()) {
+                    throw new ResourceAccessException(new ActionResult(ActionResult.Status.BAD_REQUEST, "No savegame with the specified name exists on this server."));
+                }
+                newState = new StateLoading(game.get().getManifest(), NetworkMode.LISTEN_SERVER);
+                break;
+            default:
+                throw new ResourceAccessException(new ActionResult(ActionResult.Status.BAD_REQUEST, "It's not possible to switch the engine to the requested state."));
+        }
+        JsonSession.disconnectAllClients();
+        engine.changeState(newState);
     }
 }

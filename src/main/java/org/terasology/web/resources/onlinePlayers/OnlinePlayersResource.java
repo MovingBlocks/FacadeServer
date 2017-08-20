@@ -13,49 +13,48 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.onlinePlayers;
 
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.network.Client;
 import org.terasology.network.NetworkSystem;
 import org.terasology.network.events.ConnectedEvent;
 import org.terasology.network.events.DisconnectedEvent;
 import org.terasology.registry.In;
+import org.terasology.web.resources.DefaultComponentSystem;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.AbstractSimpleResource;
+import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.resources.base.ResourcePath;
 
-import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
+
 @RegisterSystem
-public class OnlinePlayersResource extends ObservableReadableResource<List<OnlinePlayerMetadata>> implements DefaultComponentSystem {
+public class OnlinePlayersResource extends AbstractSimpleResource implements DefaultComponentSystem {
 
     @In
     private NetworkSystem networkSystem;
 
-    OnlinePlayersResource() {
-    }
-
-    @Override
-    public String getName() {
-        return "onlinePlayers";
-    }
-
     @ReceiveEvent
     public void onConnected(ConnectedEvent event, EntityRef entityRef) {
-        notifyChangedAll();
+        notifyChangedForAllClients();
     }
 
     @ReceiveEvent
     public void onDisconnected(DisconnectedEvent event, EntityRef entityRef) {
-        notifyChangedAll();
+        notifyChangedForAllClients();
     }
 
     @Override
-    public List<OnlinePlayerMetadata> read(Client requestingClient) {
-        return StreamSupport.stream(networkSystem.getPlayers().spliterator(), true)
-                .map(OnlinePlayerMetadata::new)
-                .collect(Collectors.toList());
+    protected ResourceMethod getGetMethod(ResourcePath path) throws ResourceAccessException {
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
+                StreamSupport.stream(networkSystem.getPlayers().spliterator(), true)
+                    .map(OnlinePlayerMetadata::new)
+                    .collect(Collectors.toList()));
     }
 }

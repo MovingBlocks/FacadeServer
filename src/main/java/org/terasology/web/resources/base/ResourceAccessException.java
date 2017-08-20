@@ -13,10 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.base;
 
 import org.terasology.web.io.ActionResult;
 
+// TODO: decouple from ActionResult (because thst's JSON specific)
 public class ResourceAccessException extends Exception {
 
     public static final ResourceAccessException NOT_FOUND = new ResourceAccessException(new ActionResult(ActionResult.Status.NOT_FOUND));

@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources.config;
+package org.terasology.web.resources.engineState;
 
-import org.terasology.config.Config;
+import org.terasology.engine.GameEngine;
 import org.terasology.registry.In;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.AbstractSimpleResource;
@@ -26,26 +26,20 @@ import org.terasology.web.resources.base.ResourcePath;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
-public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResource {
+public class EngineStateResource extends AbstractSimpleResource {
 
     @In
-    private Config config;
+    private GameEngine gameEngine;
 
     @Override
     protected ResourceMethod getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) -> get(config));
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
+                (data, client) -> EngineStateMetadata.build(gameEngine.getState()));
     }
 
     @Override
     protected ResourceMethod getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, getDataType(), (data, client) -> {
-            set(config, data);
-            config.save();
-            notifyChangedForAllClients();
-        });
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, EngineStateMetadata.class,
+                (data, client) -> data.switchEngineToThisState(gameEngine));
     }
-
-    protected abstract Class<T> getDataType();
-    protected abstract void set(Config targetConfig, T value);
-    protected abstract T get(Config sourceConfig);
 }

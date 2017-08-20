@@ -15,13 +15,14 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.web.resources.ResourceAccessException;
-
 import java.util.ArrayDeque;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Deque;
 
 public class ResourcePath {
+
+    public static final ResourcePath EMPTY = new ResourcePath(Collections.emptyList());
 
     private Deque<String> items;
 
@@ -42,14 +43,23 @@ public class ResourcePath {
 
     public String assertAndConsumeLastItem() throws ResourceAccessException {
         if (items.size() != 1) {
-            throw new RuntimeException("The path is either empty or the end hasn't ben reached yet"); // TODO change exception type and message
+            throw ResourceAccessException.NOT_FOUND;
         }
         return consumeNextItem();
     }
 
-    public void assertEmpty() {
+    public void assertEmpty() throws ResourceAccessException {
         if (!items.isEmpty()) {
-            throw new RuntimeException("The path is not empty"); // TODO change exception type and message
+            throw ResourceAccessException.NOT_FOUND;
         }
+    }
+
+    public ResourcePath pushItem(String item) {
+        items.offerFirst(item);
+        return this;
+    }
+
+    public Collection<String> getItemList() {
+        return items;
     }
 }

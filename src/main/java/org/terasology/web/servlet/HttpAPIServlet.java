@@ -18,6 +18,7 @@ package org.terasology.web.servlet;
 import com.google.gson.JsonElement;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.io.JsonSession;
+import org.terasology.web.resources.base.ResourceMethodName;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -26,11 +27,11 @@ import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -112,19 +113,13 @@ public class HttpAPIServlet {
         return getSessionWithEventQueue(request).drainEventQueue();
     }
 
-    @GET
-    @Path("resources/{resourceName}")
-    @Produces(MediaType.APPLICATION_JSON)
-    public ActionResult readResource(@Context HttpServletRequest request, @PathParam("resourceName") String resourceName) {
-        return getSession(request).readResource(resourceName);
-    }
-
-    @POST
-    @Path("resources/{resourceName}")
+    @Path("resources/*")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public ActionResult writeResource(JsonElement data, @Context HttpServletRequest request, @PathParam("resourceName") String resourceName) {
-        return getSession(request).writeResource(resourceName, data);
+    public ActionResult accessResource(JsonElement data, @Context HttpServletRequest request) {
+        List<String> resourcePath = Arrays.asList(request.getPathInfo().split("/"));
+        ResourceMethodName resourceMethodName = ResourceMethodName.valueOf(request.getMethod()); // TODO handle exceptions
+        return getSession(request).accessResource(resourcePath, resourceMethodName, data);
     }
 
 }

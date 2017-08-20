@@ -13,9 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources.base;
+package org.terasology.web;
 
-public interface ObservableResource extends Resource {
+@FunctionalInterface
+public interface ThrowingRunnable<T extends Throwable> {
 
-    ResourceObserverManager getObserverManager();
+    void run() throws T;
 }

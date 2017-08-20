@@ -29,6 +29,7 @@ import org.terasology.engine.subsystem.headless.HeadlessInput;
 import org.terasology.engine.subsystem.headless.HeadlessTimer;
 import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
 import org.terasology.game.Game;
+import org.terasology.web.io.JsonSession;
 import org.terasology.web.resources.ResourceManager;
 import org.terasology.web.serverAdminManagement.ServerAdminListUpdaterSystem;
 
@@ -51,11 +52,13 @@ public final class EngineRunner {
         engine = builder.build();
         engine.subscribeToStateChange(() -> {
             ResourceManager.getInstance().initialize(engine);
-            if (engine.getState() instanceof StateMainMenu) {
+            GameState newState = engine.getState();
+            if (newState instanceof StateMainMenu) {
                 engine.shutdown();
             } else if (engine.getState() instanceof StateIngame) {
-                engine.getState().getContext().get(ComponentSystemManager.class).register(new ServerAdminListUpdaterSystem());
+                newState.getContext().get(ComponentSystemManager.class).register(new ServerAdminListUpdaterSystem());
             }
+            JsonSession.handleEngineStateChanged(newState);
         });
         engine.run(autoStart ? new StateHeadlessSetup() : new StateEngineIdle());
     }

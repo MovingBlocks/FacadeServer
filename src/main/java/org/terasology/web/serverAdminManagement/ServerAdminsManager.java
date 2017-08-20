@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.web.io.ActionResult;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -81,8 +81,13 @@ public final class ServerAdminsManager {
         }
     }
 
+    public boolean clientHasAdminPermissions(String clientId) {
+        return isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId);
+    }
+
+    // TODO: remove, probably no longer necessary
     public void checkClientHasAdminPermissions(String clientId) throws ResourceAccessException {
-        if (!(isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId))) {
+        if (!clientHasAdminPermissions(clientId)) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only server admins can perform this action"));
         }
     }

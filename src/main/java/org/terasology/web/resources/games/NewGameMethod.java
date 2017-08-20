@@ -15,7 +15,6 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.SimpleUri;
 import org.terasology.engine.TerasologyConstants;
 import org.terasology.engine.module.ModuleManager;
 import org.terasology.engine.paths.PathManager;
@@ -23,53 +22,42 @@ import org.terasology.game.GameManifest;
 import org.terasology.module.DependencyResolver;
 import org.terasology.module.Module;
 import org.terasology.module.ResolutionResult;
-import org.terasology.naming.Name;
+import org.terasology.network.Client;
 import org.terasology.web.io.ActionResult;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceMethodImpl;
 import org.terasology.world.internal.WorldInfo;
 import org.terasology.world.time.WorldTime;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.List;
 
 import static org.terasology.web.resources.InputCheckUtils.checkNotNull;
 import static org.terasology.web.resources.InputCheckUtils.checkNotNullOrEmpty;
 
-public class NewGameAction implements GameAction {
+public class NewGameMethod extends ResourceMethodImpl<NewGameMetadata, Void> {
 
-    private String gameName;
-    private String seed;
-    private List<Name> modules;
-    private SimpleUri worldGenerator;
+    private PathManager pathManager;
+    private DependencyResolver dependencyResolver;
 
-    private transient DependencyResolver dependencyResolver;
-
-    public NewGameAction() {
-    }
-
-    NewGameAction(String gameName, String seed, List<Name> modules, SimpleUri worldGenerator, DependencyResolver dependencyResolver) {
-        this.gameName = gameName;
-        this.seed = seed;
-        this.modules = modules;
-        this.worldGenerator = worldGenerator;
-        this.dependencyResolver = dependencyResolver;
+    public NewGameMethod(PathManager pathManager, ModuleManager moduleManager) {
+        super(NewGameMetadata.class, ClientSecurityRequirements.REQUIRE_ADMIN, null);
+        this.pathManager = pathManager;
+        this.dependencyResolver = new DependencyResolver(moduleManager.getRegistry());
     }
 
     @Override
-    public void perform(PathManager pathManager, ModuleManager moduleManager) throws ResourceAccessException {
-        checkNotNullOrEmpty(gameName, "A name for the new game must be specified.");
-        checkNotNullOrEmpty(seed, "A seed must be specified.");
-        checkNotNull(modules, "A list of modules must be specified");
-        checkNotNull(worldGenerator, "A world generator must be specified.");
-        if (Files.exists(pathManager.getSavePath(gameName))) {
+    public Void perform(NewGameMetadata data, Client client) throws ResourceAccessException {
+        checkNotNullOrEmpty(data.getGameName(), "A name for the new game must be specified.");
+        checkNotNullOrEmpty(data.getSeed(), "A seed must be specified.");
+        checkNotNull(data.getModules(), "A list of modules must be specified");
+        checkNotNull(data.getWorldGenerator(), "A world generator must be specified.");
+        if (Files.exists(pathManager.getSavePath(data.getGameName()))) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.CONFLICT, "A game with the specified name already exists"));
         }
-        if (dependencyResolver == null) {
-            dependencyResolver = new DependencyResolver(moduleManager.getRegistry());
-        }
-        GameManifest newGameManifest = buildGameManifest();
+        GameManifest newGameManifest = buildGameManifest(data);
         Path saveDir = pathManager.getSavePath(newGameManifest.getTitle());
         Path saveFile = saveDir.resolve(GameManifest.DEFAULT_FILE_NAME);
         try {
@@ -78,14 +66,15 @@ public class NewGameAction implements GameAction {
         } catch (IOException ex) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, "Failed to save new game manifest: " + ex.getMessage()));
         }
+        return null;
     }
 
-    private GameManifest buildGameManifest() throws ResourceAccessException {
+    private GameManifest buildGameManifest(NewGameMetadata data) throws ResourceAccessException {
         GameManifest newGameManifest = new GameManifest();
-        newGameManifest.setTitle(gameName);
-        newGameManifest.setSeed(seed);
+        newGameManifest.setTitle(data.getGameName());
+        newGameManifest.setSeed(data.getSeed());
 
-        ResolutionResult result = dependencyResolver.resolve(modules);
+        ResolutionResult result = dependencyResolver.resolve(data.getModules());
         if (!result.isSuccess()) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, "Failed to resolve all module dependencies"));
         }
@@ -94,7 +83,7 @@ public class NewGameAction implements GameAction {
         }
 
         WorldInfo worldInfo = new WorldInfo(TerasologyConstants.MAIN_WORLD, newGameManifest.getSeed(),
-                (long) (WorldTime.DAY_LENGTH * 0.025f), worldGenerator);
+                (long) (WorldTime.DAY_LENGTH * 0.025f), data.getWorldGenerator());
         newGameManifest.addWorld(worldInfo);
 
         return newGameManifest;

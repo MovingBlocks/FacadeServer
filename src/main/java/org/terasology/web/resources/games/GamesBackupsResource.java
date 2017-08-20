@@ -18,7 +18,11 @@ package org.terasology.web.resources.games;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.game.GameManifest;
 import org.terasology.web.io.ActionResult;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.AbstractSimpleResource;
+import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.resources.base.ResourcePath;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -28,12 +32,25 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.stream.Collectors;
 
-public class BackupGameAction extends AbstractExistingGameAction {
+import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
+
+public class GamesBackupsResource extends AbstractSimpleResource {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
 
+    private String gameName;
+
+    public GamesBackupsResource(String gameName) {
+        this.gameName = gameName;
+    }
+
     @Override
-    public void perform(PathManager pathManager, String gameName) throws ResourceAccessException {
+    protected ResourceMethod<Void, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
+                (data, client) -> performBackup(PathManager.getInstance()));
+    }
+
+    private void performBackup(PathManager pathManager) throws ResourceAccessException {
         String backupName = gameName + "_backup_" + LocalDateTime.now().format(DATE_FORMATTER);
         Path srcGamePath = pathManager.getSavePath(gameName);
         Path dstGamePath = pathManager.getSavePath(backupName);

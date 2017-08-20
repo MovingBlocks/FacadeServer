@@ -13,26 +13,29 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.console;
 
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.console.Console;
-import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
-import org.terasology.network.Client;
 import org.terasology.network.ClientComponent;
 import org.terasology.registry.In;
+import org.terasology.web.resources.DefaultComponentSystem;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.AbstractSimpleResource;
+import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.resources.base.ResourcePath;
+
+import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
 @RegisterSystem
-public class ConsoleResource extends EventEmittingResource<Message> implements DefaultComponentSystem, WritableResource<String> {
+public class ConsoleResource extends AbstractSimpleResource implements DefaultComponentSystem {
 
     @In
     private Console console;
-
-    ConsoleResource() {
-    }
 
     @ReceiveEvent(components = ClientComponent.class)
     public void onMessage(MessageEvent event, EntityRef entityRef) {
@@ -40,27 +43,8 @@ public class ConsoleResource extends EventEmittingResource<Message> implements D
     }
 
     @Override
-    public String getName() {
-        return "console";
-    }
-
-    @Override
-    public Class<String> getDataType() {
-        return String.class;
-    }
-
-    @Override
-    public boolean writeRequiresAuthentication() {
-        return true;
-    }
-
-    @Override
-    public boolean writeIsAdminRestricted() {
-        return false;
-    }
-
-    @Override
-    public void write(Client requestingClient, String data) {
-        console.execute(data, requestingClient.getEntity());
+    protected ResourceMethod getPostMethod(ResourcePath path) throws ResourceAccessException {
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_AUTH, String.class,
+                (data, client) -> console.execute(data, client.getEntity()));
     }
 }

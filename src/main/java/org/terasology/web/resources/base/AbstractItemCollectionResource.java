@@ -15,13 +15,13 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.web.resources.ResourceAccessException;
-
 import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
-public abstract class AbstractItemCollectionResource implements Resource {
+import static org.terasology.web.resources.base.ResourceMethodFactory.decorateMethod;
+
+public abstract class AbstractItemCollectionResource extends AbstractObservableResource {
 
     private Map<String, Function<String, Resource>> itemSubResourceProviders;
 
@@ -61,7 +61,9 @@ public abstract class AbstractItemCollectionResource implements Resource {
         String subResourceName = path.consumeNextItem();
         Function<String, Resource> subResourceProvider = itemSubResourceProviders.get(subResourceName);
         if (subResourceProvider != null) {
-            return subResourceProvider.apply(itemId).getMethod(methodName, path);
+            return decorateMethod(subResourceProvider.apply(itemId).getMethod(methodName, path),
+                    () -> beforeSubResourceAccess(subResourceName, itemId),
+                    () -> afterSubResourceAccess(subResourceName, itemId));
         } else {
             throw ResourceAccessException.NOT_FOUND;
         }
@@ -107,5 +109,16 @@ public abstract class AbstractItemCollectionResource implements Resource {
 
     protected ResourceMethod getPatchItemMethod(String itemId) throws ResourceAccessException {
         throw ResourceAccessException.METHOD_NOT_ALLOWED;
+    }
+
+    // override to do additional actions before or after a sub-resource is accessed (e.g. notify observers)
+    // TODO: consider doing for each access (i.e. not only sub-resources)
+
+    protected void beforeSubResourceAccess(String subResourceName, String itemId) throws ResourceAccessException {
+        // by default, do nothing
+    }
+
+    protected void afterSubResourceAccess(String subResourceName, String itemId) throws ResourceAccessException {
+        // by default, do nothing
     }
 }

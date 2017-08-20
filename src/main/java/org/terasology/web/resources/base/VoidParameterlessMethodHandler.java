@@ -13,11 +13,11 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.base;
 
 import org.terasology.network.Client;
 
-public interface ReadableResource<T> extends Resource {
+public interface VoidParameterlessMethodHandler<INTYPE> {
 
-    T read(Client requestingClient) throws ResourceAccessException;
+    void perform(INTYPE data, Client client) throws ResourceAccessException;
 }

@@ -26,7 +26,7 @@ public class ActionResult {
     public enum Status {
         OK,
         BAD_REQUEST,
-        UNAUTHORIZED,
+        UNAUTHORIZED, // TODO: change to Forbidden (see https://stackoverflow.com/a/6937030)
         ACTION_NOT_ALLOWED,
         NOT_FOUND,
         GENERIC_ERROR,

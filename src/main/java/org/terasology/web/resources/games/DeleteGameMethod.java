@@ -16,18 +16,30 @@
 package org.terasology.web.resources.games;
 
 import org.terasology.engine.paths.PathManager;
+import org.terasology.network.Client;
 import org.terasology.utilities.FilesUtil;
 import org.terasology.web.io.ActionResult;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceMethodImpl;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
-public class DeleteGameAction extends AbstractExistingGameAction {
+public class DeleteGameMethod extends ResourceMethodImpl<Void, Void> {
+
+    private PathManager pathManager;
+    private String gameName;
+
+    public DeleteGameMethod(PathManager pathManager, String gameName) {
+        super(Void.class, ClientSecurityRequirements.REQUIRE_ADMIN, null);
+        this.pathManager = pathManager;
+        this.gameName = gameName;
+    }
 
     @Override
-    public void perform(PathManager pathManager, String gameName) throws ResourceAccessException {
+    public Void perform(Void data, Client client) throws ResourceAccessException {
         Path gamePath = pathManager.getSavePath(gameName);
         if (!Files.isDirectory(gamePath)) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.NOT_FOUND, "The specified path does not exist or isn't a valid savegame."));
@@ -37,5 +49,6 @@ public class DeleteGameAction extends AbstractExistingGameAction {
         } catch (IOException ex) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
         }
+        return null;
     }
 }

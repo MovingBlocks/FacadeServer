@@ -16,7 +16,8 @@
 package org.terasology.web.resources.base;
 
 import org.terasology.network.Client;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.ThrowingRunnable;
+import org.terasology.web.client.ClientSecurityInfo;
 
 public final class ResourceMethodFactory {
 
@@ -24,33 +25,66 @@ public final class ResourceMethodFactory {
     }
 
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParametrizedMethod(
-            ResourcePath path, Class<INTYPE> inType, ParametrizedMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
+            ResourcePath path, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
+            ParametrizedMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
         String parameter = path.assertAndConsumeLastItem();
-        return new ResourceMethod<INTYPE, OUTTYPE>() {
-            @Override
-            public Class<INTYPE> getInType() {
-                return inType;
-            }
+        return createParametrizedMethod(parameter, securityRequirements, inType, handler);
+    }
 
-            @Override
-            public OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException {
-                return handler.perform(data, parameter, client);
-            }
-        };
+    public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParametrizedMethod(
+            String parameter, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
+            ParametrizedMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
+        return new ResourceMethodImpl<>(inType, securityRequirements, (data, client) -> handler.perform(data, parameter, client));
     }
 
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParameterlessMethod(
-            ResourcePath path, Class<INTYPE> inType, ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
+            ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
+            ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
+        return new ResourceMethodImpl<>(inType, securityRequirements, handler);
+    }
+
+    public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParameterlessMethod(
+            ResourcePath path, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
+            ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
         path.assertEmpty();
+        return createParameterlessMethod(securityRequirements, inType, handler);
+    }
+
+    public static <INTYPE> ResourceMethod<INTYPE, Void> createVoidParameterlessMethod(
+            ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
+            VoidParameterlessMethodHandler<INTYPE> handler) throws ResourceAccessException {
+        return createParameterlessMethod(securityRequirements, inType, (data, client) -> {
+            handler.perform(data, client);
+            return null;
+        });
+    }
+
+    public static <INTYPE> ResourceMethod<INTYPE, Void> createVoidParameterlessMethod(
+            ResourcePath path, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
+            VoidParameterlessMethodHandler<INTYPE> handler) throws ResourceAccessException {
+        path.assertEmpty();
+        return createVoidParameterlessMethod(securityRequirements, inType, handler);
+    }
+
+    public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> decorateMethod(
+            ResourceMethod<INTYPE, OUTTYPE> base, ThrowingRunnable<ResourceAccessException> before, ThrowingRunnable<ResourceAccessException> after) {
         return new ResourceMethod<INTYPE, OUTTYPE>() {
             @Override
             public Class<INTYPE> getInType() {
-                return inType;
+                return base.getInType();
+            }
+
+            @Override
+            public boolean clientIsAllowed(ClientSecurityInfo securityInfo) {
+                return base.clientIsAllowed(securityInfo);
             }
 
             @Override
             public OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException {
-                return handler.perform(data, client);
+                before.run();
+                OUTTYPE result = base.perform(data, client);
+                after.run();
+                return result;
             }
         };
     }

@@ -16,7 +16,6 @@
 package org.terasology.web.resources.base;
 
 import org.terasology.network.Client;
-import org.terasology.web.resources.ResourceAccessException;
 
 @FunctionalInterface
 public interface ParameterlessMethodHandler<INTYPE, OUTTYPE> {

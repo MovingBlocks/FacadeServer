@@ -17,31 +17,37 @@ package org.terasology.web.resources.games;
 
 import org.terasology.engine.paths.PathManager;
 import org.terasology.game.GameManifest;
+import org.terasology.network.Client;
 import org.terasology.web.io.ActionResult;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceMethodImpl;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static org.terasology.web.resources.InputCheckUtils.checkNotNullOrEmpty;
+import static org.terasology.web.resources.InputCheckUtils.checkNull;
 
-public class RenameGameAction extends AbstractExistingGameAction {
+public class PatchGameMethod extends ResourceMethodImpl<NewGameMetadata, Void> {
 
-    private String newGameName;
+    private PathManager pathManager;
+    private String gameName;
 
-    public RenameGameAction() {
-    }
-
-    RenameGameAction(String newGameName) {
-        this.newGameName = newGameName;
+    public PatchGameMethod(PathManager pathManager, String gameName) {
+        super(NewGameMetadata.class, ClientSecurityRequirements.REQUIRE_ADMIN, null);
+        this.gameName = gameName;
     }
 
     @Override
-    protected void perform(PathManager pathManager, String oldGameName) throws ResourceAccessException {
-        checkNotNullOrEmpty(newGameName, "A new name must be specified.");
-        Path oldGameDir = pathManager.getSavePath(oldGameName);
-        Path newGameDir = pathManager.getSavePath(newGameName);
+    public Void perform(NewGameMetadata data, Client client) throws ResourceAccessException {
+        checkNull(data.getSeed(), "It's not possible to change the seed of an existing game.");
+        checkNull(data.getWorldGenerator(), "It's not possible to change the world generator of an existing game.");
+        checkNull(data.getModules(), "It's not possible to change modules of an existing game"); // TODO: make it possible
+        checkNotNullOrEmpty(data.getGameName(), "A new name must be specified.");
+        Path oldGameDir = pathManager.getSavePath(gameName);
+        Path newGameDir = pathManager.getSavePath(data.getGameName());
         Path newManifestFile = newGameDir.resolve(GameManifest.DEFAULT_FILE_NAME);
         if (Files.exists(newGameDir)) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.CONFLICT, "A game with the specified name already exists"));
@@ -49,10 +55,11 @@ public class RenameGameAction extends AbstractExistingGameAction {
         try {
             Files.move(oldGameDir, newGameDir);
             GameManifest gameManifest = GameManifest.load(newManifestFile);
-            gameManifest.setTitle(newGameName);
+            gameManifest.setTitle(data.getGameName());
             GameManifest.save(newManifestFile, gameManifest);
         } catch (IOException ex) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
         }
+        return null;
     }
 }

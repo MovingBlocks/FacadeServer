@@ -15,9 +15,7 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.web.resources.ResourceAccessException;
-
-public abstract class AbstractResource implements Resource {
+public abstract class AbstractSimpleResource extends AbstractObservableResource {
 
     @Override
     public final ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {

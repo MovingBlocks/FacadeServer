@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.onlinePlayers;
 
 import org.terasology.network.Client;
 import org.terasology.rendering.nui.Color;

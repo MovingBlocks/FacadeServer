@@ -15,9 +15,11 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.web.resources.ResourceAccessException;
-
 public interface Resource {
 
     ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException;
+
+    void setObserver(ResourceObserver observer);
+
+    void notifyChangedForAllClients();
 }

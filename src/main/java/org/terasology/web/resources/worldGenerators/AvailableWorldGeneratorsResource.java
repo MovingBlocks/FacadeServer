@@ -13,39 +13,30 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources.config;
+package org.terasology.web.resources.worldGenerators;
 
-import org.terasology.config.Config;
 import org.terasology.registry.In;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.world.generator.internal.WorldGeneratorInfo;
+import org.terasology.world.generator.internal.WorldGeneratorManager;
+
+import java.util.List;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
-import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
-public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResource {
+// TODO: make observable and update after module installation
+public class AvailableWorldGeneratorsResource extends AbstractSimpleResource {
 
     @In
-    private Config config;
+    private WorldGeneratorManager worldGeneratorManager;
 
     @Override
-    protected ResourceMethod getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) -> get(config));
+    protected ResourceMethod<Void, List<WorldGeneratorInfo>> getGetMethod(ResourcePath path) throws ResourceAccessException {
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
+                (data, client) -> worldGeneratorManager.getWorldGenerators());
     }
-
-    @Override
-    protected ResourceMethod getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, getDataType(), (data, client) -> {
-            set(config, data);
-            config.save();
-            notifyChangedForAllClients();
-        });
-    }
-
-    protected abstract Class<T> getDataType();
-    protected abstract void set(Config targetConfig, T value);
-    protected abstract T get(Config sourceConfig);
 }
