@@ -21,6 +21,8 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.terasology.web.io.JsonSession;
 
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.function.BiConsumer;
 
@@ -36,19 +38,19 @@ public class JsonSessionWithEventQueueTest {
     public void testEventQueue() {
         JsonSession jsonSessionMock = mock(JsonSession.class);
         JsonSessionWithEventQueue eventSession = new JsonSessionWithEventQueue(jsonSessionMock);
-        ArgumentCaptor<BiConsumer<String, JsonElement>> observerArgument = ArgumentCaptor.forClass(BiConsumer.class);
-        verify(jsonSessionMock).setEventResourceObserver(observerArgument.capture());
+        ArgumentCaptor<BiConsumer<Collection<String>, JsonElement>> observerArgument = ArgumentCaptor.forClass(BiConsumer.class);
+        verify(jsonSessionMock).setResourceEventListener(observerArgument.capture());
         assertTrue(eventSession.drainEventQueue().isEmpty());
-        observerArgument.getValue().accept("testResource", new JsonPrimitive("testEventDataValue1"));
-        observerArgument.getValue().accept("testResource", new JsonPrimitive("testEventDataValue2"));
+        observerArgument.getValue().accept(Arrays.asList("parent1", "resource1"), new JsonPrimitive("testEventDataValue1"));
+        observerArgument.getValue().accept(Arrays.asList("parent2", "resource2"), new JsonPrimitive("testEventDataValue2"));
         List<JsonSessionWithEventQueue.ResourceEvent> returnedEventList = eventSession.drainEventQueue();
         assertEquals(2, returnedEventList.size());
-        assertEventEquals(new JsonSessionWithEventQueue.ResourceEvent("testResource", new JsonPrimitive("testEventDataValue1")), returnedEventList.get(0));
-        assertEventEquals(new JsonSessionWithEventQueue.ResourceEvent("testResource", new JsonPrimitive("testEventDataValue2")), returnedEventList.get(1));
+        assertEventEquals(new JsonSessionWithEventQueue.ResourceEvent(Arrays.asList("parent1", "resource1"), new JsonPrimitive("testEventDataValue1")), returnedEventList.get(0));
+        assertEventEquals(new JsonSessionWithEventQueue.ResourceEvent(Arrays.asList("parent2", "resource2"), new JsonPrimitive("testEventDataValue2")), returnedEventList.get(1));
     }
 
     private void assertEventEquals(JsonSessionWithEventQueue.ResourceEvent expected, JsonSessionWithEventQueue.ResourceEvent actual) {
-        assertEquals(expected.getResourceName(), actual.getResourceName());
+        assertEquals(expected.getResourcePath(), actual.getResourcePath());
         assertEquals(expected.getEventData(), actual.getEventData());
     }
 }

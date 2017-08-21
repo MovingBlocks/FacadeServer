@@ -32,13 +32,13 @@ public class EngineStateResource extends AbstractSimpleResource {
     private GameEngine gameEngine;
 
     @Override
-    protected ResourceMethod getGetMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod<Void, EngineStateMetadata> getGetMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> EngineStateMetadata.build(gameEngine.getState()));
     }
 
     @Override
-    protected ResourceMethod getPutMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod<EngineStateMetadata, Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
         return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, EngineStateMetadata.class,
                 (data, client) -> data.switchEngineToThisState(gameEngine));
     }

@@ -42,10 +42,14 @@ public class NewGameMethod extends ResourceMethodImpl<NewGameMetadata, Void> {
     private PathManager pathManager;
     private DependencyResolver dependencyResolver;
 
-    public NewGameMethod(PathManager pathManager, ModuleManager moduleManager) {
+    public NewGameMethod(PathManager pathManager, DependencyResolver dependencyResolver) {
         super(NewGameMetadata.class, ClientSecurityRequirements.REQUIRE_ADMIN, null);
         this.pathManager = pathManager;
-        this.dependencyResolver = new DependencyResolver(moduleManager.getRegistry());
+        this.dependencyResolver = dependencyResolver;
+    }
+
+    public NewGameMethod(PathManager pathManager, ModuleManager moduleManager) {
+        this(pathManager, new DependencyResolver(moduleManager.getRegistry()));
     }
 
     @Override

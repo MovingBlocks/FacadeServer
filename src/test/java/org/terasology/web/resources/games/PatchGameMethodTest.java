@@ -21,7 +21,7 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.game.GameManifest;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -33,7 +33,7 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class RenameGameActionTest {
+public class PatchGameMethodTest {
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -67,7 +67,7 @@ public class RenameGameActionTest {
         assertTrue(Files.exists(oldPath));
         assertFalse(Files.exists(newPath));
 
-        new RenameGameAction("game1New").perform(pathManagerMock, "game1");
+        new PatchGameMethod(pathManagerMock, "game1New").perform(getRenameData("game1"), null);
 
         assertFalse(Files.exists(oldPath));
         assertTrue(Files.exists(newPath));
@@ -78,16 +78,20 @@ public class RenameGameActionTest {
 
     @Test(expected = ResourceAccessException.class)
     public void testRenameNotExisting() throws ResourceAccessException {
-        new RenameGameAction("game2New").perform(pathManagerMock, "game2");
+        new PatchGameMethod(pathManagerMock, "game2New").perform(getRenameData("game2"), null);
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testRenameConflict() throws ResourceAccessException {
-        new RenameGameAction("game3").perform(pathManagerMock, "game1");
+        new PatchGameMethod(pathManagerMock, "game3").perform(getRenameData("game1"), null);
     }
 
     @Test(expected = ResourceAccessException.class)
     public void testRenameEmptyName() throws ResourceAccessException {
-        new RenameGameAction("").perform(pathManagerMock, "game1");
+        new PatchGameMethod(pathManagerMock, "").perform(getRenameData("game1"), null);
+    }
+
+    private NewGameMetadata getRenameData(String newName) {
+        return new NewGameMetadata(newName, null, null, null);
     }
 }

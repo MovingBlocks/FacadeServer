@@ -43,7 +43,7 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
     }
 
     @Override
-    protected ResourceMethod getPostMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod<String, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
         return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_AUTH, String.class,
                 (data, client) -> console.execute(data, client.getEntity()));
     }

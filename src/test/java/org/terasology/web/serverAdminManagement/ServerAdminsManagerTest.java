@@ -18,7 +18,7 @@ package org.terasology.web.serverAdminManagement;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
 
 import java.nio.file.Path;
 import java.util.Arrays;

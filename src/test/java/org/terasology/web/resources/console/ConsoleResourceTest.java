@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.console;
 
 import org.junit.Test;
 import org.terasology.context.Context;
@@ -24,8 +24,9 @@ import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
 import org.terasology.network.Client;
 import org.terasology.registry.InjectionHelper;
-
-import java.util.function.BiConsumer;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceObserver;
+import org.terasology.web.resources.base.ResourcePath;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -37,24 +38,28 @@ public class ConsoleResourceTest {
     @SuppressWarnings("unchecked")
     public void testMessageNotification() {
         ConsoleResource consoleResource = new ConsoleResource();
-        BiConsumer<EventEmittingResource<Message>, Message> observer = mock(BiConsumer.class);
+        ResourceObserver observer = mock(ResourceObserver.class);
         MessageEvent testEvent = mock(MessageEvent.class);
         when(testEvent.getFormattedMessage()).thenReturn(new Message("testMessage"));
-        EntityRef client = mock(EntityRef.class);
-        consoleResource.setObserver(client, observer);
-        consoleResource.onMessage(testEvent, client);
-        verify(observer).accept(consoleResource, testEvent.getFormattedMessage());
+        EntityRef clientEntity = mock(EntityRef.class);
+        consoleResource.setObserver(observer);
+        consoleResource.onMessage(testEvent, clientEntity);
+        verify(observer).onEvent(ResourcePath.EMPTY, testEvent.getFormattedMessage(), clientEntity);
     }
 
     @Test
-    public void testCommandExecution() {
+    public void testCommandExecution() throws ResourceAccessException {
         Console consoleMock = mock(Console.class);
         Context context = new ContextImpl();
         context.put(Console.class, consoleMock);
         ConsoleResource consoleResource = new ConsoleResource();
         InjectionHelper.inject(consoleResource, context);
+
         Client client = mock(Client.class);
-        consoleResource.write(client, "testCommand testArg");
-        verify(consoleMock).execute("testCommand testArg", client.getEntity());
+        EntityRef clientEntityMock = mock(EntityRef.class);
+        when(client.getEntity()).thenReturn(clientEntityMock);
+
+        consoleResource.getPostMethod(ResourcePath.EMPTY).perform("testCommand testArg", null);
+        verify(consoleMock).execute("testCommand testArg", clientEntityMock);
     }
 }

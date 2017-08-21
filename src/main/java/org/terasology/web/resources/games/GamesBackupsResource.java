@@ -38,19 +38,21 @@ public class GamesBackupsResource extends AbstractSimpleResource {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
 
+    private PathManager pathManager;
     private String gameName;
 
-    public GamesBackupsResource(String gameName) {
+    public GamesBackupsResource(PathManager pathManager, String gameName) {
+        this.pathManager = pathManager;
         this.gameName = gameName;
     }
 
     @Override
     protected ResourceMethod<Void, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
         return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
-                (data, client) -> performBackup(PathManager.getInstance()));
+                (data, client) -> performBackup());
     }
 
-    private void performBackup(PathManager pathManager) throws ResourceAccessException {
+    private void performBackup() throws ResourceAccessException {
         String backupName = gameName + "_backup_" + LocalDateTime.now().format(DATE_FORMATTER);
         Path srcGamePath = pathManager.getSavePath(gameName);
         Path dstGamePath = pathManager.getSavePath(backupName);

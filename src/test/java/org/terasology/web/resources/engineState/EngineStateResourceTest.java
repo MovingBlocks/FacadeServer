@@ -13,17 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.engineState;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.terasology.context.Context;
 import org.terasology.engine.GameEngine;
 import org.terasology.engine.modes.GameState;
-import org.terasology.network.Client;
+import org.terasology.engine.modes.StateLoading;
 import org.terasology.registry.InjectionHelper;
 import org.terasology.web.StateEngineIdle;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.ResourcePath;
 
+import static org.junit.Assert.assertEquals;
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -48,13 +51,16 @@ public class EngineStateResourceTest {
 
     @Test
     public void testWriteOk() throws ResourceAccessException {
-        engineStateResource.write(mockClient("serverAdm1"), "");
-        verify(engineMock, times(1)).changeState(isA(StateEngineIdle.class));
+        engineStateResource.getPutMethod(ResourcePath.EMPTY).perform(new EngineStateMetadata(EngineStateMetadata.State.LOADING, "testGame"), null);
+        verify(engineMock, times(1)).changeState(isA(StateLoading.class));
     }
 
-    private Client mockClient(String clientId) {
-        Client result = mock(Client.class);
-        when(result.getId()).thenReturn(clientId);
-        return result;
+    // TODO: add other write tests
+
+    @Test
+    public void testRead() throws ResourceAccessException {
+        EngineStateMetadata result = engineStateResource.getGetMethod(ResourcePath.EMPTY).perform(null, null);
+        assertEquals(EngineStateMetadata.State.IDLE, result.getState());
+        assertEquals("", result.getGameName());
     }
 }

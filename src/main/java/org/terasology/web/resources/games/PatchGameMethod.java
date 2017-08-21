@@ -37,6 +37,7 @@ public class PatchGameMethod extends ResourceMethodImpl<NewGameMetadata, Void> {
 
     public PatchGameMethod(PathManager pathManager, String gameName) {
         super(NewGameMetadata.class, ClientSecurityRequirements.REQUIRE_ADMIN, null);
+        this.pathManager = pathManager;
         this.gameName = gameName;
     }
 

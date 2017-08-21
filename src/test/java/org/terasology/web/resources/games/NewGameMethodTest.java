@@ -29,7 +29,7 @@ import org.terasology.module.ResolutionResult;
 import org.terasology.naming.Name;
 import org.terasology.naming.NameVersion;
 import org.terasology.naming.Version;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.world.internal.WorldInfo;
 
 import java.io.IOException;
@@ -49,7 +49,7 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-public class NewGameActionTest {
+public class NewGameMethodTest {
 
     private static final SimpleUri DEFAULT_WORLD_GENERATOR = new SimpleUri("testModule", "testGenerator");
 
@@ -76,8 +76,8 @@ public class NewGameActionTest {
     }
 
     private void performAction(String name, String seed, List<Name> modules, SimpleUri worldGenerator) throws ResourceAccessException {
-        NewGameAction newGameAction = new NewGameAction(name, seed, modules, worldGenerator, dependencyResolverMock);
-        newGameAction.perform(pathManagerMock, null);
+        NewGameMethod newGameMethod = new NewGameMethod(pathManagerMock, dependencyResolverMock);
+        newGameMethod.perform(new NewGameMetadata(name, seed, modules, worldGenerator), null);
     }
 
     @Test

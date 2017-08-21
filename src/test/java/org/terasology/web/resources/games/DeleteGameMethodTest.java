@@ -20,20 +20,19 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.terasology.engine.paths.PathManager;
-import org.terasology.game.GameManifest;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.ArgumentMatchers.startsWith;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class BackupGameActionTest {
+public class DeleteGameMethodTest {
 
     @Rule
     public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -47,32 +46,20 @@ public class BackupGameActionTest {
         Path game2Path = tempFolder.getRoot().toPath().resolve("game2");
         when(pathManagerMock.getSavePath("game1")).thenReturn(game1Path);
         when(pathManagerMock.getSavePath("game2")).thenReturn(game2Path);
-        when(pathManagerMock.getSavePath(startsWith("game1_backup"))).thenReturn(tempFolder.getRoot().toPath().resolve("game1_backup"));
         Files.createDirectory(game1Path);
-        Files.createFile(game1Path.resolve("someFile"));
-        GameManifest gameManifest = new GameManifest("game1", "", 0);
-        GameManifest.save(game1Path.resolve(GameManifest.DEFAULT_FILE_NAME), gameManifest);
+        Files.createFile(game1Path.resolve(Paths.get("someFile")));
     }
 
     @Test
-    public void testBackupOk() throws ResourceAccessException, IOException {
+    public void testDeleteOk() throws ResourceAccessException {
         Path gamePath = tempFolder.getRoot().toPath().resolve("game1");
-        Path tempFolderPath = tempFolder.getRoot().toPath();
-        Path backupPath = tempFolderPath.resolve("game1_backup");
-
         assertTrue(Files.exists(gamePath));
-        assertFalse(Files.exists(backupPath));
-
-        new BackupGameAction().perform(pathManagerMock, "game1");
-
-        assertTrue(Files.exists(gamePath));
-        assertTrue(Files.exists(backupPath));
-        assertTrue(Files.exists(backupPath.resolve("someFile")));
-        assertTrue(Files.exists(backupPath.resolve(GameManifest.DEFAULT_FILE_NAME)));
+        new DeleteGameMethod(pathManagerMock, "game1").perform(null, null);
+        assertFalse(Files.exists(gamePath));
     }
 
     @Test(expected = ResourceAccessException.class)
-    public void testBackupNotExisting() throws ResourceAccessException {
-        new BackupGameAction().perform(pathManagerMock, "game2");
+    public void testDeleteNotExisting() throws ResourceAccessException {
+        new DeleteGameMethod(pathManagerMock, "game2").perform(null, null);
     }
 }

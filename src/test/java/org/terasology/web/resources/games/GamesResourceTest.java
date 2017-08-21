@@ -15,45 +15,32 @@
  */
 package org.terasology.web.resources.games;
 
-import org.junit.Before;
 import org.junit.Test;
-import org.terasology.context.Context;
-import org.terasology.engine.module.ModuleManager;
-import org.terasology.engine.paths.PathManager;
-import org.terasology.network.Client;
-import org.terasology.registry.InjectionHelper;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceMethod;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.junit.Assert.assertTrue;
 
 public class GamesResourceTest {
 
-    private ModuleManager moduleManagerMock;
-    private GameAction actionMock;
-    private GamesResource gamesResource;
+    // TODO: it's currently not possible to etst the GET methods because GameProvider.getSavedGames() is a ststic method
+    // TODO: thus can't easily be mocked. Possibly refactor GameProvider in the engine repository to a singleton
 
-    @Before
-    public void setUp() {
-        moduleManagerMock = mock(ModuleManager.class);
-        actionMock = mock(GameAction.class);
-        Context contextMock = mock(Context.class);
-        when(contextMock.get(ModuleManager.class)).thenReturn(moduleManagerMock);
-        gamesResource = new GamesResource();
-        InjectionHelper.inject(gamesResource, contextMock);
+    @Test
+    public void testPost() throws ResourceAccessException {
+        ResourceMethod<NewGameMetadata, Void> postMethod = new GamesResource().getPostCollectionMethod();
+        assertTrue(postMethod instanceof NewGameMethod);
     }
 
     @Test
-    public void testWriteOk() throws ResourceAccessException {
-        gamesResource.write(mockClient("admin2"), actionMock);
-        verify(actionMock, times(1)).perform(PathManager.getInstance(), moduleManagerMock);
+    public void testDelete() throws ResourceAccessException {
+        ResourceMethod<Void, Void> deleteMethod = new GamesResource().getDeleteItemMethod("gameToDelete");
+        assertTrue(deleteMethod instanceof DeleteGameMethod);
     }
 
-    private Client mockClient(String clientId) {
-        Client result = mock(Client.class);
-        when(result.getId()).thenReturn(clientId);
-        return result;
+    @Test
+    public void testPatch() throws ResourceAccessException {
+        ResourceMethod<NewGameMetadata, Void> patchMethod = new GamesResource().getPatchItemMethod("gameToPatch");
+        assertTrue(patchMethod instanceof PatchGameMethod);
     }
 }

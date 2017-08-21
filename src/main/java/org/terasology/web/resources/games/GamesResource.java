@@ -40,7 +40,7 @@ public class GamesResource extends AbstractItemCollectionResource {
     private ModuleManager moduleManager;
 
     public GamesResource() {
-        super(Collections.singletonMap("backup", GamesBackupsResource::new));
+        super(Collections.singletonMap("backup", (gameName) -> new GamesBackupsResource(PathManager.getInstance(), gameName)));
     }
 
     @Override
@@ -79,12 +79,12 @@ public class GamesResource extends AbstractItemCollectionResource {
     }
 
     @Override
-    protected ResourceMethod getDeleteItemMethod(String itemId) throws ResourceAccessException {
+    protected ResourceMethod<Void, Void> getDeleteItemMethod(String itemId) throws ResourceAccessException {
         return decorateMethodForExistingGame(itemId, new DeleteGameMethod(PathManager.getInstance(), itemId));
     }
 
     @Override
-    protected ResourceMethod getPatchItemMethod(String itemId) throws ResourceAccessException {
+    protected ResourceMethod<NewGameMetadata, Void> getPatchItemMethod(String itemId) throws ResourceAccessException {
         return decorateMethodForExistingGame(itemId, new PatchGameMethod(PathManager.getInstance(), itemId));
     }
 

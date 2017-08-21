@@ -56,7 +56,7 @@ public final class EngineStateMetadata {
     private State state;
     private String gameName;
 
-    private EngineStateMetadata(State state, String gameName) {
+    EngineStateMetadata(State state, String gameName) {
         this.state = state;
         this.gameName = gameName;
     }

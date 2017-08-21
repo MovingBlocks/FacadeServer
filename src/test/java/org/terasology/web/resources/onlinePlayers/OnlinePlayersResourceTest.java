@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources;
+package org.terasology.web.resources.onlinePlayers;
 
 import org.junit.Test;
 import org.terasology.context.Context;
@@ -25,10 +25,12 @@ import org.terasology.network.events.ConnectedEvent;
 import org.terasology.network.events.DisconnectedEvent;
 import org.terasology.registry.InjectionHelper;
 import org.terasology.rendering.nui.Color;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceObserver;
+import org.terasology.web.resources.base.ResourcePath;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.function.Consumer;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -47,7 +49,7 @@ public class OnlinePlayersResourceTest {
     }
 
     @Test
-    public void testRead() {
+    public void testRead() throws ResourceAccessException {
         NetworkSystem networkSystemMock = mock(NetworkSystem.class);
         List<Client> clientMocks = Arrays.asList(
                 mockClient("id1", "name1", new Color(255, 0, 0, 255)),
@@ -63,23 +65,23 @@ public class OnlinePlayersResourceTest {
                 new OnlinePlayerMetadata("id1", "name1", new Color(255, 0, 0, 255)),
                 new OnlinePlayerMetadata("id2", "name2", new Color(0, 255, 0, 255))
         );
-        assertEquals(expectedResult, onlinePlayersResource.read(null));
+        assertEquals(expectedResult, onlinePlayersResource.getGetMethod(ResourcePath.EMPTY).perform(null, null));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testNotification() {
-        Consumer<ObservableReadableResource<List<OnlinePlayerMetadata>>> observer = mock(Consumer.class);
+        ResourceObserver resourceObserverMock = mock(ResourceObserver.class);
 
         Context context = new ContextImpl();
         context.put(NetworkSystem.class, mock(NetworkSystem.class));
         OnlinePlayersResource onlinePlayersResource = new OnlinePlayersResource();
         InjectionHelper.inject(onlinePlayersResource, context);
-        onlinePlayersResource.setObserver(mock(EntityRef.class), observer);
+        onlinePlayersResource.setObserver(resourceObserverMock);
         onlinePlayersResource.onConnected(mock(ConnectedEvent.class), EntityRef.NULL);
         onlinePlayersResource.onDisconnected(mock(DisconnectedEvent.class), EntityRef.NULL);
 
         //2 times because one for Connected and one for Disconnected events
-        verify(observer, times(2)).accept(onlinePlayersResource);
+        verify(resourceObserverMock, times(2)).onChangedForAllClients(ResourcePath.EMPTY, onlinePlayersResource);
     }
 }
