@@ -20,14 +20,17 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
 
+// TODO: consider making it immutable and returning a new instance for each operation
 public class ResourcePath {
-
-    public static final ResourcePath EMPTY = new ResourcePath(Collections.emptyList());
 
     private Deque<String> items;
 
     public ResourcePath(Collection<String> items) {
         this.items = new ArrayDeque<>(items);
+    }
+
+    public static ResourcePath createEmpty() {
+        return new ResourcePath(Collections.emptyList());
     }
 
     public boolean isEmpty() {
@@ -61,5 +64,10 @@ public class ResourcePath {
 
     public Collection<String> getItemList() {
         return items;
+    }
+
+    @Override
+    public String toString() {
+        return String.join("/", items);
     }
 }

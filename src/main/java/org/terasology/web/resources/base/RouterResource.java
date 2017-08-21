@@ -93,6 +93,11 @@ public final class RouterResource implements Resource {
                 }
             };
         }
+
+        @Override
+        public void notifyChangedForAllClients() {
+            // do nothing (avoid sending updates for this non-meaningful resource)
+        }
     }
 
     public static final class Builder {

@@ -31,15 +31,15 @@ public abstract class AbstractObservableResource implements Resource {
     }
 
     protected void notifyEvent(EntityRef clientEntity, Object eventData) {
-        observer.onEvent(ResourcePath.EMPTY, eventData, clientEntity);
+        observer.onEvent(ResourcePath.createEmpty(), eventData, clientEntity);
     }
 
     protected void notifyChangedForClient(EntityRef clientEntity) {
-        observer.onChangedForClient(ResourcePath.EMPTY, this, clientEntity);
+        observer.onChangedForClient(ResourcePath.createEmpty(), this, clientEntity);
     }
 
     @Override
     public void notifyChangedForAllClients() {
-        observer.onChangedForAllClients(ResourcePath.EMPTY, this);
+        observer.onChangedForAllClients(ResourcePath.createEmpty(), this);
     }
 }

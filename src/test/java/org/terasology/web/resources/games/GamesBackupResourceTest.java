@@ -78,6 +78,6 @@ public class GamesBackupResourceTest {
     }
 
     private void performBackup(String gameName) throws ResourceAccessException {
-        new GamesBackupsResource(pathManagerMock, gameName).getPostMethod(ResourcePath.EMPTY).perform(null, null);
+        new GamesBackupsResource(pathManagerMock, gameName).getPostMethod(ResourcePath.createEmpty()).perform(null, null);
     }
 }

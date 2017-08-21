@@ -65,7 +65,7 @@ public class OnlinePlayersResourceTest {
                 new OnlinePlayerMetadata("id1", "name1", new Color(255, 0, 0, 255)),
                 new OnlinePlayerMetadata("id2", "name2", new Color(0, 255, 0, 255))
         );
-        assertEquals(expectedResult, onlinePlayersResource.getGetMethod(ResourcePath.EMPTY).perform(null, null));
+        assertEquals(expectedResult, onlinePlayersResource.getGetMethod(ResourcePath.createEmpty()).perform(null, null));
     }
 
     @Test
@@ -82,6 +82,6 @@ public class OnlinePlayersResourceTest {
         onlinePlayersResource.onDisconnected(mock(DisconnectedEvent.class), EntityRef.NULL);
 
         //2 times because one for Connected and one for Disconnected events
-        verify(resourceObserverMock, times(2)).onChangedForAllClients(ResourcePath.EMPTY, onlinePlayersResource);
+        verify(resourceObserverMock, times(2)).onChangedForAllClients(ResourcePath.createEmpty(), onlinePlayersResource);
     }
 }

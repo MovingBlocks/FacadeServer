@@ -113,6 +113,7 @@ public class HttpAPIServlet {
         return getSessionWithEventQueue(request).drainEventQueue();
     }
 
+    @POST // TODO: change, must handle all the methods!
     @Path("resources/*")
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)

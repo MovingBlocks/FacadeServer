@@ -44,7 +44,7 @@ public class ConsoleResourceTest {
         EntityRef clientEntity = mock(EntityRef.class);
         consoleResource.setObserver(observer);
         consoleResource.onMessage(testEvent, clientEntity);
-        verify(observer).onEvent(ResourcePath.EMPTY, testEvent.getFormattedMessage(), clientEntity);
+        verify(observer).onEvent(ResourcePath.createEmpty(), testEvent.getFormattedMessage(), clientEntity);
     }
 
     @Test
@@ -59,7 +59,7 @@ public class ConsoleResourceTest {
         EntityRef clientEntityMock = mock(EntityRef.class);
         when(client.getEntity()).thenReturn(clientEntityMock);
 
-        consoleResource.getPostMethod(ResourcePath.EMPTY).perform("testCommand testArg", client);
+        consoleResource.getPostMethod(ResourcePath.createEmpty()).perform("testCommand testArg", client);
         verify(consoleMock).execute("testCommand testArg", clientEntityMock);
     }
 }

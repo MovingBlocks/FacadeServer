@@ -70,10 +70,7 @@ public final class ResourceManager implements ResourceObserver {
         GameState gameState = gameEngine.getState();
         Context context = gameState.getContext();
 
-        Consumer<Resource> resourceInitializer = (resource) -> {
-            initializeResource(context, resource);
-            resource.notifyChangedForAllClients(); //update all the currently connected client with each resource
-        };
+        Consumer<Resource> resourceInitializer = (resource) -> initializeResource(context, resource);
         rootResource = new RouterResource.Builder(resourceInitializer)
                 .addSubResource("onlinePlayers", new OnlinePlayersResource())
                 .addSubResource("console", new ConsoleResource())
@@ -90,12 +87,14 @@ public final class ResourceManager implements ResourceObserver {
                         .build())
                 .build();
         rootResource.setObserver(this);
+        rootResource.notifyChangedForAllClients();
     }
 
     private void initializeResource(Context context, Resource resource) {
-        if (resource instanceof ComponentSystem) {
+        ComponentSystemManager componentSystemManager = context.get(ComponentSystemManager.class);
+        if (resource instanceof ComponentSystem && componentSystemManager != null) {
             // this will both inject fields and register event handlers
-            context.get(ComponentSystemManager.class).register((ComponentSystem) resource);
+            componentSystemManager.register((ComponentSystem) resource);
         } else {
             // if it's not a ComponentSystem (thus no need to receive events) only field injection is performed
             InjectionHelper.inject(resource, context);
@@ -116,7 +115,7 @@ public final class ResourceManager implements ResourceObserver {
     }
 
     private ResourceMethod getResourceMethod(Resource resource, ResourceMethodName methodName, HeadlessClient client) throws ResourceAccessException {
-        return getResourceMethod(resource, ResourcePath.EMPTY, methodName, client);
+        return getResourceMethod(resource, ResourcePath.createEmpty(), methodName, client);
     }
 
     public <T> Object performAction(ResourcePath path, ResourceMethodName methodName, T inputData, InputParser<T> inputParser, HeadlessClient client)
@@ -144,28 +143,23 @@ public final class ResourceManager implements ResourceObserver {
 
     @Override
     public void onChangedForClient(ResourcePath senderPath, Resource sender, EntityRef targetClientEntity) {
-        updateSubscribers.get(targetClientEntity).accept(senderPath, readResourceUpdate(sender, targetClientEntity));
-    }
-
-    @Override
-    public void onChangedForAllClients(ResourcePath senderPath, Resource sender) {
-        updateSubscribers.forEach((clientEntity, consumer) -> consumer.accept(senderPath, readResourceUpdate(sender, clientEntity)));
-    }
-
-    private Object readResourceUpdate(Resource resource, EntityRef targetClientEntity) {
         HeadlessClient client = clientLookup.get(targetClientEntity);
         if (client == null) {
             logger.warn("Failed to send update to client with entity ID" + targetClientEntity.getId() + " (corresponding client not registered)");
         }
         try {
-            ResourceMethod resourceGetMethod = getResourceMethod(resource, ResourceMethodName.GET, client);
+            ResourceMethod resourceGetMethod = getResourceMethod(sender, ResourceMethodName.GET, client);
             if (!resourceGetMethod.getInType().equals(Void.class)) {
                 throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, "This resource's GET method requires input data"));
             }
-            return resourceGetMethod.perform(null, client);
+            updateSubscribers.get(targetClientEntity).accept(senderPath, resourceGetMethod.perform(null, client));
         } catch (ResourceAccessException ex) {
-            logger.warn("Failed to send update", ex); //TODO better message
-            return null;
+            logger.warn("Failed to send update for resource at path " + senderPath.toString(), ex);
         }
+    }
+
+    @Override
+    public void onChangedForAllClients(ResourcePath senderPath, Resource sender) {
+        updateSubscribers.keySet().forEach((clientEntity) -> onChangedForClient(senderPath, sender, clientEntity));
     }
 }

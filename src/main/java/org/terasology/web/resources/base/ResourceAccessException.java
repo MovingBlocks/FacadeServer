@@ -26,7 +26,7 @@ public class ResourceAccessException extends Exception {
     private final ActionResult resultToSend;
 
     public ResourceAccessException(ActionResult resultToSend) {
-        super("Failed to access requested resource: " + resultToSend.getMessage());
+        super("Failed to access requested resource: " + resultToSend.getStatus().toString() + resultToSend.getMessage());
         this.resultToSend = resultToSend;
     }
 

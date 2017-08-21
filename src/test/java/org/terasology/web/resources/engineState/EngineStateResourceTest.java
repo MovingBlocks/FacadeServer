@@ -50,7 +50,7 @@ public class EngineStateResourceTest {
     @Test
     public void testWriteOk() throws ResourceAccessException {
         EngineStateMetadata stateMetadataMock = mock(EngineStateMetadata.class);
-        engineStateResource.getPutMethod(ResourcePath.EMPTY).perform(stateMetadataMock, null);
+        engineStateResource.getPutMethod(ResourcePath.createEmpty()).perform(stateMetadataMock, null);
         verify(stateMetadataMock, times(1)).switchEngineToThisState(engineMock);
     }
 
@@ -58,7 +58,7 @@ public class EngineStateResourceTest {
 
     @Test
     public void testRead() throws ResourceAccessException {
-        EngineStateMetadata result = engineStateResource.getGetMethod(ResourcePath.EMPTY).perform(null, null);
+        EngineStateMetadata result = engineStateResource.getGetMethod(ResourcePath.createEmpty()).perform(null, null);
         assertEquals(EngineStateMetadata.State.IDLE, result.getState());
         assertEquals(null, result.getGameName());
     }
