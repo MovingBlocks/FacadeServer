@@ -67,7 +67,7 @@ public class PatchGameMethodTest {
         assertTrue(Files.exists(oldPath));
         assertFalse(Files.exists(newPath));
 
-        new PatchGameMethod(pathManagerMock, "game1New").perform(getRenameData("game1"), null);
+        new PatchGameMethod(pathManagerMock, "game1").perform(getRenameData("game1New"), null);
 
         assertFalse(Files.exists(oldPath));
         assertTrue(Files.exists(newPath));
@@ -88,7 +88,7 @@ public class PatchGameMethodTest {
 
     @Test(expected = ResourceAccessException.class)
     public void testRenameEmptyName() throws ResourceAccessException {
-        new PatchGameMethod(pathManagerMock, "").perform(getRenameData("game1"), null);
+        new PatchGameMethod(pathManagerMock, "game1").perform(getRenameData(""), null);
     }
 
     private NewGameMetadata getRenameData(String newName) {

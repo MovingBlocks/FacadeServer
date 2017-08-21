@@ -59,7 +59,7 @@ public class ConsoleResourceTest {
         EntityRef clientEntityMock = mock(EntityRef.class);
         when(client.getEntity()).thenReturn(clientEntityMock);
 
-        consoleResource.getPostMethod(ResourcePath.EMPTY).perform("testCommand testArg", null);
+        consoleResource.getPostMethod(ResourcePath.EMPTY).perform("testCommand testArg", client);
         verify(consoleMock).execute("testCommand testArg", clientEntityMock);
     }
 }
