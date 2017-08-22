@@ -33,6 +33,8 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -82,6 +84,6 @@ public class OnlinePlayersResourceTest {
         onlinePlayersResource.onDisconnected(mock(DisconnectedEvent.class), EntityRef.NULL);
 
         //2 times because one for Connected and one for Disconnected events
-        verify(resourceObserverMock, times(2)).onChangedForAllClients(ResourcePath.createEmpty(), onlinePlayersResource);
+        verify(resourceObserverMock, times(2)).onChangedForAllClients(argThat(ResourcePath::isEmpty), eq(onlinePlayersResource));
     }
 }

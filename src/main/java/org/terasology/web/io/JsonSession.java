@@ -67,8 +67,12 @@ public class JsonSession {
             .create();
     private static final InputParser<JsonElement> JSON_INPUT_PARSER = new InputParser<JsonElement>() {
         @Override
-        public <T> T parse(JsonElement input, Class<T> outputType) {
-            return  GSON.fromJson(input, outputType);
+        public <T> T parse(JsonElement input, Class<T> outputType) throws ResourceAccessException {
+            try {
+                return GSON.fromJson(input, outputType);
+            } catch (JsonSyntaxException ex) {
+                throw new ResourceAccessException(new ActionResult(ex));
+            }
         }
     };
     private static Set<JsonSession> allSessions = new HashSet<>();

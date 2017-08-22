@@ -17,5 +17,5 @@ package org.terasology.web.resources.base;
 
 @FunctionalInterface
 public interface InputParser<GENERICINTYPE> {
-    <T> T parse(GENERICINTYPE input, Class<T> outputType); //TODO allow implementor to throw an appropriate exception
+    <T> T parse(GENERICINTYPE input, Class<T> outputType) throws ResourceAccessException;
 }

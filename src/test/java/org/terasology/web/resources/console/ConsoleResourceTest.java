@@ -28,6 +28,8 @@ import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceObserver;
 import org.terasology.web.resources.base.ResourcePath;
 
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -40,11 +42,12 @@ public class ConsoleResourceTest {
         ConsoleResource consoleResource = new ConsoleResource();
         ResourceObserver observer = mock(ResourceObserver.class);
         MessageEvent testEvent = mock(MessageEvent.class);
-        when(testEvent.getFormattedMessage()).thenReturn(new Message("testMessage"));
+        Message message = new Message("testMessage");
+        when(testEvent.getFormattedMessage()).thenReturn(message);
         EntityRef clientEntity = mock(EntityRef.class);
         consoleResource.setObserver(observer);
         consoleResource.onMessage(testEvent, clientEntity);
-        verify(observer).onEvent(ResourcePath.createEmpty(), testEvent.getFormattedMessage(), clientEntity);
+        verify(observer).onEvent(argThat(ResourcePath::isEmpty), eq(message), eq(clientEntity));
     }
 
     @Test

@@ -42,6 +42,7 @@ import org.terasology.web.resources.games.GamesResource;
 import org.terasology.web.resources.modules.AvailableModulesResource;
 import org.terasology.web.resources.modules.ModuleInstallerResource;
 import org.terasology.web.resources.onlinePlayers.OnlinePlayersResource;
+import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
 
 import java.util.HashMap;
@@ -85,6 +86,7 @@ public final class ResourceManager implements ResourceObserver {
                         .addSubResource("serverPort", new ServerPortResource())
                         .addSubResource("MOTD", new ServerMotdResource())
                         .build())
+                .addSubResource("serverAdmins", new ServerAdminsResource())
                 .build();
         rootResource.setObserver(this);
         rootResource.notifyChangedForAllClients();

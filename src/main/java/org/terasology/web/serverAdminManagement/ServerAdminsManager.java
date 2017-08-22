@@ -85,7 +85,7 @@ public final class ServerAdminsManager {
         return isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId);
     }
 
-    // TODO: remove, probably no longer necessary
+    // TODO: refactor test class and remove, probably no longer necessary
     public void checkClientHasAdminPermissions(String clientId) throws ResourceAccessException {
         if (!clientHasAdminPermissions(clientId)) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only server admins can perform this action"));

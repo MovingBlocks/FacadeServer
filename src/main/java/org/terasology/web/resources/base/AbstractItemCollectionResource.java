@@ -112,7 +112,6 @@ public abstract class AbstractItemCollectionResource extends AbstractObservableR
     }
 
     // override to do additional actions before or after a sub-resource is accessed (e.g. notify observers)
-    // TODO: consider doing for each access (i.e. not only sub-resources)
 
     protected void beforeSubResourceAccess(String subResourceName, String itemId) throws ResourceAccessException {
         // by default, do nothing

@@ -70,7 +70,7 @@ public class AvailableModulesResourceTest {
         // assertTrue(result.getWorldGenerators().contains(worldGen2));
     }
 
-    // TODO: test read single item, and DELETE method when and if ir's implemented
+    // TODO: test read single item, and DELETE method when and if it's implemented
 
     private Module mockModule(Name id, Version version, String displayName) {
         ModuleMetadata metadata = mock(ModuleMetadata.class);

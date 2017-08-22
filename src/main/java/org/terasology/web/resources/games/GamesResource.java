@@ -23,24 +23,31 @@ import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.base.ResourceAccessException;
-import org.terasology.web.resources.base.AbstractItemCollectionResource;
-import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.resources.base.StreamBasedItemCollectionResource;
 
 import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.stream.Stream;
 
-import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.decorateMethod;
 
-public class GamesResource extends AbstractItemCollectionResource {
+public class GamesResource extends StreamBasedItemCollectionResource<GameInfo> {
 
     @In
     private ModuleManager moduleManager;
 
     public GamesResource() {
         super(Collections.singletonMap("backup", (gameName) -> new GamesBackupsResource(PathManager.getInstance(), gameName)));
+    }
+
+    @Override
+    protected Stream<GameInfo> getDataSourceStream() {
+        return GameProvider.getSavedGames().stream().sorted();
+    }
+
+    @Override
+    protected boolean itemMatchesId(String itemId, GameInfo item) {
+        return false;
     }
 
     @Override
@@ -51,26 +58,6 @@ public class GamesResource extends AbstractItemCollectionResource {
     @Override
     protected void afterSubResourceAccess(String subResourceName, String itemId) {
         notifyChangedForAllClients();
-    }
-
-    @Override
-    protected ResourceMethod<Void, List<GameInfo>> getGetCollectionMethod() throws ResourceAccessException {
-        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
-                (data, client) -> GameProvider.getSavedGames());
-    }
-
-    @Override
-    protected ResourceMethod<Void, GameInfo> getGetItemMethod(String itemId) throws ResourceAccessException {
-        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class, (data, client) -> {
-            Optional<GameInfo> result = GameProvider.getSavedGames().stream()
-                    .filter(gameInfo -> gameInfo.getManifest().getTitle().equals(itemId))
-                    .findFirst();
-            // TODO: generalize this Optional result management code
-            if (!result.isPresent()) {
-                throw ResourceAccessException.NOT_FOUND;
-            }
-            return result.get();
-        });
     }
 
     @Override

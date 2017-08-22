@@ -17,7 +17,7 @@ package org.terasology.web.resources.base;
 
 import org.terasology.web.io.ActionResult;
 
-// TODO: decouple from ActionResult (because thst's JSON specific)
+// TODO: consider decoupling from ActionResult (which is JSON specific)
 public class ResourceAccessException extends Exception {
 
     public static final ResourceAccessException NOT_FOUND = new ResourceAccessException(new ActionResult(ActionResult.Status.NOT_FOUND));
