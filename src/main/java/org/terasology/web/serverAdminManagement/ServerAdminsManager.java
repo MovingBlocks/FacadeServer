@@ -88,7 +88,7 @@ public final class ServerAdminsManager {
     // TODO: refactor test class and remove, probably no longer necessary
     public void checkClientHasAdminPermissions(String clientId) throws ResourceAccessException {
         if (!clientHasAdminPermissions(clientId)) {
-            throw new ResourceAccessException(new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only server admins can perform this action"));
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.FORBIDDEN, "Only server admins can perform this action"));
         }
     }
 
@@ -102,11 +102,13 @@ public final class ServerAdminsManager {
 
     public void addAdmin(String id) {
         serverAdminIds.add(id);
+        saveAdminList();
         onListChanged.run();
     }
 
     public void removeAdmin(String id) {
         serverAdminIds.remove(id);
+        saveAdminList();
         onListChanged.run();
     }
 

@@ -26,7 +26,9 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
+import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
@@ -41,6 +43,9 @@ import java.util.UUID;
 public class HttpAPIServlet {
 
     private static final String SESSION_TOKEN_HEADER = "Session-Token";
+    private static final String RESOURCE_PATH_MATCHER = "resources/{resourcePath: .+?}";
+    private static final String RESOURCE_PATH_PARAM = "resourcePath";
+
     private final Map<String, JsonSessionWithEventQueue> sessions = new HashMap<>(); //maps session tokens with the active sessions
     private JsonSession anonymousSession;
 
@@ -113,14 +118,50 @@ public class HttpAPIServlet {
         return getSessionWithEventQueue(request).drainEventQueue();
     }
 
-    @POST // TODO: change, must handle all the methods!
-    @Path("resources/*")
+    @GET
+    @Path(RESOURCE_PATH_MATCHER)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public ActionResult accessResource(JsonElement data, @Context HttpServletRequest request) {
-        List<String> resourcePath = Arrays.asList(request.getPathInfo().split("/"));
-        ResourceMethodName resourceMethodName = ResourceMethodName.valueOf(request.getMethod()); // TODO handle exceptions
-        return getSession(request).accessResource(resourcePath, resourceMethodName, data);
+    public ActionResult accessResourceGet(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    @POST
+    @Path(RESOURCE_PATH_MATCHER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult accessResourcePost(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    @PUT
+    @Path(RESOURCE_PATH_MATCHER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult accessResourcePut(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    @DELETE
+    @Path(RESOURCE_PATH_MATCHER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult accessResourceDelete(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    @PATCH
+    @Path(RESOURCE_PATH_MATCHER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult accessResourcePatch(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    private ActionResult accessResource(JsonElement data, HttpServletRequest request, String resourcePath) {
+        List<String> splitPath = Arrays.asList(resourcePath.split("/"));
+        ResourceMethodName resourceMethodName = ResourceMethodName.valueOf(request.getMethod());
+        return getSession(request).accessResource(splitPath, resourceMethodName, data);
     }
 
 }

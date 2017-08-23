@@ -40,7 +40,7 @@ public class ActionResultMessageBodyWriter implements MessageBodyWriter<ActionRe
 
     private static final Map<ActionResult.Status, Response.Status> ERRORMAP = ImmutableMap.<ActionResult.Status, Response.Status>builder()
             .put(ActionResult.Status.BAD_REQUEST, Response.Status.BAD_REQUEST)
-            .put(ActionResult.Status.UNAUTHORIZED, Response.Status.UNAUTHORIZED)
+            .put(ActionResult.Status.FORBIDDEN, Response.Status.FORBIDDEN)
             .put(ActionResult.Status.NOT_FOUND, Response.Status.NOT_FOUND)
             .put(ActionResult.Status.ACTION_NOT_ALLOWED, Response.Status.METHOD_NOT_ALLOWED)
             .put(ActionResult.Status.GENERIC_ERROR, Response.Status.INTERNAL_SERVER_ERROR)
@@ -63,7 +63,7 @@ public class ActionResultMessageBodyWriter implements MessageBodyWriter<ActionRe
         if (actionResult.getStatus() != ActionResult.Status.OK) {
             throw new JsonWebApplicationException(actionResult.getMessage(), ERRORMAP.get(actionResult.getStatus()));
         }
-        if (actionResult.getData() != null) {
+        if (actionResult.getData() != null && !actionResult.getData().isJsonNull()) {
             try (Writer writer = new OutputStreamWriter(entityStream, StandardCharsets.UTF_8)) {
                 writer.write(actionResult.getData().toString());
             }

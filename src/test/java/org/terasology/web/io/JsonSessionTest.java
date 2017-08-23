@@ -89,14 +89,14 @@ public class JsonSessionTest {
         assertFalse(session.isAuthenticated());
         assertEquals(ActionResult.Status.BAD_REQUEST, session.finishAuthentication(JsonNull.INSTANCE).getStatus());
         assertFalse(session.isAuthenticated());
-        assertEquals(ActionResult.Status.UNAUTHORIZED, session.finishAuthentication(dummyClientMessage).getStatus());
+        assertEquals(ActionResult.Status.FORBIDDEN, session.finishAuthentication(dummyClientMessage).getStatus());
         assertFalse(session.isAuthenticated());
         authHandlerMock.nextResult = true;
         ActionResult result = session.finishAuthentication(dummyClientMessage);
         assertEquals(ActionResult.Status.OK, result.getStatus());
         assertEquals("AAAA", result.getData().getAsString()); //"AAAA" is the base64 of three 0 bytes, returned by the mock authenticate method
         assertTrue(session.isAuthenticated());
-        //assertEquals(ActionResult.Status.UNAUTHORIZED, session.finishAuthentication(dummyClientMessage).getStatus()); //already authenticated
+        //assertEquals(ActionResult.Status.FORBIDDEN, session.finishAuthentication(dummyClientMessage).getStatus()); //already authenticated
     }
 
     private JsonSession setupAlwaysAccepting(String playerId, HeadlessClientFactory clientFactory, ResourceManager resourceManager,

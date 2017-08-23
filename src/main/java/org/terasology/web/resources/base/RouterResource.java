@@ -67,12 +67,21 @@ public final class RouterResource implements Resource {
             return rootResource.getMethod(methodName, path);
         } else {
             String selector = path.consumeNextItem();
-            Resource res = subResources.get(selector);
+            Resource res = subResources.getOrDefault(selector, NullResource.getInstance());
             return res.getMethod(methodName, path);
         }
     }
 
     private static final class NullResource extends AbstractObservableResource {
+
+        private static final NullResource INSTANCE = new NullResource();
+
+        private NullResource() {
+        }
+
+        public static NullResource getInstance() {
+            return INSTANCE;
+        }
 
         @Override
         public ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
@@ -120,7 +129,7 @@ public final class RouterResource implements Resource {
         }
 
         public Builder() {
-            this(new NullResource(), (resource) -> { });
+            this(NullResource.getInstance(), (resource) -> { });
         }
 
         public Builder addSubResource(String name, Resource resource) {

@@ -149,7 +149,7 @@ public class JsonSession {
 
     public ActionResult initAuthentication() {
         /*if (isAuthenticated()) {
-            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
+            return new ActionResult(ActionResult.Status.FORBIDDEN, "Already authenticated");
         }*/
         HandshakeHello serverHello = authHandler.initServerHello();
         return new ActionResult(GSON.toJsonTree(serverHello));
@@ -157,7 +157,7 @@ public class JsonSession {
 
     public ActionResult finishAuthentication(JsonElement clientMessage) {
         /*if (isAuthenticated()) {
-            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
+            return new ActionResult(ActionResult.Status.FORBIDDEN, "Already authenticated");
         }*/
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);
@@ -171,7 +171,7 @@ public class JsonSession {
         } catch (JsonSyntaxException ex) {
             return new ActionResult(ex);
         } catch (AuthenticationFailedException ex) {
-            return new ActionResult(ActionResult.Status.UNAUTHORIZED);
+            return new ActionResult(ActionResult.Status.FORBIDDEN);
         }
     }
 

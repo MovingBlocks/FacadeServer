@@ -27,6 +27,7 @@ public class ResourcePath {
 
     public ResourcePath(Collection<String> items) {
         this.items = new ArrayDeque<>(items);
+        this.items.removeIf(String::isEmpty);
     }
 
     public static ResourcePath createEmpty() {

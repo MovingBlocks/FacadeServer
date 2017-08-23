@@ -43,5 +43,5 @@ public class AvailableModulesResource extends StreamBasedItemCollectionResource<
         return item.getId().equals(new Name(itemId));
     }
 
-    // TODO: implement DELETE method to uninstall modules
+    // TODO: implement DELETE method to uninstall modules (after deciding on a policy to handle dependencies)
 }

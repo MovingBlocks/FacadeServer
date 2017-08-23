@@ -20,8 +20,10 @@ import org.terasology.web.io.ActionResult;
 // TODO: consider decoupling from ActionResult (which is JSON specific)
 public class ResourceAccessException extends Exception {
 
-    public static final ResourceAccessException NOT_FOUND = new ResourceAccessException(new ActionResult(ActionResult.Status.NOT_FOUND));
-    public static final ResourceAccessException METHOD_NOT_ALLOWED = new ResourceAccessException(new ActionResult(ActionResult.Status.ACTION_NOT_ALLOWED));
+    public static final ResourceAccessException NOT_FOUND = new ResourceAccessException(
+            new ActionResult(ActionResult.Status.NOT_FOUND, "Resource not found"));
+    public static final ResourceAccessException METHOD_NOT_ALLOWED = new ResourceAccessException(
+            new ActionResult(ActionResult.Status.ACTION_NOT_ALLOWED, "Method not supported by this resource"));
 
     private final ActionResult resultToSend;
 
