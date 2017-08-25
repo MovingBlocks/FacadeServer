@@ -24,11 +24,12 @@ import org.terasology.network.events.ConnectedEvent;
 import org.terasology.network.events.DisconnectedEvent;
 import org.terasology.registry.In;
 
-import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 @RegisterSystem
-public class OnlinePlayersResource extends ObservableReadableResource<List<String>> implements DefaultComponentSystem {
+public class OnlinePlayersResource extends ObservableReadableResource<List<OnlinePlayerMetadata>> implements DefaultComponentSystem {
 
     @In
     private NetworkSystem networkSystem;
@@ -52,11 +53,9 @@ public class OnlinePlayersResource extends ObservableReadableResource<List<Strin
     }
 
     @Override
-    public List<String> read(Client requestingClient) {
-        List<String> result = new ArrayList<>();
-        for (Client client: networkSystem.getPlayers()) {
-            result.add(client.getName());
-        }
-        return result;
+    public List<OnlinePlayerMetadata> read(Client requestingClient) {
+        return StreamSupport.stream(networkSystem.getPlayers().spliterator(), true)
+                .map(OnlinePlayerMetadata::new)
+                .collect(Collectors.toList());
     }
 }

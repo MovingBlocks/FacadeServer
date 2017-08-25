@@ -21,7 +21,6 @@ import org.terasology.network.Client;
 import org.terasology.registry.In;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
-import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.resources.ObservableReadableResource;
 import org.terasology.web.resources.ResourceAccessException;
 import org.terasology.web.resources.WritableResource;
@@ -49,8 +48,17 @@ public class GamesResource extends ObservableReadableResource<List<GameInfo>> im
     }
 
     @Override
+    public boolean writeRequiresAuthentication() {
+        return false;
+    }
+
+    @Override
+    public boolean writeIsAdminRestricted() {
+        return true;
+    }
+
+    @Override
     public void write(Client requestingClient, GameAction data) throws ResourceAccessException {
-        ServerAdminsManager.checkClientIsServerAdmin(requestingClient.getId());
         data.perform(PathManager.getInstance(), moduleManager);
         notifyChangedAll();
     }

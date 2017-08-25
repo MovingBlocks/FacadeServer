@@ -31,6 +31,7 @@ import org.terasology.naming.gson.NameTypeAdapter;
 import org.terasology.naming.gson.VersionTypeAdapter;
 import org.terasology.utilities.gson.UriTypeAdapterFactory;
 import org.terasology.web.EngineRunner;
+import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.AuthenticationHandshakeHandlerImpl;
@@ -198,11 +199,14 @@ public class JsonSession {
 
     @SuppressWarnings("unchecked")
     public ActionResult writeResource(String resourceName, JsonElement data) {
-        if (!isAuthenticated()) {
-            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to resources.");
-        }
         try {
             WritableResource resource = resourceManager.getAs(resourceName, WritableResource.class);
+            if (resource.writeRequiresAuthentication() && !isAuthenticated()) {
+                return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to this resource.");
+            }
+            if (resource.writeIsAdminRestricted()) {
+                ServerAdminsManager.getInstance().checkClientHasAdminPermissions(client.getId());
+            }
             resource.write(client, GSON.fromJson(data, resource.getDataType()));
             return ActionResult.OK;
         } catch (ResourceAccessException ex) {

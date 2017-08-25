@@ -24,6 +24,7 @@ import org.terasology.network.NetworkSystem;
 import org.terasology.network.events.ConnectedEvent;
 import org.terasology.network.events.DisconnectedEvent;
 import org.terasology.registry.InjectionHelper;
+import org.terasology.rendering.nui.Color;
 
 import java.util.Arrays;
 import java.util.List;
@@ -37,29 +38,38 @@ import static org.mockito.Mockito.when;
 
 public class OnlinePlayersResourceTest {
 
-    private Client mockClient(String name) {
+    private Client mockClient(String id, String name, Color color) {
         Client result = mock(Client.class);
+        when(result.getId()).thenReturn(id);
         when(result.getName()).thenReturn(name);
+        when(result.getColor()).thenReturn(color);
         return result;
     }
 
     @Test
     public void testRead() {
         NetworkSystem networkSystemMock = mock(NetworkSystem.class);
-        List<Client> clientMocks = Arrays.asList(mockClient("client1"), mockClient("client2"));
+        List<Client> clientMocks = Arrays.asList(
+                mockClient("id1", "name1", new Color(255, 0, 0, 255)),
+                mockClient("id2", "name2", new Color(0, 255, 0, 255))
+        );
         when(networkSystemMock.getPlayers()).thenReturn(clientMocks);
 
         Context context = new ContextImpl();
         context.put(NetworkSystem.class, networkSystemMock);
         OnlinePlayersResource onlinePlayersResource = new OnlinePlayersResource();
         InjectionHelper.inject(onlinePlayersResource, context);
-        assertEquals(Arrays.asList("client1", "client2"), onlinePlayersResource.read(null));
+        List<OnlinePlayerMetadata> expectedResult = Arrays.asList(
+                new OnlinePlayerMetadata("id1", "name1", new Color(255, 0, 0, 255)),
+                new OnlinePlayerMetadata("id2", "name2", new Color(0, 255, 0, 255))
+        );
+        assertEquals(expectedResult, onlinePlayersResource.read(null));
     }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testNotification() {
-        Consumer<ObservableReadableResource<List<String>>> observer = mock(Consumer.class);
+        Consumer<ObservableReadableResource<List<OnlinePlayerMetadata>>> observer = mock(Consumer.class);
 
         Context context = new ContextImpl();
         context.put(NetworkSystem.class, mock(NetworkSystem.class));

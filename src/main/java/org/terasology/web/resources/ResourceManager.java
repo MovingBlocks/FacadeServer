@@ -55,6 +55,7 @@ public final class ResourceManager {
         registerAndPutResource(context, new EngineStateResource());
         registerAndPutResource(context, new GamesResource());
         registerAndPutResource(context, new AvailableModulesResource());
+        registerAndPutResource(context, new ServerAdminsResource());
         registerAndPutResource(context, new ServerMotdResource());
         registerAndPutResource(context, new ServerPortResource());
         registerAndPutResource(context, new ModuleInstallerResource());

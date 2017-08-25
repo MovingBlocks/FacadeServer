@@ -50,6 +50,16 @@ public class ConsoleResource extends EventEmittingResource<Message> implements D
     }
 
     @Override
+    public boolean writeRequiresAuthentication() {
+        return true;
+    }
+
+    @Override
+    public boolean writeIsAdminRestricted() {
+        return false;
+    }
+
+    @Override
     public void write(Client requestingClient, String data) {
         console.execute(data, requestingClient.getEntity());
     }

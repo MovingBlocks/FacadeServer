@@ -22,10 +22,7 @@ import org.terasology.engine.GameEngine;
 import org.terasology.engine.modes.GameState;
 import org.terasology.network.Client;
 import org.terasology.registry.InjectionHelper;
-import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.StateEngineIdle;
-
-import java.util.Arrays;
 
 import static org.mockito.ArgumentMatchers.isA;
 import static org.mockito.Mockito.mock;
@@ -43,16 +40,10 @@ public class EngineStateResourceTest {
         engineMock = mock(GameEngine.class);
         GameState state = new StateEngineIdle();
         when(engineMock.getState()).thenReturn(state);
-        ServerAdminsManager.setAdminList(Arrays.asList("serverAdm1", "admin"));
         Context contextMock = mock(Context.class);
         when(contextMock.get(GameEngine.class)).thenReturn(engineMock);
         engineStateResource = new EngineStateResource();
         InjectionHelper.inject(engineStateResource, contextMock);
-    }
-
-    @Test(expected = ResourceAccessException.class)
-    public void testWriteFail() throws ResourceAccessException {
-        engineStateResource.write(mockClient("someUser"), "");
     }
 
     @Test

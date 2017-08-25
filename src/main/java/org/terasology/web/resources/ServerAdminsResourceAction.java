@@ -15,15 +15,21 @@
  */
 package org.terasology.web.resources;
 
-import org.terasology.network.Client;
+class ServerAdminsResourceAction {
 
-public interface WritableResource<T> extends Resource {
+    enum Action {
+        ADD,
+        REMOVE
+    }
 
-    Class<T> getDataType();
+    private Action action;
+    private String clientId;
 
-    boolean writeRequiresAuthentication();
+    public Action getAction() {
+        return action;
+    }
 
-    boolean writeIsAdminRestricted();
-
-    void write(Client requestingClient, T data) throws ResourceAccessException;
+    public String getClientId() {
+        return clientId;
+    }
 }

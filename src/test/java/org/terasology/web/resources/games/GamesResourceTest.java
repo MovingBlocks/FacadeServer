@@ -22,10 +22,7 @@ import org.terasology.engine.module.ModuleManager;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.network.Client;
 import org.terasology.registry.InjectionHelper;
-import org.terasology.web.ServerAdminsManager;
 import org.terasology.web.resources.ResourceAccessException;
-
-import java.util.Arrays;
 
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -40,18 +37,12 @@ public class GamesResourceTest {
 
     @Before
     public void setUp() {
-        ServerAdminsManager.setAdminList(Arrays.asList("admin1", "admin2"));
         moduleManagerMock = mock(ModuleManager.class);
         actionMock = mock(GameAction.class);
         Context contextMock = mock(Context.class);
         when(contextMock.get(ModuleManager.class)).thenReturn(moduleManagerMock);
         gamesResource = new GamesResource();
         InjectionHelper.inject(gamesResource, contextMock);
-    }
-
-    @Test(expected = ResourceAccessException.class)
-    public void testWriteNotAllowed() throws ResourceAccessException {
-        gamesResource.write(mockClient("user"), actionMock);
     }
 
     @Test
