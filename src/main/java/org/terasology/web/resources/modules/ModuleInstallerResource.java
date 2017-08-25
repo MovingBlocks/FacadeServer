@@ -27,6 +27,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.world.generator.internal.WorldGeneratorManager;
 
 import java.util.List;
 import java.util.Set;
@@ -44,6 +45,8 @@ public class ModuleInstallerResource extends AbstractSimpleResource {
 
     @In
     private ModuleManager moduleManager;
+    @In
+    private WorldGeneratorManager worldGeneratorManager;
 
     private ExecutorService installExecutor = Executors.newSingleThreadExecutor();
     private String status = "Ready";
@@ -87,6 +90,7 @@ public class ModuleInstallerResource extends AbstractSimpleResource {
             try {
                 List<Module> installedModules = installResult.get();
                 newStatus += "successfully installed " + installedModules.size() + " modules.";
+                worldGeneratorManager.refresh();
             } catch (CancellationException | ExecutionException | InterruptedException ex) {
                 newStatus += "installation failed for this reason: " + ex.getMessage();
             }
