@@ -21,6 +21,8 @@ import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 
+import java.util.Set;
+
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
@@ -31,19 +33,19 @@ public class ServerAdminsResource extends AbstractItemCollectionResource {
     }
 
     @Override
-    protected ResourceMethod getGetCollectionMethod() throws ResourceAccessException {
+    protected ResourceMethod<Void, Set<String>> getGetCollectionMethod() throws ResourceAccessException {
         return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> ServerAdminsManager.getInstance().getAdminIds());
     }
 
     @Override
-    protected ResourceMethod getPostItemMethod(String itemId) throws ResourceAccessException {
+    protected ResourceMethod<Void, Void> getPostItemMethod(String itemId) throws ResourceAccessException {
         return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
                 (data, client) -> ServerAdminsManager.getInstance().addAdmin(itemId));
     }
 
     @Override
-    protected ResourceMethod getDeleteItemMethod(String itemId) throws ResourceAccessException {
+    protected ResourceMethod<Void, Void> getDeleteItemMethod(String itemId) throws ResourceAccessException {
         return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
                 (data, client) -> ServerAdminsManager.getInstance().removeAdmin(itemId));
     }

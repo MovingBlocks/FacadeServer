@@ -16,6 +16,7 @@
 package org.terasology.web.resources.modules;
 
 import com.google.common.collect.ImmutableSet;
+import org.junit.Before;
 import org.junit.Test;
 import org.terasology.context.Context;
 import org.terasology.engine.module.ModuleManager;
@@ -37,40 +38,40 @@ import static org.mockito.Mockito.when;
 
 public class AvailableModulesResourceTest {
 
-    @Test
-    public void testRead() throws ResourceAccessException {
-        Module moduleMock2 = mockModule(new Name("module2"), new Version("1.1.0"), "Module 2");
-        Module moduleMock1 = mockModule(new Name("module1"), new Version("1.0.0"), "Module 1");
+    private Module moduleMock2;
+    private Module moduleMock1;
+    private AvailableModulesResource availableModulesResource;
+
+    @Before
+    public void setUp() {
+        moduleMock2 = mockModule(new Name("module2"), new Version("1.1.0"), "Module 2");
+        moduleMock1 = mockModule(new Name("module1"), new Version("1.0.0"), "Module 1");
         Set<Module> modules = ImmutableSet.of(moduleMock1, moduleMock2);
 
         ModuleRegistry moduleRegistryMock = mock(ModuleRegistry.class);
         when(moduleRegistryMock.stream()).thenReturn(modules.stream());
         ModuleManager moduleManagerMock = mock(ModuleManager.class);
         when(moduleManagerMock.getRegistry()).thenReturn(moduleRegistryMock);
-
-        // TODO: move to a proper test for world generators
-        // WorldGeneratorManager worldGeneratorManagerMock = mock(WorldGeneratorManager.class);
-        // WorldGeneratorInfo worldGen1 = new WorldGeneratorInfo(new SimpleUri("module1:worldgen1"), "", "");
-        // WorldGeneratorInfo worldGen2 = new WorldGeneratorInfo(new SimpleUri("module1:worldgen2"), "", "");
-        // when(worldGeneratorManagerMock.getWorldGenerators()).thenReturn(Arrays.asList(worldGen1, worldGen2));
-
         Context contextMock = mock(Context.class);
         when(contextMock.get(ModuleManager.class)).thenReturn(moduleManagerMock);
-        // when(contextMock.get(WorldGeneratorManager.class)).thenReturn(worldGeneratorManagerMock);
 
-        AvailableModulesResource availableModulesResource = new AvailableModulesResource();
+        availableModulesResource = new AvailableModulesResource();
         InjectionHelper.inject(availableModulesResource, contextMock);
+    }
 
+    @Test
+    public void testReadCollection() throws ResourceAccessException {
         List<ModuleMetadata> result = availableModulesResource.getGetCollectionMethod().perform(null, null);
         assertEquals(2, result.size());
         assertEquals(moduleMock1.getMetadata(), result.get(0));
         assertEquals(moduleMock2.getMetadata(), result.get(1));
-        // assertEquals(2, result.getWorldGenerators().size());
-        // assertTrue(result.getWorldGenerators().contains(worldGen1));
-        // assertTrue(result.getWorldGenerators().contains(worldGen2));
     }
 
-    // TODO: test read single item, and DELETE method when and if it's implemented
+    @Test
+    public void testReadItemOk() throws ResourceAccessException {
+        ModuleMetadata result = availableModulesResource.getGetItemMethod("module1").perform(null, null);
+        assertEquals(moduleMock1.getMetadata(), result);
+    }
 
     private Module mockModule(Name id, Version version, String displayName) {
         ModuleMetadata metadata = mock(ModuleMetadata.class);

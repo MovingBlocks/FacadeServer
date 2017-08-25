@@ -17,6 +17,7 @@ package org.terasology.web.resources.games;
 
 import org.terasology.engine.module.ModuleManager;
 import org.terasology.engine.paths.PathManager;
+import org.terasology.game.GameManifest;
 import org.terasology.registry.In;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
@@ -27,6 +28,7 @@ import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.StreamBasedItemCollectionResource;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.stream.Stream;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.decorateMethod;
@@ -42,7 +44,8 @@ public class GamesResource extends StreamBasedItemCollectionResource<GameInfo> {
 
     @Override
     protected Stream<GameInfo> getDataSourceStream() {
-        return GameProvider.getSavedGames().stream().sorted();
+        return GameProvider.getSavedGames().stream()
+                .sorted(Comparator.comparing(GameInfo::getManifest, Comparator.comparing(GameManifest::getTitle)));
     }
 
     @Override

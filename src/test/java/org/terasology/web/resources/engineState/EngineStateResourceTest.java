@@ -54,8 +54,6 @@ public class EngineStateResourceTest {
         verify(stateMetadataMock, times(1)).switchEngineToThisState(engineMock);
     }
 
-    // TODO: add other write tests
-
     @Test
     public void testRead() throws ResourceAccessException {
         EngineStateMetadata result = engineStateResource.getGetMethod(ResourcePath.createEmpty()).perform(null, null);
