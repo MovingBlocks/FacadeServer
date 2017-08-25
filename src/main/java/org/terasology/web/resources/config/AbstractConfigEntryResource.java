@@ -32,12 +32,12 @@ public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResou
     private Config config;
 
     @Override
-    protected ResourceMethod getGetMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod<Void, T> getGetMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) -> get(config));
     }
 
     @Override
-    protected ResourceMethod getPutMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod<T, Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
         return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, getDataType(), (data, client) -> {
             set(config, data);
             config.save();

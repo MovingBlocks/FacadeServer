@@ -16,6 +16,7 @@
 package org.terasology.web.resources.base;
 
 import java.util.ArrayDeque;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Deque;
@@ -28,6 +29,10 @@ public class ResourcePath {
     public ResourcePath(Collection<String> items) {
         this.items = new ArrayDeque<>(items);
         this.items.removeIf(String::isEmpty);
+    }
+
+    public ResourcePath(String... items) {
+        this(Arrays.asList(items));
     }
 
     public static ResourcePath createEmpty() {
@@ -65,6 +70,21 @@ public class ResourcePath {
 
     public Collection<String> getItemList() {
         return items;
+    }
+
+    @Override
+    public boolean equals(Object other) {
+        return other instanceof ResourcePath && toString().equals(other.toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return toString().hashCode();
+    }
+
+    @Override
+    public ResourcePath clone() {
+        return new ResourcePath(getItemList());
     }
 
     @Override

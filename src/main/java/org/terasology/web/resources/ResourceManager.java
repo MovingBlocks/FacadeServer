@@ -45,8 +45,12 @@ import org.terasology.web.resources.onlinePlayers.OnlinePlayersResource;
 import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
@@ -56,6 +60,7 @@ public final class ResourceManager implements ResourceObserver {
     private static final ResourceManager INSTANCE = new ResourceManager();
 
     private RouterResource rootResource;
+    private Map<ResourcePath, Set<ResourcePath>> additionalResourcesToUpdate;
     private Map<EntityRef, BiConsumer<ResourcePath, Object>> eventListeners = new HashMap<>();
     private Map<EntityRef, BiConsumer<ResourcePath, Object>> updateSubscribers = new HashMap<>();
     private Map<EntityRef, HeadlessClient> clientLookup = new HashMap<>();
@@ -89,6 +94,11 @@ public final class ResourceManager implements ResourceObserver {
                 .addSubResource("serverAdmins", new ServerAdminsResource())
                 .build();
         rootResource.setObserver(this);
+        additionalResourcesToUpdate = new HashMap<>();
+        // when /modules/installer changes, also update /modules/available and /worldGenerators
+        additionalResourcesToUpdate.put(new ResourcePath("modules", "installer"), new HashSet<>(Arrays.asList(
+                new ResourcePath("modules", "available"),
+                new ResourcePath("worldGenerators"))));
         rootResource.notifyChangedForAllClients();
     }
 
@@ -149,14 +159,19 @@ public final class ResourceManager implements ResourceObserver {
         if (client == null) {
             logger.warn("Failed to send update to client with entity ID" + targetClientEntity.getId() + " (corresponding client not registered)");
         }
-        try {
-            ResourceMethod resourceGetMethod = getResourceMethod(sender, ResourceMethodName.GET, client);
-            if (!resourceGetMethod.getInType().equals(Void.class)) {
-                throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, "This resource's GET method requires input data"));
+        Set<ResourcePath> updatesToSend = new HashSet<>();
+        updatesToSend.add(senderPath);
+        updatesToSend.addAll(additionalResourcesToUpdate.getOrDefault(senderPath, Collections.emptySet()));
+        for (ResourcePath path: updatesToSend) {
+            try {
+                ResourceMethod resourceGetMethod = getResourceMethod(path.clone(), ResourceMethodName.GET, client);
+                if (!resourceGetMethod.getInType().equals(Void.class)) {
+                    throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, "This resource's GET method requires input data"));
+                }
+                updateSubscribers.get(targetClientEntity).accept(path, resourceGetMethod.perform(null, client));
+            } catch (ResourceAccessException ex) {
+                logger.warn("Failed to send update for resource at path " + path.toString(), ex);
             }
-            updateSubscribers.get(targetClientEntity).accept(senderPath, resourceGetMethod.perform(null, client));
-        } catch (ResourceAccessException ex) {
-            logger.warn("Failed to send update for resource at path " + senderPath.toString(), ex);
         }
     }
 
