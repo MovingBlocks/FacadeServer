@@ -2,7 +2,7 @@
   "openapi": "3.0.0",
   "info": {
     "title": "Terasology FacadeServer API",
-    "description": "Specification of HTTP API to interact with a Terasology server running with FacadeServer (https://github.com/MovingBlocks/FacadeServer). Also available over WebSocket (TODO: explain)",
+    "description": "Specification of HTTP API to interact with a Terasology server running with FacadeServer (https://github.com/MovingBlocks/FacadeServer). Also available over WebSocket (see docs.md)",
     "version": "1.0.0"
   },
   "components": {
