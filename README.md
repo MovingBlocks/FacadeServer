@@ -23,7 +23,7 @@ Here is a step-by-step summary:
 
 The web server exposes access to the various resources both with an HTTP REST API and over WebSocket.
 More information is available in the docs.md file at the root of this repository.
-Also, here is a [direct link](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/gianluca-nitti/FacadeServer/rest-methods/swagger.json#/) to view online the Swagger/OpenAPI specification of the HTTP API.
+Also, here is a [direct link](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/gianluca-nitti/FacadeServer/rest-methods/src/main/resources/web/swagger.json#/) to view online the Swagger/OpenAPI specification of the HTTP API.
 
 ### Related repositories
 [Here](https://github.com/gianluca-nitti/FacadeServer-frontend) is the code for a web and mobile frontend to FacadeServer.

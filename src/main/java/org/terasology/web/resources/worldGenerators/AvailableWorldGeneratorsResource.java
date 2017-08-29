@@ -28,7 +28,6 @@ import java.util.List;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
-// TODO: make observable and update after module installation
 public class AvailableWorldGeneratorsResource extends AbstractSimpleResource {
 
     @In

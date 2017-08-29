@@ -29,6 +29,7 @@ import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.eclipse.jetty.util.resource.Resource;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -151,7 +152,7 @@ public final class ServerMain {
 
         ResourceHandler webResourceHandler = new ResourceHandler();
         webResourceHandler.setDirectoriesListed(false);
-        webResourceHandler.setResourceBase("web");
+        webResourceHandler.setBaseResource(Resource.newClassPathResource("web"));
 
         ContextHandler webContext = new ContextHandler("/");     // the server uri path
         webContext.setHandler(webResourceHandler);

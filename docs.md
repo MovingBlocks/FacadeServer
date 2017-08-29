@@ -4,7 +4,7 @@ FacadeServer exposes access to the various resources both with an HTTP REST API 
 
 ### Specification
 The API specification is defined in the [OpenAPI 3.0](https://github.com/OAI/OpenAPI-Specification) format, and is contained in the `swagger.json` file at the root of this repository.
-You can view it in a browser at [this link](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/gianluca-nitti/FacadeServer/rest-methods/swagger.json#/).
+You can view it in a browser at [this link](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/gianluca-nitti/FacadeServer/rest-methods/src/main/resources/web/swagger.json#/).
 
 ### HTTP
 All the information necessary to interact with FacadeServer over HTTP is explained in the previously mentioned specification;
