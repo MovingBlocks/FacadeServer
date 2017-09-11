@@ -18,7 +18,7 @@ package org.terasology.web.serverAdminManagement;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
 
 import java.nio.file.Path;
 import java.util.Arrays;
@@ -45,7 +45,7 @@ public class ServerAdminsManagerTest {
 
     @Test
     public void testAdminListManipulation() {
-        ServerAdminsManager manager = new ServerAdminsManager(null);
+        ServerAdminsManager manager = new ServerAdminsManager(null, false);
         assertTrue(manager.isAnonymousAdminAccessEnabled());
         manager.addAdmin("test");
         assertSetEquals(manager.getAdminIds(), "test");
@@ -57,31 +57,30 @@ public class ServerAdminsManagerTest {
 
     @Test
     public void testAnonymousOk() throws ResourceAccessException {
-        ServerAdminsManager manager = new ServerAdminsManager(null);
-        manager.checkClientHasAdminPermissions("someone"); // should not throw
+        ServerAdminsManager manager = new ServerAdminsManager(null, false);
+        assertTrue(manager.clientHasAdminPermissions("someone"));
     }
 
     private ServerAdminsManager setUpWithSingleAdmin(String adminId) {
-        ServerAdminsManager result = new ServerAdminsManager(null);
+        ServerAdminsManager result = new ServerAdminsManager(null, false);
         result.addAdmin(adminId);
         return result;
     }
 
-    @Test(expected = ResourceAccessException.class)
     public void testAnonymousFail() throws ResourceAccessException {
         ServerAdminsManager manager = setUpWithSingleAdmin("testAdmin");
-        manager.checkClientHasAdminPermissions("someUser"); // should throw
+        assertFalse(manager.clientHasAdminPermissions("someUser"));
     }
 
     @Test
     public void testRegisteredOk() throws ResourceAccessException {
         ServerAdminsManager manager = setUpWithSingleAdmin("testAdmin");
-        manager.checkClientHasAdminPermissions("testAdmin"); // should not throw
+        assertTrue(manager.clientHasAdminPermissions("testAdmin"));
     }
 
     @Test
     public void testAddFirstAdmin() {
-        ServerAdminsManager manager = new ServerAdminsManager(null);
+        ServerAdminsManager manager = new ServerAdminsManager(null, false);
         assertTrue(manager.isAnonymousAdminAccessEnabled());
 
         // this is the first one and must be added
@@ -100,11 +99,11 @@ public class ServerAdminsManagerTest {
     @Test
     public void testSaveLoad() {
         Path filePath = tempFolder.getRoot().toPath().resolve("admins.json");
-        ServerAdminsManager manager = new ServerAdminsManager(filePath);
+        ServerAdminsManager manager = new ServerAdminsManager(filePath, true);
         manager.addAdmin("admin1");
         manager.addAdmin("admin2");
         manager.saveAdminList();
-        manager = new ServerAdminsManager(filePath); // reinitialize...
+        manager = new ServerAdminsManager(filePath, true); // reinitialize...
         manager.loadAdminList(); // ...and reload from same file
         assertSetEquals(manager.getAdminIds(), "admin1", "admin2");
     }

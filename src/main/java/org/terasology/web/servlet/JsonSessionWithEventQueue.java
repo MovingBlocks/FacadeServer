@@ -19,6 +19,7 @@ import com.google.gson.JsonElement;
 import org.terasology.web.io.JsonSession;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
@@ -30,9 +31,9 @@ public class JsonSessionWithEventQueue {
 
     public JsonSessionWithEventQueue(JsonSession session) {
         this.session = session;
-        session.setEventResourceObserver((resourceName, eventData) -> {
+        session.setResourceEventListener((resourcePath, eventData) -> {
                 synchronized (eventQueue) {
-                    eventQueue.offer(new ResourceEvent(resourceName, eventData));
+                    eventQueue.offer(new ResourceEvent(resourcePath, eventData));
                 }
         });
     }
@@ -57,16 +58,16 @@ public class JsonSessionWithEventQueue {
     }
 
     public static final class ResourceEvent {
-        private String resourceName;
+        private Collection<String> resourcePath;
         private JsonElement eventData;
 
-        ResourceEvent(String resourceName, JsonElement eventData) {
-            this.resourceName = resourceName;
+        ResourceEvent(Collection<String> resourcePath, JsonElement eventData) {
+            this.resourcePath = resourcePath;
             this.eventData = eventData;
         }
 
-        public String getResourceName() {
-            return resourceName;
+        public Collection<String> getResourcePath() {
+            return resourcePath;
         }
 
         public JsonElement getEventData() {

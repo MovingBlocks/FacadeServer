@@ -18,24 +18,22 @@ package org.terasology.web.webSocket;
 import com.google.gson.JsonElement;
 import org.terasology.web.io.gsonUtils.InvalidClientMessageException;
 import org.terasology.web.io.gsonUtils.Validable;
+import org.terasology.web.resources.base.ResourceMethodName;
+
+import java.util.Collection;
 
 public class ResourceRequestClientMessage implements Validable {
 
-    public enum Action {
-        READ,
-        WRITE
-    }
-
-    private Action action;
-    private String resourceName;
+    private ResourceMethodName method;
+    private Collection<String> resourcePath;
     private JsonElement data;
 
-    public Action getAction() {
-        return action;
+    public ResourceMethodName getMethod() {
+        return method;
     }
 
-    public String getResourceName() {
-        return resourceName;
+    public Collection<String> getResourcePath() {
+        return resourcePath;
     }
 
     public JsonElement getData() {
@@ -44,14 +42,10 @@ public class ResourceRequestClientMessage implements Validable {
 
     @Override
     public void validate() throws InvalidClientMessageException {
-        if (action == null) {
+        if (method == null) {
             throw new InvalidClientMessageException("an action must be specified");
-        } else if (resourceName == null) {
-            throw new InvalidClientMessageException("a resource name must be specified");
-        } else if (action == Action.WRITE && data == null) {
-            throw new InvalidClientMessageException("data is required");
-        } else if (action == Action.READ && data != null) {
-            throw new InvalidClientMessageException("no data must be sent");
+        } else if (resourcePath == null) {
+            throw new InvalidClientMessageException("a resource path must be specified");
         }
     }
 }

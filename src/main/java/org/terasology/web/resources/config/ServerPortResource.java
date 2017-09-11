@@ -20,22 +20,17 @@ import org.terasology.config.Config;
 public class ServerPortResource extends AbstractConfigEntryResource<Integer> {
 
     @Override
-    public String getName() {
-        return "serverPort";
-    }
-
-    @Override
     public Class<Integer> getDataType() {
         return Integer.class;
     }
 
     @Override
-    void set(Config targetConfig, Integer value) {
+    protected void set(Config targetConfig, Integer value) {
         targetConfig.getNetwork().setServerPort(value);
     }
 
     @Override
-    Integer get(Config sourceConfig) {
+    protected Integer get(Config sourceConfig) {
         return sourceConfig.getNetwork().getServerPort();
     }
 }

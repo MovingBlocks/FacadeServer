@@ -16,39 +16,36 @@
 package org.terasology.web.resources.config;
 
 import org.terasology.config.Config;
-import org.terasology.network.Client;
 import org.terasology.registry.In;
-import org.terasology.web.resources.ObservableReadableResource;
-import org.terasology.web.resources.ResourceAccessException;
-import org.terasology.web.resources.WritableResource;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.AbstractSimpleResource;
+import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.resources.base.ResourcePath;
 
-public abstract class AbstractConfigEntryResource<T> extends ObservableReadableResource<T> implements WritableResource<T> {
+import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
+import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
+
+public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResource {
 
     @In
     private Config config;
 
     @Override
-    public boolean writeRequiresAuthentication() {
-        return false;
+    protected ResourceMethod<Void, T> getGetMethod(ResourcePath path) throws ResourceAccessException {
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) -> get(config));
     }
 
     @Override
-    public boolean writeIsAdminRestricted() {
-        return true;
+    protected ResourceMethod<T, Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, getDataType(), (data, client) -> {
+            set(config, data);
+            config.save();
+            notifyChangedForAllClients();
+        });
     }
 
-    @Override
-    public T read(Client requestingClient) throws ResourceAccessException {
-        return get(config);
-    }
-
-    @Override
-    public void write(Client requestingClient, T data) throws ResourceAccessException {
-        set(config, data);
-        config.save();
-        notifyChangedAll();
-    }
-
-    abstract void set(Config targetConfig, T value);
-    abstract T get(Config sourceConfig);
+    protected abstract Class<T> getDataType();
+    protected abstract void set(Config targetConfig, T value);
+    protected abstract T get(Config sourceConfig);
 }

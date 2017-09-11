@@ -17,6 +17,8 @@ package org.terasology.web.webSocket;
 
 import com.google.gson.JsonElement;
 
+import java.util.Collection;
+
 public class ServerToClientMessage {
 
     public enum MessageType {
@@ -26,12 +28,12 @@ public class ServerToClientMessage {
     }
 
     private MessageType messageType;
-    private String resourceName;
+    private Collection<String> resourcePath;
     private JsonElement data;
 
-    public ServerToClientMessage(MessageType messageType, String resourceName, JsonElement data) {
+    public ServerToClientMessage(MessageType messageType, Collection<String> resourcePath, JsonElement data) {
         this.messageType = messageType;
-        this.resourceName = resourceName;
+        this.resourcePath = resourcePath;
         this.data = data;
     }
 

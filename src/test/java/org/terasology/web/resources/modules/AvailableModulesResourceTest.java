@@ -16,9 +16,9 @@
 package org.terasology.web.resources.modules;
 
 import com.google.common.collect.ImmutableSet;
+import org.junit.Before;
 import org.junit.Test;
 import org.terasology.context.Context;
-import org.terasology.engine.SimpleUri;
 import org.terasology.engine.module.ModuleManager;
 import org.terasology.i18n.I18nMap;
 import org.terasology.module.Module;
@@ -27,50 +27,50 @@ import org.terasology.module.ModuleRegistry;
 import org.terasology.naming.Name;
 import org.terasology.naming.Version;
 import org.terasology.registry.InjectionHelper;
-import org.terasology.web.resources.ResourceAccessException;
-import org.terasology.world.generator.internal.WorldGeneratorInfo;
-import org.terasology.world.generator.internal.WorldGeneratorManager;
+import org.terasology.web.resources.base.ResourceAccessException;
 
-import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 public class AvailableModulesResourceTest {
 
-    @Test
-    public void testRead() throws ResourceAccessException {
-        Module moduleMock2 = mockModule(new Name("module2"), new Version("1.1.0"), "Module 2");
-        Module moduleMock1 = mockModule(new Name("module1"), new Version("1.0.0"), "Module 1");
+    private Module moduleMock2;
+    private Module moduleMock1;
+    private AvailableModulesResource availableModulesResource;
+
+    @Before
+    public void setUp() {
+        moduleMock2 = mockModule(new Name("module2"), new Version("1.1.0"), "Module 2");
+        moduleMock1 = mockModule(new Name("module1"), new Version("1.0.0"), "Module 1");
         Set<Module> modules = ImmutableSet.of(moduleMock1, moduleMock2);
 
         ModuleRegistry moduleRegistryMock = mock(ModuleRegistry.class);
         when(moduleRegistryMock.stream()).thenReturn(modules.stream());
         ModuleManager moduleManagerMock = mock(ModuleManager.class);
         when(moduleManagerMock.getRegistry()).thenReturn(moduleRegistryMock);
-
-        WorldGeneratorManager worldGeneratorManagerMock = mock(WorldGeneratorManager.class);
-        WorldGeneratorInfo worldGen1 = new WorldGeneratorInfo(new SimpleUri("module1:worldgen1"), "", "");
-        WorldGeneratorInfo worldGen2 = new WorldGeneratorInfo(new SimpleUri("module1:worldgen2"), "", "");
-        when(worldGeneratorManagerMock.getWorldGenerators()).thenReturn(Arrays.asList(worldGen1, worldGen2));
-
         Context contextMock = mock(Context.class);
         when(contextMock.get(ModuleManager.class)).thenReturn(moduleManagerMock);
-        when(contextMock.get(WorldGeneratorManager.class)).thenReturn(worldGeneratorManagerMock);
 
-        AvailableModulesResource availableModulesResource = new AvailableModulesResource();
+        availableModulesResource = new AvailableModulesResource();
         InjectionHelper.inject(availableModulesResource, contextMock);
+    }
 
-        AvailableModulesData result = availableModulesResource.read(null);
-        assertEquals(2, result.getModules().size());
-        assertEquals(moduleMock1.getMetadata(), result.getModules().get(0));
-        assertEquals(moduleMock2.getMetadata(), result.getModules().get(1));
-        assertEquals(2, result.getWorldGenerators().size());
-        assertTrue(result.getWorldGenerators().contains(worldGen1));
-        assertTrue(result.getWorldGenerators().contains(worldGen2));
+    @Test
+    public void testReadCollection() throws ResourceAccessException {
+        List<ModuleMetadata> result = availableModulesResource.getGetCollectionMethod().perform(null, null);
+        assertEquals(2, result.size());
+        assertEquals(moduleMock1.getMetadata(), result.get(0));
+        assertEquals(moduleMock2.getMetadata(), result.get(1));
+    }
+
+    @Test
+    public void testReadItemOk() throws ResourceAccessException {
+        ModuleMetadata result = availableModulesResource.getGetItemMethod("module1").perform(null, null);
+        assertEquals(moduleMock1.getMetadata(), result);
     }
 
     private Module mockModule(Name id, Version version, String displayName) {

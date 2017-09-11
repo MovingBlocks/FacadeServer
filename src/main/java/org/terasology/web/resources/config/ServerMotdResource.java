@@ -20,22 +20,17 @@ import org.terasology.config.Config;
 public class ServerMotdResource extends AbstractConfigEntryResource<String> {
 
     @Override
-    public String getName() {
-        return "serverMotd";
-    }
-
-    @Override
     public Class<String> getDataType() {
         return String.class;
     }
 
     @Override
-    void set(Config targetConfig, String value) {
+    protected void set(Config targetConfig, String value) {
         targetConfig.getNetwork().setServerMOTD(value);
     }
 
     @Override
-    String get(Config sourceConfig) {
+    protected String get(Config sourceConfig) {
         return sourceConfig.getNetwork().getServerMOTD();
     }
 }

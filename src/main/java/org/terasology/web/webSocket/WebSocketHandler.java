@@ -28,6 +28,9 @@ import org.terasology.web.io.ActionResult;
 import org.terasology.web.io.JsonSession;
 import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 /**
  * Manages one websocket session
  */
@@ -46,9 +49,9 @@ public class WebSocketHandler extends WebSocketAdapter {
         super.onWebSocketConnect(session);
         logger.info("Connected: " + session.getRemoteAddress());
         jsonSession = new JsonSession();
-        jsonSession.setEventResourceObserver((resourceName, eventData) ->
+        jsonSession.setResourceEventListener((resourceName, eventData) ->
                 send(new ServerToClientMessage(ServerToClientMessage.MessageType.RESOURCE_EVENT, resourceName, eventData)));
-        jsonSession.setReadableResourceObserver((resourceName, newData) ->
+        jsonSession.setResourceChangeSubscriber((resourceName, newData) ->
                 send(new ServerToClientMessage(ServerToClientMessage.MessageType.RESOURCE_CHANGED, resourceName, newData)));
     }
 
@@ -59,7 +62,7 @@ public class WebSocketHandler extends WebSocketAdapter {
             ClientToServerMessage deserializedMessage = GSON.fromJson(message, ClientToServerMessage.class);
             handleClientMessage(deserializedMessage);
         } catch (JsonSyntaxException ex) {
-            trySendResult(new ActionResult(ex));
+            sendResult(new ActionResult(ex));
         }
     }
 
@@ -80,10 +83,10 @@ public class WebSocketHandler extends WebSocketAdapter {
     private void handleClientMessage(ClientToServerMessage clientMessage) {
         switch(clientMessage.getMessageType()) {
             case AUTHENTICATION_REQUEST:
-                trySendResult(jsonSession.initAuthentication()); //send server handshake hello
+                sendResult(jsonSession.initAuthentication()); //send server handshake hello
                 break;
             case AUTHENTICATION_DATA:
-                trySendResult(jsonSession.finishAuthentication(clientMessage.getData())); //process client handshake hello
+                sendResult(jsonSession.finishAuthentication(clientMessage.getData())); //process client handshake hello
                 break;
             case RESOURCE_REQUEST:
                 parseAndHandleResourceRequest(clientMessage.getData());
@@ -94,12 +97,12 @@ public class WebSocketHandler extends WebSocketAdapter {
         getSession().getRemote().sendString(GSON.toJson(message), ERROR_REPORTING_WRITE_CALLBACK);
     }
 
-    private void trySendResult(ActionResult result, String resourceName) {
-        send(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, resourceName, result.toJsonTree(GSON)));
+    private void sendResult(ActionResult result) {
+        send(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, result.toJsonTree(GSON)));
     }
 
-    private void trySendResult(ActionResult result) {
-        send(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, result.toJsonTree(GSON)));
+    private void sendResult(ActionResult result, Collection<String> resourcePath) {
+        send(new ServerToClientMessage(ServerToClientMessage.MessageType.ACTION_RESULT, resourcePath, result.toJsonTree(GSON)));
     }
 
     private void parseAndHandleResourceRequest(JsonElement requestMessage) {
@@ -107,18 +110,12 @@ public class WebSocketHandler extends WebSocketAdapter {
             ResourceRequestClientMessage deserializedMessage = GSON.fromJson(requestMessage, ResourceRequestClientMessage.class);
             handleResourceRequest(deserializedMessage);
         } catch (JsonSyntaxException ex) {
-            trySendResult(new ActionResult(ex));
+            sendResult(new ActionResult(ex));
         }
     }
 
     private void handleResourceRequest(ResourceRequestClientMessage deserializedMessage) {
-        String resourceName = deserializedMessage.getResourceName();
-        switch (deserializedMessage.getAction()) {
-            case READ:
-                trySendResult(jsonSession.readResource(resourceName), resourceName);
-                break;
-            case WRITE:
-                trySendResult(jsonSession.writeResource(resourceName, deserializedMessage.getData()), resourceName);
-        }
+        Collection<String> resourcePath = deserializedMessage.getResourcePath();
+        sendResult(jsonSession.accessResource(new ArrayList<>(resourcePath), deserializedMessage.getMethod(), deserializedMessage.getData()), resourcePath);
     }
 }

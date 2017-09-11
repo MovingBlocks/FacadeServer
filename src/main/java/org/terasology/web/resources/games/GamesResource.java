@@ -17,50 +17,79 @@ package org.terasology.web.resources.games;
 
 import org.terasology.engine.module.ModuleManager;
 import org.terasology.engine.paths.PathManager;
-import org.terasology.network.Client;
+import org.terasology.game.GameManifest;
 import org.terasology.registry.In;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
 import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
-import org.terasology.web.resources.ObservableReadableResource;
-import org.terasology.web.resources.ResourceAccessException;
-import org.terasology.web.resources.WritableResource;
+import org.terasology.web.EngineRunner;
+import org.terasology.web.io.ActionResult;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.resources.base.StreamBasedItemCollectionResource;
 
-import java.util.List;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.stream.Stream;
 
-public class GamesResource extends ObservableReadableResource<List<GameInfo>> implements WritableResource<GameAction> {
+import static org.terasology.web.resources.base.ResourceMethodFactory.decorateMethod;
+
+public class GamesResource extends StreamBasedItemCollectionResource<GameInfo> {
 
     @In
     private ModuleManager moduleManager;
 
-    @Override
-    public String getName() {
-        return "games";
+    public GamesResource() {
+        super(Collections.singletonMap("backup", (gameName) -> new GamesBackupsResource(PathManager.getInstance(), gameName)));
     }
 
     @Override
-    public List<GameInfo> read(Client requestingClient) {
-        return GameProvider.getSavedGames();
+    protected Stream<GameInfo> getDataSourceStream() {
+        return GameProvider.getSavedGames().stream()
+                .sorted(Comparator.comparing(GameInfo::getManifest, Comparator.comparing(GameManifest::getTitle)));
     }
 
     @Override
-    public Class<GameAction> getDataType() {
-        return GameAction.class;
-    }
-
-    @Override
-    public boolean writeRequiresAuthentication() {
+    protected boolean itemMatchesId(String itemId, GameInfo item) {
         return false;
     }
 
     @Override
-    public boolean writeIsAdminRestricted() {
-        return true;
+    protected void beforeSubResourceAccess(String subResourceName, String itemId) throws ResourceAccessException {
+        checkGameIsNotRunningOrLoading(itemId);
     }
 
     @Override
-    public void write(Client requestingClient, GameAction data) throws ResourceAccessException {
-        data.perform(PathManager.getInstance(), moduleManager);
-        notifyChangedAll();
+    protected void afterSubResourceAccess(String subResourceName, String itemId) {
+        notifyChangedForAllClients();
     }
 
+    @Override
+    protected ResourceMethod<NewGameMetadata, Void> getPostCollectionMethod() throws ResourceAccessException {
+        return decorateMethodWithNotifier(new NewGameMethod(PathManager.getInstance(), moduleManager));
+    }
+
+    @Override
+    protected ResourceMethod<Void, Void> getDeleteItemMethod(String itemId) throws ResourceAccessException {
+        return decorateMethodForExistingGame(itemId, new DeleteGameMethod(PathManager.getInstance(), itemId));
+    }
+
+    @Override
+    protected ResourceMethod<NewGameMetadata, Void> getPatchItemMethod(String itemId) throws ResourceAccessException {
+        return decorateMethodForExistingGame(itemId, new PatchGameMethod(PathManager.getInstance(), itemId));
+    }
+
+    private <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> decorateMethodWithNotifier(ResourceMethod<INTYPE, OUTTYPE> base) {
+        return decorateMethod(base, () -> { }, this::notifyChangedForAllClients);
+    }
+
+    private <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> decorateMethodForExistingGame(String gameName, ResourceMethod<INTYPE, OUTTYPE> base) {
+        return decorateMethod(base, () -> checkGameIsNotRunningOrLoading(gameName), this::notifyChangedForAllClients);
+    }
+
+    private void checkGameIsNotRunningOrLoading(String gameName) throws ResourceAccessException {
+        if (gameName.equals(EngineRunner.getInstance().getRunningOrLoadingGameName())) {
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR,
+                    "This action cannot be performed on a game which is running or loading."));
+        }
+    }
 }

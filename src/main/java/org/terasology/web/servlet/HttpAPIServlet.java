@@ -18,6 +18,7 @@ package org.terasology.web.servlet;
 import com.google.gson.JsonElement;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.io.JsonSession;
+import org.terasology.web.resources.base.ResourceMethodName;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -25,12 +26,14 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.POST;
+import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,6 +43,9 @@ import java.util.UUID;
 public class HttpAPIServlet {
 
     private static final String SESSION_TOKEN_HEADER = "Session-Token";
+    private static final String RESOURCE_PATH_MATCHER = "resources/{resourcePath: .+?}";
+    private static final String RESOURCE_PATH_PARAM = "resourcePath";
+
     private final Map<String, JsonSessionWithEventQueue> sessions = new HashMap<>(); //maps session tokens with the active sessions
     private JsonSession anonymousSession;
 
@@ -113,18 +119,49 @@ public class HttpAPIServlet {
     }
 
     @GET
-    @Path("resources/{resourceName}")
+    @Path(RESOURCE_PATH_MATCHER)
     @Produces(MediaType.APPLICATION_JSON)
-    public ActionResult readResource(@Context HttpServletRequest request, @PathParam("resourceName") String resourceName) {
-        return getSession(request).readResource(resourceName);
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult accessResourceGet(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
     }
 
     @POST
-    @Path("resources/{resourceName}")
+    @Path(RESOURCE_PATH_MATCHER)
     @Produces(MediaType.APPLICATION_JSON)
     @Consumes(MediaType.APPLICATION_JSON)
-    public ActionResult writeResource(JsonElement data, @Context HttpServletRequest request, @PathParam("resourceName") String resourceName) {
-        return getSession(request).writeResource(resourceName, data);
+    public ActionResult accessResourcePost(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    @PUT
+    @Path(RESOURCE_PATH_MATCHER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult accessResourcePut(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    @DELETE
+    @Path(RESOURCE_PATH_MATCHER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult accessResourceDelete(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    @PATCH
+    @Path(RESOURCE_PATH_MATCHER)
+    @Produces(MediaType.APPLICATION_JSON)
+    @Consumes(MediaType.APPLICATION_JSON)
+    public ActionResult accessResourcePatch(JsonElement data, @Context HttpServletRequest request, @PathParam(RESOURCE_PATH_PARAM) String resourcePath) {
+        return accessResource(data, request, resourcePath);
+    }
+
+    private ActionResult accessResource(JsonElement data, HttpServletRequest request, String resourcePath) {
+        List<String> splitPath = Arrays.asList(resourcePath.split("/"));
+        ResourceMethodName resourceMethodName = ResourceMethodName.valueOf(request.getMethod());
+        return getSession(request).accessResource(splitPath, resourceMethodName, data);
     }
 
 }

@@ -19,8 +19,6 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
-import org.terasology.web.io.ActionResult;
-import org.terasology.web.resources.ResourceAccessException;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,14 +33,16 @@ public final class ServerAdminsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerAdminsManager.class);
     private static final Gson GSON = new Gson();
-    private static final ServerAdminsManager INSTANCE = new ServerAdminsManager(PathManager.getInstance().getHomePath().resolve("serverAdmins.json"));
+    private static final ServerAdminsManager INSTANCE = new ServerAdminsManager(PathManager.getInstance().getHomePath().resolve("serverAdmins.json"), true);
 
     private final Path adminListFilePath;
+    private final boolean autoSave;
     private Set<String> serverAdminIds;
     private Runnable onListChanged = () -> { };
 
-    ServerAdminsManager(Path adminListFilePath) {
+    ServerAdminsManager(Path adminListFilePath, boolean autoSave) {
         this.adminListFilePath = adminListFilePath;
+        this.autoSave = autoSave;
         setServerAdminIds(new HashSet<>());
     }
 
@@ -81,10 +81,8 @@ public final class ServerAdminsManager {
         }
     }
 
-    public void checkClientHasAdminPermissions(String clientId) throws ResourceAccessException {
-        if (!(isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId))) {
-            throw new ResourceAccessException(new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only server admins can perform this action"));
-        }
+    public boolean clientHasAdminPermissions(String clientId) {
+        return isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId);
     }
 
     public boolean isAnonymousAdminAccessEnabled() {
@@ -97,11 +95,17 @@ public final class ServerAdminsManager {
 
     public void addAdmin(String id) {
         serverAdminIds.add(id);
+        if (autoSave) {
+            saveAdminList();
+        }
         onListChanged.run();
     }
 
     public void removeAdmin(String id) {
         serverAdminIds.remove(id);
+        if (autoSave) {
+            saveAdminList();
+        }
         onListChanged.run();
     }
 

@@ -31,7 +31,9 @@ import org.terasology.naming.gson.NameTypeAdapter;
 import org.terasology.naming.gson.VersionTypeAdapter;
 import org.terasology.utilities.gson.UriTypeAdapterFactory;
 import org.terasology.web.EngineRunner;
-import org.terasology.web.serverAdminManagement.ServerAdminsManager;
+import org.terasology.web.resources.base.InputParser;
+import org.terasology.web.resources.base.ResourceMethodName;
+import org.terasology.web.resources.base.ResourcePath;
 import org.terasology.web.authentication.AuthenticationFailedException;
 import org.terasology.web.authentication.AuthenticationHandshakeHandler;
 import org.terasology.web.authentication.AuthenticationHandshakeHandlerImpl;
@@ -40,19 +42,15 @@ import org.terasology.web.authentication.HandshakeHello;
 import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.client.HeadlessClientFactory;
 import org.terasology.web.io.gsonUtils.ByteArrayBase64Serializer;
-import org.terasology.web.io.gsonUtils.HierarchyDeserializer;
 import org.terasology.web.io.gsonUtils.ValidatorTypeAdapterFactory;
-import org.terasology.web.resources.EngineStateChangeObserver;
-import org.terasology.web.resources.EventEmittingResource;
-import org.terasology.web.resources.ObservableReadableResource;
-import org.terasology.web.resources.ReadableResource;
-import org.terasology.web.resources.ResourceAccessException;
+import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.ResourceManager;
-import org.terasology.web.resources.WritableResource;
-import org.terasology.web.resources.games.GameAction;
 
 import java.math.BigInteger;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
@@ -66,26 +64,32 @@ public class JsonSession {
             .registerTypeAdapter(Version.class, new VersionTypeAdapter())
             .registerTypeAdapter(I18nMap.class, new I18nMapTypeAdapter())
             .registerTypeAdapterFactory(new UriTypeAdapterFactory())
-            //the following adapter is only used for the Games writable resource
-            .registerTypeAdapter(GameAction.class, new HierarchyDeserializer<GameAction>("org.terasology.web.resources.games.%sGameAction"))
             .create();
+    private static final InputParser<JsonElement> JSON_INPUT_PARSER = new InputParser<JsonElement>() {
+        @Override
+        public <T> T parse(JsonElement input, Class<T> outputType) throws ResourceAccessException {
+            try {
+                return GSON.fromJson(input, outputType);
+            } catch (JsonSyntaxException ex) {
+                throw new ResourceAccessException(new ActionResult(ex));
+            }
+        }
+    };
     private static Set<JsonSession> allSessions = new HashSet<>();
 
     private final AuthenticationHandshakeHandler authHandler;
     private final ResourceManager resourceManager;
-    private final JsonSessionResourceObserver resourceObserver;
 
     private HeadlessClientFactory headlessClientFactory;
     private HeadlessClient client;
-    private EngineStateChangeObserver engineStateObserver;
+    private BiConsumer<Collection<String>, JsonElement> resourceChangeSubscriber = (path, data) -> { };
+    private BiConsumer<Collection<String>, JsonElement> resourceEventListener = (path, data) -> { };
 
     JsonSession(AuthenticationHandshakeHandler authHandler, HeadlessClientFactory headlessClientFactory, ResourceManager resourceManager) {
         this.authHandler = authHandler;
         this.headlessClientFactory = headlessClientFactory;
         this.resourceManager = resourceManager;
-        this.resourceObserver = new JsonSessionResourceObserver(this);
         this.client = headlessClientFactory.connectNewAnonymousHeadlessClient();
-        this.engineStateObserver = new EngineStateChangeObserver(resourceObserver, this::handleEngineStateChanged);
         setResourceObservers(); //observe the notifications sent for the anonymous client
         allSessions.add(this);
     }
@@ -101,45 +105,42 @@ public class JsonSession {
         }
     }
 
-    private void handleEngineStateChanged(GameState newEngineState) {
-        headlessClientFactory = new HeadlessClientFactory(newEngineState.getContext().get(EntityManager.class));
-        removeResourceObservers();
-        client.disconnect();
-        if (isAuthenticated()) {
-            client = headlessClientFactory.connectNewHeadlessClient(client.getId());
-        } else {
-            client = headlessClientFactory.connectNewAnonymousHeadlessClient();
-        }
-        setResourceObservers();
+    public static void handleEngineStateChanged(GameState newEngineState) {
+        allSessions.forEach((instance) -> {
+            instance.headlessClientFactory = new HeadlessClientFactory(newEngineState.getContext().get(EntityManager.class));
+            instance.removeResourceObservers();
+            instance.client.disconnect();
+            if (instance.isAuthenticated()) {
+                instance.client = instance.headlessClientFactory.connectNewHeadlessClient(instance.client.getId());
+            } else {
+                instance.client = instance.headlessClientFactory.connectNewAnonymousHeadlessClient();
+            }
+            instance.setResourceObservers();
+        });
     }
 
-    @SuppressWarnings("unchecked")
+    public void setResourceChangeSubscriber(BiConsumer<Collection<String>, JsonElement> resourceChangeSubscriber) {
+        this.resourceChangeSubscriber = resourceChangeSubscriber;
+    }
+
+    public void setResourceEventListener(BiConsumer<Collection<String>, JsonElement> resourceEventListener) {
+        this.resourceEventListener = resourceEventListener;
+    }
+
+    private void notifyResourceChanged(ResourcePath resourcePath, Object newData) {
+        resourceChangeSubscriber.accept(Collections.unmodifiableCollection(resourcePath.getItemList()), GSON.toJsonTree(newData));
+    }
+
+    private void notifyResourceEvent(ResourcePath resourcePath, Object eventData) {
+        resourceEventListener.accept(Collections.unmodifiableCollection(resourcePath.getItemList()), GSON.toJsonTree(eventData));
+    }
+
     private void setResourceObservers() {
-        for (ObservableReadableResource observableResource: resourceManager.getAll(ObservableReadableResource.class)) {
-            observableResource.setObserver(client.getEntity(), resourceObserver);
-        }
-        for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
-            eventResource.setObserver(client.getEntity(), resourceObserver);
-        }
-        ResourceManager.getInstance().addEngineStateChangeObserver(engineStateObserver);
+       resourceManager.addClient(client, this::notifyResourceChanged, this::notifyResourceEvent);
     }
 
     private void removeResourceObservers() {
-        for (ObservableReadableResource observableResource: resourceManager.getAll(ObservableReadableResource.class)) {
-            observableResource.removeObserver(client.getEntity());
-        }
-        for (EventEmittingResource eventResource: resourceManager.getAll(EventEmittingResource.class)) {
-            eventResource.removeObserver(client.getEntity());
-        }
-        ResourceManager.getInstance().removeEngineStateChangeObserver(engineStateObserver);
-    }
-
-    public void setReadableResourceObserver(BiConsumer<String, JsonElement> observer) {
-        resourceObserver.setReadableResourceObserver(observer);
-    }
-
-    public void setEventResourceObserver(BiConsumer<String, JsonElement> observer) {
-        resourceObserver.setEventResourceObserver(observer);
+        resourceManager.removeClient(client);
     }
 
     public boolean isAuthenticated() {
@@ -147,17 +148,17 @@ public class JsonSession {
     }
 
     public ActionResult initAuthentication() {
-        /*if (isAuthenticated()) {
-            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
-        }*/
+        if (isAuthenticated()) {
+            return new ActionResult(ActionResult.Status.FORBIDDEN, "Already authenticated");
+        }
         HandshakeHello serverHello = authHandler.initServerHello();
         return new ActionResult(GSON.toJsonTree(serverHello));
     }
 
     public ActionResult finishAuthentication(JsonElement clientMessage) {
-        /*if (isAuthenticated()) {
-            return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Already authenticated");
-        }*/
+        if (isAuthenticated()) {
+            return new ActionResult(ActionResult.Status.FORBIDDEN, "Already authenticated");
+        }
         try {
             ClientAuthenticationMessage clientAuthentication = GSON.fromJson(clientMessage, ClientAuthenticationMessage.class);
             byte[] serverVerification = authHandler.authenticate(clientAuthentication);
@@ -170,7 +171,7 @@ public class JsonSession {
         } catch (JsonSyntaxException ex) {
             return new ActionResult(ex);
         } catch (AuthenticationFailedException ex) {
-            return new ActionResult(ActionResult.Status.UNAUTHORIZED);
+            return new ActionResult(ActionResult.Status.FORBIDDEN);
         }
     }
 
@@ -181,34 +182,10 @@ public class JsonSession {
         allSessions.remove(this);
     }
 
-    JsonElement serializeEvent(Object eventData) {
-        return GSON.toJsonTree(eventData);
-    }
-
-    JsonElement readResource(ReadableResource resource) throws ResourceAccessException {
-        return GSON.toJsonTree(resource.read(client));
-    }
-
-    public ActionResult readResource(String resourceName) {
+    public ActionResult accessResource(List<String> resourcePath, ResourceMethodName methodName, JsonElement inputData) {
         try {
-            return new ActionResult(readResource(resourceManager.getAs(resourceName, ReadableResource.class)));
-        } catch (ResourceAccessException ex) {
-            return ex.getResultToSend();
-        }
-    }
-
-    @SuppressWarnings("unchecked")
-    public ActionResult writeResource(String resourceName, JsonElement data) {
-        try {
-            WritableResource resource = resourceManager.getAs(resourceName, WritableResource.class);
-            if (resource.writeRequiresAuthentication() && !isAuthenticated()) {
-                return new ActionResult(ActionResult.Status.UNAUTHORIZED, "Only authenticated clients can write to this resource.");
-            }
-            if (resource.writeIsAdminRestricted()) {
-                ServerAdminsManager.getInstance().checkClientHasAdminPermissions(client.getId());
-            }
-            resource.write(client, GSON.fromJson(data, resource.getDataType()));
-            return ActionResult.OK;
+            Object resultData = resourceManager.performAction(new ResourcePath(resourcePath), methodName, inputData, JSON_INPUT_PARSER, client);
+            return new ActionResult(GSON.toJsonTree(resultData));
         } catch (ResourceAccessException ex) {
             return ex.getResultToSend();
         }

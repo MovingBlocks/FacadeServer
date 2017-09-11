@@ -19,33 +19,29 @@ import org.terasology.engine.module.ModuleManager;
 import org.terasology.i18n.I18nMap;
 import org.terasology.module.Module;
 import org.terasology.module.ModuleMetadata;
-import org.terasology.network.Client;
+import org.terasology.naming.Name;
 import org.terasology.registry.In;
-import org.terasology.web.resources.ReadableResource;
-import org.terasology.web.resources.ResourceAccessException;
-import org.terasology.world.generator.internal.WorldGeneratorManager;
+import org.terasology.web.resources.base.StreamBasedItemCollectionResource;
 
 import java.util.Comparator;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class AvailableModulesResource implements ReadableResource<AvailableModulesData> {
+public class AvailableModulesResource extends StreamBasedItemCollectionResource<ModuleMetadata> {
 
     @In
     private ModuleManager moduleManager;
 
-    @In
-    private WorldGeneratorManager worldGeneratorManager;
-
     @Override
-    public String getName() {
-        return "availableModules";
-    }
-
-    @Override
-    public AvailableModulesData read(Client requestingClient) throws ResourceAccessException {
-        Stream<ModuleMetadata> modules = moduleManager.getRegistry().stream().map(Module::getMetadata)
+    protected Stream<ModuleMetadata> getDataSourceStream() {
+        return moduleManager.getRegistry().stream()
+                .map(Module::getMetadata)
                 .sorted(Comparator.comparing(ModuleMetadata::getDisplayName, Comparator.comparing(I18nMap::value)));
-        return new AvailableModulesData(modules.collect(Collectors.toList()), worldGeneratorManager.getWorldGenerators());
     }
+
+    @Override
+    protected boolean itemMatchesId(String itemId, ModuleMetadata item) {
+        return item.getId().equals(new Name(itemId));
+    }
+
+    // TODO: implement DELETE method to uninstall modules (after deciding on a policy to handle dependencies)
 }

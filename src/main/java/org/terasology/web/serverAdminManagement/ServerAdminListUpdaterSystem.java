@@ -25,7 +25,6 @@ public class ServerAdminListUpdaterSystem extends BaseComponentSystem {
     @ReceiveEvent
     public void onConnected(ConnectedEvent event, EntityRef entityRef) {
         ServerAdminsManager.getInstance().addFirstAdminIfNecessary(event.getPlayerStore().getId());
-        ServerAdminsManager.getInstance().saveAdminList();
     }
 
     @Override

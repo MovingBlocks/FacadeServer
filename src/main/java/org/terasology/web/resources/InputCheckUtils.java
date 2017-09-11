@@ -16,22 +16,32 @@
 package org.terasology.web.resources;
 
 import org.terasology.web.io.ActionResult;
+import org.terasology.web.resources.base.ResourceAccessException;
+
+import java.util.Objects;
+import java.util.function.Predicate;
 
 public final class InputCheckUtils {
 
     private InputCheckUtils() {
     }
 
-    public static void checkNotNull(Object obj, String errorMessage) throws ResourceAccessException {
-        if (obj == null) {
+    public static <T> void checkPredicate(T obj, Predicate<T> predicate, String errorMessage) throws ResourceAccessException {
+        if (!predicate.test(obj)) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.BAD_REQUEST, errorMessage));
         }
     }
 
+    public static void checkNull(Object obj, String errorMessage) throws ResourceAccessException {
+        checkPredicate(obj, Objects::isNull, errorMessage);
+    }
+
+    public static void checkNotNull(Object obj, String errorMessage) throws ResourceAccessException {
+        checkPredicate(obj, Objects::nonNull, errorMessage);
+    }
+
     public static void checkNotNullOrEmpty(String str, String errorMessage) throws ResourceAccessException {
         checkNotNull(str, errorMessage);
-        if (str.isEmpty()) {
-            throw new ResourceAccessException(new ActionResult(ActionResult.Status.BAD_REQUEST, errorMessage));
-        }
+        checkPredicate(str, s -> !s.isEmpty(), errorMessage);
     }
 }

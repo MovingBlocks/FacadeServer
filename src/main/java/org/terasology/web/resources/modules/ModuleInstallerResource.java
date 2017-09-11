@@ -19,13 +19,15 @@ import org.terasology.engine.module.DependencyResolutionFailedException;
 import org.terasology.engine.module.ModuleManager;
 import org.terasology.module.Module;
 import org.terasology.naming.Name;
-import org.terasology.network.Client;
 import org.terasology.registry.In;
 import org.terasology.utilities.download.MultiFileTransferProgressListener;
 import org.terasology.web.io.ActionResult;
-import org.terasology.web.resources.ObservableReadableResource;
-import org.terasology.web.resources.ResourceAccessException;
-import org.terasology.web.resources.WritableResource;
+import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.web.resources.base.AbstractSimpleResource;
+import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.world.generator.internal.WorldGeneratorManager;
 
 import java.util.List;
 import java.util.Set;
@@ -36,45 +38,36 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
-public class ModuleInstallerResource extends ObservableReadableResource<String> implements WritableResource<Name[]> {
+import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
+import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
+
+public class ModuleInstallerResource extends AbstractSimpleResource {
 
     @In
     private ModuleManager moduleManager;
+    @In
+    private WorldGeneratorManager worldGeneratorManager;
 
     private ExecutorService installExecutor = Executors.newSingleThreadExecutor();
     private String status = "Ready";
 
     @Override
-    public String getName() {
-        return "moduleInstaller";
+    protected ResourceMethod<Void, String> getGetMethod(ResourcePath path) throws ResourceAccessException {
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
+                (data, client) -> status);
     }
 
     @Override
-    public Class<Name[]> getDataType() {
-        return Name[].class;
+    protected ResourceMethod<Name[], Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, Name[].class,
+                (data, client) -> installModules(data));
     }
 
-    @Override
-    public boolean writeRequiresAuthentication() {
-        return false;
-    }
-
-    @Override
-    public boolean writeIsAdminRestricted() {
-        return true;
-    }
-
-    @Override
-    public String read(Client requestingClient) throws ResourceAccessException {
-        return status;
-    }
-
-    @Override
-    public void write(Client requestingClient, Name[] data) throws ResourceAccessException {
+    private void installModules(Name[] moduleNames) throws ResourceAccessException {
         executeCallable(moduleManager.getInstallManager().updateRemoteRegistry());
         Set<Module> allModules;
         try {
-            allModules = moduleManager.getInstallManager().getAllModulesToDownloadFor(data);
+            allModules = moduleManager.getInstallManager().getAllModulesToDownloadFor(moduleNames);
         } catch (DependencyResolutionFailedException ex) {
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.GENERIC_ERROR, ex.getMessage()));
         }
@@ -97,6 +90,7 @@ public class ModuleInstallerResource extends ObservableReadableResource<String> 
             try {
                 List<Module> installedModules = installResult.get();
                 newStatus += "successfully installed " + installedModules.size() + " modules.";
+                worldGeneratorManager.refresh();
             } catch (CancellationException | ExecutionException | InterruptedException ex) {
                 newStatus += "installation failed for this reason: " + ex.getMessage();
             }
@@ -106,7 +100,7 @@ public class ModuleInstallerResource extends ObservableReadableResource<String> 
 
     private void setStatus(String value) {
         status = value;
-        notifyChangedAll();
+        notifyChangedForAllClients();
     }
 
     private void executeCallable(Callable process) throws ResourceAccessException {
