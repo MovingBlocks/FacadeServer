@@ -17,7 +17,7 @@ package org.terasology.web.resources.base;
 
 import org.terasology.web.client.ClientSecurityInfo;
 
-public class ClientSecurityRequirements {
+public final class ClientSecurityRequirements {
 
     public static final ClientSecurityRequirements PUBLIC = new ClientSecurityRequirements(false, false);
     public static final ClientSecurityRequirements REQUIRE_AUTH = new ClientSecurityRequirements(true, false);

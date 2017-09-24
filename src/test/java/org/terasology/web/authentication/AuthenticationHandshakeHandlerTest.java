@@ -60,24 +60,6 @@ public class AuthenticationHandshakeHandlerTest {
         handshake.authenticate(new ClientAuthenticationMessage(clientHello, null));
     }
 
-    @Test(expected = AuthenticationFailedException.class) //authentication attempt that must be rejected
-    public void testBadSignature() throws AuthenticationFailedException {
-        CertificateGenerator gen = new CertificateGenerator();
-        CertificatePair server = gen.generateSelfSigned();
-        CertificatePair client = gen.generate(server.getPrivateCert());
-
-        AuthenticationHandshakeHandler handshake = new AuthenticationHandshakeHandlerImpl(server);
-        HandshakeHello serverHello = handshake.initServerHello();
-        assertTrue(serverHello.getCertificate().verifySelfSigned());
-        byte[] clientRandom = new byte[IdentityConstants.SERVER_CLIENT_RANDOM_LENGTH];
-        //correct public certificate...
-        HandshakeHello clientHello = new HandshakeHello(clientRandom, client.getPublicCert(), System.currentTimeMillis());
-        byte[] dataToSign = HandshakeHello.concat(serverHello, clientHello);
-        //...but wrong private certificate
-        byte[] signature = randomPrivateCert(2).sign(dataToSign);
-        handshake.authenticate(new ClientAuthenticationMessage(clientHello, signature));
-    }
-
     @Test //legitimate authentication attempt that must be accepted
     public void testOk() throws AuthenticationFailedException {
         CertificateGenerator gen = new CertificateGenerator();

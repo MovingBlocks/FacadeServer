@@ -41,12 +41,12 @@ public class JsonSessionWithEventQueueTest {
         ArgumentCaptor<BiConsumer<Collection<String>, JsonElement>> observerArgument = ArgumentCaptor.forClass(BiConsumer.class);
         verify(jsonSessionMock).setResourceEventListener(observerArgument.capture());
         assertTrue(eventSession.drainEventQueue().isEmpty());
-        observerArgument.getValue().accept(Arrays.asList("parent1", "resource1"), new JsonPrimitive("testEventDataValue1"));
-        observerArgument.getValue().accept(Arrays.asList("parent2", "resource2"), new JsonPrimitive("testEventDataValue2"));
+        observerArgument.getValue().accept(Arrays.asList("parent1", "resource1"), new JsonPrimitive("testEventData1"));
+        observerArgument.getValue().accept(Arrays.asList("parent2", "resource2"), new JsonPrimitive("testEventData2"));
         List<JsonSessionWithEventQueue.ResourceEvent> returnedEventList = eventSession.drainEventQueue();
         assertEquals(2, returnedEventList.size());
-        assertEventEquals(new JsonSessionWithEventQueue.ResourceEvent(Arrays.asList("parent1", "resource1"), new JsonPrimitive("testEventDataValue1")), returnedEventList.get(0));
-        assertEventEquals(new JsonSessionWithEventQueue.ResourceEvent(Arrays.asList("parent2", "resource2"), new JsonPrimitive("testEventDataValue2")), returnedEventList.get(1));
+        assertEventEquals(new JsonSessionWithEventQueue.ResourceEvent(Arrays.asList("parent1", "resource1"), new JsonPrimitive("testEventData1")), returnedEventList.get(0));
+        assertEventEquals(new JsonSessionWithEventQueue.ResourceEvent(Arrays.asList("parent2", "resource2"), new JsonPrimitive("testEventData2")), returnedEventList.get(1));
     }
 
     private void assertEventEquals(JsonSessionWithEventQueue.ResourceEvent expected, JsonSessionWithEventQueue.ResourceEvent actual) {
