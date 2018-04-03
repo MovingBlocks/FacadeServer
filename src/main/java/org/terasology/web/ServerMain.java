@@ -18,6 +18,7 @@ package org.terasology.web;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -176,12 +177,12 @@ public final class ServerMain {
 
         KeyStore keyStore = KeyStore.getInstance("JKS");
         Path keyStorePath = PathManager.getInstance().getInstallPath().resolve("facades").resolve("Server").resolve("keystore.jks");
-        System.out.println(keyStorePath);
         File keyStoreFile = new File(keyStorePath.toString());
-        if (keyStoreFile.exists()){
+        try {
             keyStore.load(new FileInputStream(keyStoreFile), "ServerKeyPassword".toCharArray());
-        } else {
+        } catch (FileNotFoundException e) {
             logger.error("Keystore file not found");
+            e.printStackTrace();
         }
 
         SslContextFactory sslContextFactory = new SslContextFactory();
