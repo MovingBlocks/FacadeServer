@@ -16,20 +16,28 @@
 
 package org.terasology.web;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.security.KeyStore;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import org.eclipse.jetty.http.HttpVersion;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
 import org.eclipse.jetty.server.handler.ContextHandler;
 import org.eclipse.jetty.server.handler.HandlerList;
 import org.eclipse.jetty.server.handler.ResourceHandler;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import org.eclipse.jetty.util.resource.Resource;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import org.glassfish.jersey.server.mvc.freemarker.FreemarkerMvcFeature;
 import org.glassfish.jersey.servlet.ServletContainer;
@@ -165,6 +173,26 @@ public final class ServerMain {
         for (Object servlet : annotatedObjects) {
             rc.register(servlet);
         }
+
+        KeyStore keyStore = KeyStore.getInstance("JKS");
+        Path keyStorePath = PathManager.getInstance().getInstallPath().resolve("facades").resolve("Server").resolve("keystore.jks");
+        System.out.println(keyStorePath);
+        File keyStoreFile = new File(keyStorePath.toString());
+        if (keyStoreFile.exists()){
+            keyStore.load(new FileInputStream(keyStoreFile), "ServerKeyPassword".toCharArray());
+        } else {
+            logger.error("Keystore file not found");
+        }
+
+        SslContextFactory sslContextFactory = new SslContextFactory();
+        sslContextFactory.setKeyStorePath(keyStorePath.toString());
+        sslContextFactory.setKeyStorePassword("ServerKeyPassword");
+
+        ServerConnector wssConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory,
+                HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory());
+
+        wssConnector.setPort(8443);
+        server.addConnector(wssConnector);
 
         ServletContextHandler jerseyContext = new ServletContextHandler(ServletContextHandler.GZIP);
         jerseyContext.setResourceBase("templates");
