@@ -79,25 +79,40 @@ public final class ServerMain {
         setupLogging();
         ServerAdminsManager.getInstance().loadAdminList();
 
-        String portEnv = System.getenv("PORT");
-        if (portEnv == null) {
-            portEnv = "8080";
-            logger.warn("Environment variable 'PORT' not defined - using default {}", portEnv);
+        String httpPortEnv = System.getenv("HTTP_PORT");
+        if (httpPortEnv == null) {
+            httpPortEnv = "8080";
+            logger.warn("Environment variable 'HTTP_PORT' not defined - using default {}", httpPortEnv);
         }
-        Integer port = Integer.valueOf(portEnv);
+
+        Integer httpPort = Integer.valueOf(httpPortEnv);
+
+        String httpsPortEnv = System.getenv("HTTPS_PORT");
+        if (httpsPortEnv == null) {
+            httpsPortEnv = "8443";
+            logger.warn("Environment variable 'HTTPS_PORT' not defined - using default {}", httpsPortEnv);
+        }
+
+        String keystorePassword = System.getenv("KEYSTORE_PASSWORD");
+        if (keystorePassword == null){
+            keystorePassword = "ServerKeyPassword";
+            logger.warn("Environment variable 'KEYSTORE_PASSWORD' not defined - using default {}", keystorePassword);
+        }
+
+        Integer httpsPort = Integer.valueOf(httpsPortEnv);
 
         // this is mostly for I18nMap, but can have an influence on other
         // string formats. Note that metainfo.ftl explicitly sets the locale to
         // define the date format.
         Locale.setDefault(Locale.ENGLISH);
 
-        Server server = createServer(port,
+        Server server = createServer(httpPort, httpsPort, keystorePassword,
                 new LogServlet(),
                 new AboutServlet(),
                 new HttpAPIServlet());
 
         server.start();
-        logger.info("Web server started on port {}!", port);
+        logger.info("Web server started on port {}!", httpPort);
 
         EngineRunner.getInstance().runEngine(autoStart);
 
@@ -137,7 +152,7 @@ public final class ServerMain {
         System.out.println(ARG_ENGINE_SERVER_PORT + ": use the specified port for the Terasology server");
         System.out.println(ARG_WAIT_MANUAL_START + ": do not generate and start a game with the default settings, but wait for manual setup via the web interface");
         System.out.println();
-        System.out.println("The web server port (default 8080) can be overridden by setting the environment variable PORT.");
+        System.out.println("The web server port (default 8080) can be overridden by setting the environment variable HTTP_PORT.");
     }
 
     private static void setupLogging() {
@@ -149,8 +164,8 @@ public final class ServerMain {
         LoggingContext.initialize(path);
     }
 
-    private static Server createServer(int port, Object... annotatedObjects) throws Exception {
-        Server server = new Server(port);
+    private static Server createServer(int httpPort, int httpsPort, String keystorePassword, Object... annotatedObjects) throws Exception {
+        Server server = new Server(httpPort);
 
         ResourceHandler logFileResourceHandler = new ResourceHandler();
         logFileResourceHandler.setDirectoriesListed(true);
@@ -179,7 +194,7 @@ public final class ServerMain {
         Path keyStorePath = PathManager.getInstance().getInstallPath().resolve("facades").resolve("Server").resolve("keystore.jks");
         File keyStoreFile = new File(keyStorePath.toString());
         try {
-            keyStore.load(new FileInputStream(keyStoreFile), "ServerKeyPassword".toCharArray());
+            keyStore.load(new FileInputStream(keyStoreFile), keystorePassword.toCharArray());
         } catch (FileNotFoundException e) {
             logger.error("Keystore file not found");
             e.printStackTrace();
@@ -187,13 +202,13 @@ public final class ServerMain {
 
         SslContextFactory sslContextFactory = new SslContextFactory();
         sslContextFactory.setKeyStorePath(keyStorePath.toString());
-        sslContextFactory.setKeyStorePassword("ServerKeyPassword");
+        sslContextFactory.setKeyStorePassword(keystorePassword);
 
-        ServerConnector wssConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory,
+        ServerConnector sslConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory,
                 HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory());
 
-        wssConnector.setPort(8443);
-        server.addConnector(wssConnector);
+        sslConnector.setPort(httpsPort);
+        server.addConnector(sslConnector);
 
         ServletContextHandler jerseyContext = new ServletContextHandler(ServletContextHandler.GZIP);
         jerseyContext.setResourceBase("templates");
