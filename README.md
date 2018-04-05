@@ -25,6 +25,12 @@ The web server exposes access to the various resources both with an HTTP REST AP
 More information is available in the docs.md file at the root of this repository.
 Also, here is a [direct link](http://petstore.swagger.io/?url=https://raw.githubusercontent.com/MovingBlocks/FacadeServer/develop/src/main/resources/web/swagger.json#/) to view online the Swagger/OpenAPI specification of the HTTP API.
 
+### HTTPS connections
+The server is able to support https connections.
+A self-signed certificate is provided in a keystore file, which will make browsers refuse to connect unless an exception is made.
+To avoid this problem, you can obtain a valid certificate, [convert it to jks format](https://blogs.oracle.com/jtc/installing-trusted-certificates-into-a-java-keystore), and replace the keystore.jks file.
+
+
 ### Related repositories
 [Here](https://github.com/gianluca-nitti/FacadeServer-frontend) is the code for a web and mobile frontend to FacadeServer.
 
