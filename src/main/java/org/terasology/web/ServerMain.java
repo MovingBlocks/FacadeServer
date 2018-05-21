@@ -94,7 +94,7 @@ public final class ServerMain {
         }
 
         String keystorePassword = System.getenv("KEYSTORE_PASSWORD");
-        if (keystorePassword == null){
+        if (keystorePassword == null) {
             keystorePassword = "ServerKeyPassword";
             logger.warn("Environment variable 'KEYSTORE_PASSWORD' not defined - using default {}", keystorePassword);
         }

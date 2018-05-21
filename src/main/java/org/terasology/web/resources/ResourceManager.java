@@ -43,6 +43,7 @@ import org.terasology.web.resources.modules.AvailableModulesResource;
 import org.terasology.web.resources.modules.ModuleInstallerResource;
 import org.terasology.web.resources.onlinePlayers.OnlinePlayersResource;
 import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
+import org.terasology.web.resources.systemStatus.SystemResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
 
 import java.util.Arrays;
@@ -92,6 +93,7 @@ public final class ResourceManager implements ResourceObserver {
                         .addSubResource("MOTD", new ServerMotdResource())
                         .build())
                 .addSubResource("serverAdmins", new ServerAdminsResource())
+                .addSubResource("system", new SystemResource())
                 .build();
         rootResource.setObserver(this);
         additionalResourcesToUpdate = new HashMap<>();
