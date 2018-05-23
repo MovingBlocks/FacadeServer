@@ -16,31 +16,56 @@
 package org.terasology.web.resources.systemStatus;
 
 import oshi.SystemInfo;
+import oshi.hardware.HardwareAbstractionLayer;
+
+import java.lang.management.*;
+
+
+/**
+ * This class contains the data for system resources
+ */
 
 public final class SystemMetadata {
+
+    private static SystemMetadata instance;
+    private static HardwareAbstractionLayer hardware;
+    private static RuntimeMXBean runtimeBean;
+    private static MemoryMXBean memoryBean;
 
     private double cpuUsage;
     private double memoryUsagePercentage;
     private long memoryUsed;
     private long memoryTotal;
     private long memoryAvailable;
-    private long systemUptime;
+    private long serverUptime;
+    private long jvmMemoryUsed;
+    private long jvmMemoryTotal;
 
-    public static SystemMetadata build() {
-        SystemMetadata systemMetadata = new SystemMetadata();
-        systemMetadata.getStatus();
-        return systemMetadata;
+    private SystemMetadata() {
+        hardware = new SystemInfo().getHardware();
+        runtimeBean = ManagementFactory.getRuntimeMXBean();
+        memoryBean = ManagementFactory.getMemoryMXBean();
     }
 
-    private void getStatus() {
-        SystemInfo systemInfo = new SystemInfo();
-        cpuUsage = systemInfo.getHardware().getProcessor().getSystemCpuLoad() * 100;
-        memoryAvailable = systemInfo.getHardware().getMemory().getAvailable();
-        memoryTotal = systemInfo.getHardware().getMemory().getTotal();
+    public static SystemMetadata getInstance() {
+        if (instance == null) {
+            instance = new SystemMetadata();
+        }
+        instance.refresh();
+        return instance;
+    }
+
+    private void refresh() {
+        //Runtime
+        cpuUsage = hardware.getProcessor().getSystemCpuLoad() * 100;
+        memoryAvailable = hardware.getMemory().getAvailable();
+        memoryTotal = hardware.getMemory().getTotal();
         memoryUsed = memoryTotal - memoryAvailable;
         memoryUsagePercentage = ((double) memoryUsed / memoryTotal) * 100;
-        // system uptime in seconds
-        systemUptime = systemInfo.getHardware().getProcessor().getSystemUptime();
+        // system uptime in milliseconds
+        serverUptime = runtimeBean.getUptime();
+        jvmMemoryUsed = Runtime.getRuntime().totalMemory();
+        jvmMemoryTotal = Runtime.getRuntime().maxMemory();
     }
 
     public double getCpuUsage() {
@@ -63,7 +88,7 @@ public final class SystemMetadata {
         return memoryAvailable;
     }
 
-    public long getSystemUptime() {
-        return systemUptime;
+    public long getServerUptime() {
+        return serverUptime;
     }
 }
