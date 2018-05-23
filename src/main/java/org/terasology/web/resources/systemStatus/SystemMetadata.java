@@ -18,7 +18,8 @@ package org.terasology.web.resources.systemStatus;
 import oshi.SystemInfo;
 import oshi.hardware.HardwareAbstractionLayer;
 
-import java.lang.management.*;
+import java.lang.management.ManagementFactory;
+import java.lang.management.RuntimeMXBean;
 
 
 /**
@@ -30,21 +31,17 @@ public final class SystemMetadata {
     private static SystemMetadata instance;
     private static HardwareAbstractionLayer hardware;
     private static RuntimeMXBean runtimeBean;
-    private static MemoryMXBean memoryBean;
 
     private double cpuUsage;
-    private double memoryUsagePercentage;
     private long memoryUsed;
-    private long memoryTotal;
-    private long memoryAvailable;
+    private long memoryMax;
     private long serverUptime;
     private long jvmMemoryUsed;
-    private long jvmMemoryTotal;
+    private long jvmMemoryMax;
 
     private SystemMetadata() {
         hardware = new SystemInfo().getHardware();
         runtimeBean = ManagementFactory.getRuntimeMXBean();
-        memoryBean = ManagementFactory.getMemoryMXBean();
     }
 
     public static SystemMetadata getInstance() {
@@ -58,37 +55,36 @@ public final class SystemMetadata {
     private void refresh() {
         //Runtime
         cpuUsage = hardware.getProcessor().getSystemCpuLoad() * 100;
-        memoryAvailable = hardware.getMemory().getAvailable();
-        memoryTotal = hardware.getMemory().getTotal();
-        memoryUsed = memoryTotal - memoryAvailable;
-        memoryUsagePercentage = ((double) memoryUsed / memoryTotal) * 100;
+        memoryMax = hardware.getMemory().getTotal();
+        memoryUsed = memoryMax - hardware.getMemory().getAvailable();
         // system uptime in milliseconds
         serverUptime = runtimeBean.getUptime();
         jvmMemoryUsed = Runtime.getRuntime().totalMemory();
-        jvmMemoryTotal = Runtime.getRuntime().maxMemory();
+        jvmMemoryMax = Runtime.getRuntime().maxMemory();
     }
 
     public double getCpuUsage() {
         return cpuUsage;
     }
 
-    public double getMemoryUsagePercentage() {
-        return memoryUsagePercentage;
-    }
-
     public long getMemoryUsed() {
         return memoryUsed;
     }
 
-    public long getMemoryTotal() {
-        return memoryTotal;
-    }
-
-    public long getMemoryAvailable() {
-        return memoryAvailable;
+    public long getMemoryMax() {
+        return memoryMax;
     }
 
     public long getServerUptime() {
         return serverUptime;
     }
+
+    public long getJvmMemoryUsed() {
+        return jvmMemoryUsed;
+    }
+
+    public long getJvmMemoryMax() {
+        return jvmMemoryMax;
+    }
+
 }
