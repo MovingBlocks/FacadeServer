@@ -28,8 +28,10 @@ mainClassName = "org.terasology.web.ServerMain"
 
 ext {
     localServerDataPath = 'terasology-server'
-    group = 'org.terasology.web'
 }
+
+// For artifact organizing - version is set in gradle.properties
+group = 'org.terasology.web'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.13'
