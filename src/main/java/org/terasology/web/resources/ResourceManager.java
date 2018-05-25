@@ -43,6 +43,7 @@ import org.terasology.web.resources.modules.AvailableModulesResource;
 import org.terasology.web.resources.modules.ModuleInstallerResource;
 import org.terasology.web.resources.onlinePlayers.OnlinePlayersResource;
 import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
+import org.terasology.web.resources.systemStatus.SystemResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
 
 import java.util.Arrays;
@@ -77,6 +78,7 @@ public final class ResourceManager implements ResourceObserver {
         Context context = gameState.getContext();
 
         Consumer<Resource> resourceInitializer = (resource) -> initializeResource(context, resource);
+        SystemResource systemResource = new SystemResource();
         rootResource = new RouterResource.Builder(resourceInitializer)
                 .addSubResource("onlinePlayers", new OnlinePlayersResource())
                 .addSubResource("console", new ConsoleResource())
@@ -92,7 +94,9 @@ public final class ResourceManager implements ResourceObserver {
                         .addSubResource("MOTD", new ServerMotdResource())
                         .build())
                 .addSubResource("serverAdmins", new ServerAdminsResource())
+                .addSubResource("system", systemResource)
                 .build();
+        systemResource.startSystemInfoRefreshService();
         rootResource.setObserver(this);
         additionalResourcesToUpdate = new HashMap<>();
         // when /modules/installer changes, also update /modules/available and /worldGenerators

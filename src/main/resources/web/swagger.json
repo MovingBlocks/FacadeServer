@@ -172,6 +172,35 @@
             }
           }
         }
+      },
+      "SystemMetadata": {
+        "description": "Contains information on the machine running the server.",
+        "properties": {
+          "cpuUsage": {
+            "type": "number",
+            "description": "The current percentage of CPU usage in the server machine"
+          },
+          "memoryUsed": {
+            "type": "integer",
+            "description": "Current RAM memory in use by the system"
+          },
+          "MemoryMax": {
+            "type": "integer",
+            "description": "Maximum RAM memory available for use by the system"
+          },
+          "serverUptime": {
+            "type": "integer",
+            "description": "Time in milliseconds of how long the server has been running"
+          },
+          "jvmMemoryUsed": {
+            "type": "integer",
+            "description": "Current RAM memory used by the JVM"
+          },
+          "jvmMemoryMax": {
+            "type": "integer",
+            "description": "Maximum available RAM memory for the JVM"
+          }
+        }
       }
     },
     "responses": {
@@ -877,6 +906,28 @@
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenNotAdmin"
+          }
+        }
+      }
+    },
+    "/resources/system": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Session-Token"
+        }
+      ],
+      "get": {
+        "summary": "Gets information on the system running the server.",
+        "responses": {
+          "200": {
+            "description": "System status, including the cpu usage, memory usage, system uptime, and jvm memory usage.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SystemMetadata"
+                }
+              }
+            }
           }
         }
       }
