@@ -15,15 +15,31 @@
  */
 package org.terasology.web.resources.systemStatus;
 
+import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
 
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
 public class SystemResource extends AbstractSimpleResource {
+
+    private final ScheduledExecutorService refreshSystemInfoService = Executors.newScheduledThreadPool(1);
+
+    public void startSystemInfoRefreshService() {
+        refreshSystemInfoService.scheduleAtFixedRate(this::refreshSystemInfoForClient, 1000, 1000, TimeUnit.MILLISECONDS);
+    }
+
+    @ReceiveEvent
+    public void refreshSystemInfoForClient() {
+        notifyChangedForAllClients();
+    }
 
     @Override
     protected ResourceMethod<Void, SystemMetadata> getGetMethod(ResourcePath path) throws ResourceAccessException {

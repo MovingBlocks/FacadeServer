@@ -29,8 +29,8 @@ import java.lang.management.RuntimeMXBean;
 public final class SystemMetadata {
 
     private static SystemMetadata instance;
-    private static HardwareAbstractionLayer hardware;
-    private static RuntimeMXBean runtimeBean;
+    private static HardwareAbstractionLayer hardware = new SystemInfo().getHardware();
+    private static RuntimeMXBean runtimeBean = ManagementFactory.getRuntimeMXBean();
 
     private double cpuUsage;
     private long memoryUsed;
@@ -40,8 +40,6 @@ public final class SystemMetadata {
     private long jvmMemoryMax;
 
     private SystemMetadata() {
-        hardware = new SystemInfo().getHardware();
-        runtimeBean = ManagementFactory.getRuntimeMXBean();
     }
 
     public static SystemMetadata getInstance() {
@@ -53,7 +51,6 @@ public final class SystemMetadata {
     }
 
     private void refresh() {
-        //Runtime
         cpuUsage = hardware.getProcessor().getSystemCpuLoad() * 100;
         memoryMax = hardware.getMemory().getTotal();
         memoryUsed = memoryMax - hardware.getMemory().getAvailable();
