@@ -15,6 +15,7 @@
  */
 package org.terasology.web.resources.console;
 
+import com.google.common.collect.Collections2;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.RegisterSystem;
@@ -29,7 +30,10 @@ import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
 
+import java.util.Collection;
+
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
+import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
 @RegisterSystem
 public class ConsoleResource extends AbstractSimpleResource implements DefaultComponentSystem {
@@ -40,6 +44,12 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
     @ReceiveEvent(components = ClientComponent.class)
     public void onMessage(MessageEvent event, EntityRef entityRef) {
         notifyEvent(entityRef, event.getFormattedMessage());
+    }
+
+    @Override
+    protected ResourceMethod<Void, Collection<String>> getGetMethod(ResourcePath path) throws ResourceAccessException {
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
+            Collections2.transform(console.getCommands(), input -> input.getName().toString()));
     }
 
     @Override
