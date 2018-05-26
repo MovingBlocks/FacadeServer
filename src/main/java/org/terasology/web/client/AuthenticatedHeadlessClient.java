@@ -20,6 +20,12 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.network.internal.AbstractClient;
 import org.terasology.rendering.nui.Color;
 
+/**
+ * This class is used to make an authenticated client, which is able to connect to the
+ * server. Note that authenticated does not necessarily mean that the client can perform admin
+ * actions on the server.
+ * @see HeadlessClientFactory
+ */
 public class AuthenticatedHeadlessClient extends AbstractClient implements HeadlessClient {
 
     private String id;
@@ -39,7 +45,6 @@ public class AuthenticatedHeadlessClient extends AbstractClient implements Headl
     public boolean isAnonymous() {
         return false;
     }
-
 
     @Override
     public void disconnect() {
@@ -63,6 +68,5 @@ public class AuthenticatedHeadlessClient extends AbstractClient implements Headl
     public Color getColor() {
         return Color.BLACK; //TODO temporary default
     }
-
 
 }

@@ -20,6 +20,10 @@ import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.network.events.ConnectedEvent;
 
+/**
+ * This class serves as an abstraction layer between ServerAdminsManager and other classes.
+ * It is used when the admins list needs to be saved or when a client connects without any admins previously set.
+ */
 public class ServerAdminListUpdaterSystem extends BaseComponentSystem {
 
     @ReceiveEvent

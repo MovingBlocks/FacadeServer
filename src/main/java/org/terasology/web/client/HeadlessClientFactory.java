@@ -18,6 +18,9 @@ package org.terasology.web.client;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.web.EngineRunner;
 
+/**
+ * This factory is used to generate instances of headless clients
+ */
 public class HeadlessClientFactory {
 
     private final EntityManager entityManager;

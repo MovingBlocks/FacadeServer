@@ -24,6 +24,9 @@ import org.terasology.rendering.world.viewDistance.ViewDistance;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.world.chunks.Chunk;
 
+/**
+ * Interface for clients attempting to access resources or connecting to the game.
+ */
 public interface HeadlessClient extends Client {
 
     void connect(EntityManager entityManager);

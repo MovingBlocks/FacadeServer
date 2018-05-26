@@ -19,6 +19,10 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.rendering.nui.Color;
 
+/**
+ * This class is used to make an anonymous client, which is used to get read-only access to resources.
+ * @see HeadlessClientFactory
+ */
 public class AnonymousHeadlessClient implements HeadlessClient {
 
     private EntityRef entity = EntityRef.NULL;

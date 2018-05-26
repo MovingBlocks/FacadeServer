@@ -50,13 +50,12 @@ import org.terasology.engine.subsystem.common.ConfigurationSubsystem;
 import org.terasology.web.io.ActionResultMessageBodyWriter;
 import org.terasology.web.io.gsonUtils.GsonMessageBodyHandler;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
-import org.terasology.web.servlet.AboutServlet;
 import org.terasology.web.servlet.HttpAPIServlet;
-import org.terasology.web.servlet.LogServlet;
 import org.terasology.web.servlet.WsConnectionServlet;
 
-
 /**
+ * Main class from which the server facade is started.
+ * It defines command-line usage, starts the Jetty server, and establishes connections.
  */
 public final class ServerMain {
 
@@ -107,8 +106,6 @@ public final class ServerMain {
         Locale.setDefault(Locale.ENGLISH);
 
         Server server = createServer(httpPort, httpsPort, keystorePassword,
-                new LogServlet(),
-                new AboutServlet(),
                 new HttpAPIServlet());
 
         server.start();

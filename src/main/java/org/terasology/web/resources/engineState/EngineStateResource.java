@@ -26,6 +26,10 @@ import org.terasology.web.resources.base.ResourcePath;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * This class determines what methods can be used to access the engine state.
+ */
+
 public class EngineStateResource extends AbstractSimpleResource {
 
     @In

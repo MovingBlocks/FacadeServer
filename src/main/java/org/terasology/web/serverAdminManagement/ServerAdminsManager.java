@@ -29,6 +29,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This class loads, adds, and removes admins by changing the serverAdmins.json file.
+ * As a special case, when no admins are on the list, the first client to connect is given admin permissions.
+ */
 public final class ServerAdminsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerAdminsManager.class);

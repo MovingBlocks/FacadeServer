@@ -15,6 +15,10 @@
  */
 package org.terasology.web.client;
 
+/**
+ * This class contains information on whether a client is authenticated or has admin permission.
+ * All clients connecting to the server facade use this.
+ */
 public class ClientSecurityInfo {
 
     private boolean isAuthenticated;

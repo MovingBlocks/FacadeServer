@@ -31,6 +31,9 @@ import org.terasology.web.resources.base.ResourcePath;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * This class is used to access the in-game console and send commands to it.
+ */
 @RegisterSystem
 public class ConsoleResource extends AbstractSimpleResource implements DefaultComponentSystem {
 
