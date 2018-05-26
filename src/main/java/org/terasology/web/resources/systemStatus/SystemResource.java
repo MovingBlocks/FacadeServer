@@ -15,7 +15,6 @@
  */
 package org.terasology.web.resources.systemStatus;
 
-import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
@@ -30,15 +29,10 @@ import static org.terasology.web.resources.base.ResourceMethodFactory.createPara
 
 public class SystemResource extends AbstractSimpleResource {
 
-    private final ScheduledExecutorService refreshSystemInfoService = Executors.newScheduledThreadPool(1);
+    private final ScheduledExecutorService refreshSystemInfoService = Executors.newSingleThreadScheduledExecutor();
 
     public void startSystemInfoRefreshService() {
-        refreshSystemInfoService.scheduleAtFixedRate(this::refreshSystemInfoForClient, 1000, 1000, TimeUnit.MILLISECONDS);
-    }
-
-    @ReceiveEvent
-    public void refreshSystemInfoForClient() {
-        notifyChangedForAllClients();
+        refreshSystemInfoService.scheduleAtFixedRate(this::notifyChangedForAllClients, 1000, 1000, TimeUnit.MILLISECONDS);
     }
 
     @Override
