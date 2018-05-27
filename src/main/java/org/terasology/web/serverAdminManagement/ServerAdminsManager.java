@@ -89,6 +89,10 @@ public final class ServerAdminsManager {
         return isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId);
     }
 
+    /**
+     * Determine if anyone can become an admin simply by joining the game.
+     * @return whether the admin list is empty or not.
+     */
     public boolean isAnonymousAdminAccessEnabled() {
         return serverAdminIds.isEmpty();
     }

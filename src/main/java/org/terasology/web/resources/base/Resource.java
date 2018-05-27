@@ -15,11 +15,29 @@
  */
 package org.terasology.web.resources.base;
 
+/**
+ * Base interface for the resource implementation.
+ */
 public interface Resource {
 
+    /**
+     * Determine the method used to request a resource.
+     * @param methodName type of http request (GET, PUT, etc.).
+     * @param path path of the URL to the resource (api/resources/console for example).
+     * @return the method used to request the resource.
+     * @throws ResourceAccessException the requested method is not supported by this resource.
+     */
     ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException;
 
+    /**
+     * Set the resource observer.
+     * @param observer the observer to set.
+     */
     void setObserver(ResourceObserver observer);
 
+    /**
+     * Tell clients that a value has been changed. Clients who are subscribed to changes in a specified resource
+     * will access the REST API to get any new values that have been changed.
+     */
     void notifyChangedForAllClients();
 }

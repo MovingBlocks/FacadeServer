@@ -19,6 +19,9 @@ import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonSyntaxException;
 
+/**
+ * This class determines the result of a request to the server.
+ */
 public class ActionResult {
 
     public static final ActionResult OK = new ActionResult(Status.OK);

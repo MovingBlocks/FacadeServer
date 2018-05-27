@@ -17,6 +17,9 @@ package org.terasology.web.resources.base;
 
 import org.terasology.entitySystem.entity.EntityRef;
 
+/**
+ * Basic implementation of the resource interface, taking all methods from the resource observer.
+ */
 public abstract class AbstractObservableResource implements Resource {
 
     private ResourceObserver observer;

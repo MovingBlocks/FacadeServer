@@ -50,7 +50,9 @@ import org.terasology.engine.subsystem.common.ConfigurationSubsystem;
 import org.terasology.web.io.ActionResultMessageBodyWriter;
 import org.terasology.web.io.gsonUtils.GsonMessageBodyHandler;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
+import org.terasology.web.servlet.AboutServlet;
 import org.terasology.web.servlet.HttpAPIServlet;
+import org.terasology.web.servlet.LogServlet;
 import org.terasology.web.servlet.WsConnectionServlet;
 
 /**
@@ -106,6 +108,8 @@ public final class ServerMain {
         Locale.setDefault(Locale.ENGLISH);
 
         Server server = createServer(httpPort, httpsPort, keystorePassword,
+                new LogServlet(),
+                new AboutServlet(),
                 new HttpAPIServlet());
 
         server.start();
@@ -161,6 +165,15 @@ public final class ServerMain {
         LoggingContext.initialize(path);
     }
 
+    /**
+     * Create a Jetty server with the appropriate configurations.
+     * @param httpPort port for http connections (default 8080).
+     * @param httpsPort port for https connections (default 8443).
+     * @param keystorePassword password for keystore used in https connections (default ServerKeyPassword).
+     * @param annotatedObjects servlets used by the server.
+     * @return A properly configured jetty server.
+     * @throws Exception an error occurred in setting up the server
+     */
     private static Server createServer(int httpPort, int httpsPort, String keystorePassword, Object... annotatedObjects) throws Exception {
         Server server = new Server(httpPort);
 

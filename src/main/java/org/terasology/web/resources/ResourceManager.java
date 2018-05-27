@@ -73,6 +73,10 @@ public final class ResourceManager implements ResourceObserver {
         return INSTANCE;
     }
 
+    /**
+     * Initialize the resource manager. Note that the subresources' paths are determined here by their name.
+     * @param gameEngine the game engine that the server is running
+     */
     public void initialize(TerasologyEngine gameEngine) {
         GameState gameState = gameEngine.getState();
         Context context = gameState.getContext();

@@ -17,6 +17,10 @@ package org.terasology.web.resources.base;
 
 import org.terasology.web.io.ActionResult;
 
+/**
+ * This exception is thrown when attempting to either access a resource which does not exist or
+ * when trying to perform a HTTP request on a resource that is not supported
+ */
 // TODO: consider decoupling from ActionResult (which is JSON specific)
 public class ResourceAccessException extends Exception {
 
