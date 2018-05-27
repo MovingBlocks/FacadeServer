@@ -1,3 +1,18 @@
+// Dependencies needed for what our Gradle scripts themselves use. It cannot be included via an external Gradle file :-(
+buildscript {
+    repositories {
+        // External libs - jcenter is Bintray and is supposed to be a superset of Maven Central, but do both just in case
+        jcenter()
+        mavenCentral()
+    }
+
+    dependencies {
+        // Artifactory plugin
+        classpath(group: 'org.jfrog.buildinfo', name: 'build-info-extractor-gradle', version: '4.0.0')
+
+    }
+}
+
 plugins {
     id "org.standardout.versioneye" version "1.3.0"
 }
@@ -13,8 +28,10 @@ mainClassName = "org.terasology.web.ServerMain"
 
 ext {
     localServerDataPath = 'terasology-server'
-    group = 'org.terasology.web'
 }
+
+// For artifact organizing - version is set in gradle.properties
+group = 'org.terasology.web'
 
 task wrapper(type: Wrapper) {
     gradleVersion = '2.13'
@@ -24,8 +41,14 @@ def jettyVersion = '9.3.8.v20160314'
 def jerseyVersion = '2.22.2'
 
 dependencies {
-    //compile 'org.terasology.engine:engine:1.0.0'
-    compile project(':engine')
+    // Support both standalone workspace (fetch binary engine) and embedding in a Terasology workspace (use local engine source)
+    if (project.name != project(':').name) {
+        compile project(':engine')
+    } else {
+        // For a standalone workspace we need to retrieve the engine from Artifactory instead
+        compile(group: 'org.terasology.engine', name: 'engine', version: '+', changing: true)
+    }
+
     //TODO: add Guava dependency?
 
     compile group: 'org.eclipse.jetty', name: 'jetty-servlet', version: jettyVersion
@@ -99,9 +122,15 @@ task setupServerModules(type: Sync) << {
     into(new File(rootProject.file(localServerDataPath), "modules"))
 }
 
-run.dependsOn rootProject.extractNatives
-run.dependsOn rootProject.moduleClasses
-run.dependsOn setupServerConfig
-run.dependsOn setupServerModules
 run.workingDir = rootDir
 run.args = ["-homedir=terasology-server"]
+run.dependsOn setupServerConfig
+run.dependsOn setupServerModules
+
+// Support both standalone workspace (expect certain things provided) and embedding in a Terasology workspace (use task dependencies)
+if (project.name != project(':').name) {
+    run.dependsOn rootProject.extractNatives
+    run.dependsOn rootProject.moduleClasses
+} else {
+    // For a standalone workspace natives should be provided
+}
