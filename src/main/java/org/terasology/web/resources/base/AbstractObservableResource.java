@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,7 +18,8 @@ package org.terasology.web.resources.base;
 import org.terasology.entitySystem.entity.EntityRef;
 
 /**
- * Basic implementation of the resource interface, taking all methods from the resource observer.
+ * Basic implementation of the resource interface for resources that are exposed over REST,
+ * taking all methods from the resource observer.
  */
 public abstract class AbstractObservableResource implements Resource {
 

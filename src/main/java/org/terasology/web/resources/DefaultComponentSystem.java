@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,9 @@ package org.terasology.web.resources;
 
 import org.terasology.entitySystem.systems.ComponentSystem;
 
+/**
+ * Interface for component systems, same as {@link org.terasology.entitySystem.systems.ComponentSystem} without the autosave methods.
+ */
 public interface DefaultComponentSystem extends ComponentSystem {
 
     @Override

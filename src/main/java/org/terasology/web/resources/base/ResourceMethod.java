@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ public interface ResourceMethod<INTYPE, OUTTYPE> {
     boolean clientIsAllowed(ClientSecurityInfo securityInfo);
 
     /**
-     * Perform the HTTP request that the client requested.
+     * Perform the HTTP request for the client.
      * @param data the data to send to the server (if any).
      * @param client the client that requested the perform.
      * @return the data requested by the server.

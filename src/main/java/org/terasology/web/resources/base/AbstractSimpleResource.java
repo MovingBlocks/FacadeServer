@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,7 @@
 package org.terasology.web.resources.base;
 
 /**
- * Simple resource class which provides access to a variable.
+ * Simple resource class which provides access to a variable through REST.
  */
 public abstract class AbstractSimpleResource extends AbstractObservableResource {
 
