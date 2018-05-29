@@ -15,12 +15,13 @@
  */
 package org.terasology.web.resources.console;
 
-import com.google.common.collect.Collections2;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.console.Console;
 import org.terasology.logic.console.MessageEvent;
+import org.terasology.logic.console.commandSystem.ConsoleCommand;
+import org.terasology.naming.Name;
 import org.terasology.network.ClientComponent;
 import org.terasology.registry.In;
 import org.terasology.web.resources.DefaultComponentSystem;
@@ -31,6 +32,7 @@ import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
 
 import java.util.Collection;
+import java.util.stream.Collectors;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
@@ -49,7 +51,8 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
     @Override
     protected ResourceMethod<Void, Collection<String>> getGetMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
-            Collections2.transform(console.getCommands(), input -> input.getName().toString()));
+            console.getCommands().stream().filter(ConsoleCommand::isRunOnServer).map(ConsoleCommand::getName)
+                .map(Name::toString).collect(Collectors.toList()));
     }
 
     @Override
