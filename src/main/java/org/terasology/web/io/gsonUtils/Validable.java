@@ -15,7 +15,14 @@
  */
 package org.terasology.web.io.gsonUtils;
 
+/**
+ * Interface for validating a client connection certificate.
+ */
 public interface Validable {
 
+    /**
+     * Determines if a client's certificate is valid.
+     * @throws InvalidClientMessageException the client's certificate is not valid.
+     */
     void validate() throws InvalidClientMessageException;
 }

@@ -121,6 +121,10 @@ public final class ServerAdminsManager {
         return Collections.unmodifiableSet(serverAdminIds);
     }
 
+    /**
+     * Add the first admin if none are currently set.
+     * @param id the client id of the new admin
+     */
     public void addFirstAdminIfNecessary(String id) {
         if (isAnonymousAdminAccessEnabled()) {
             addAdmin(id);
