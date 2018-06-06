@@ -54,6 +54,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+/**
+ * Handles JSON data that controls client connection sessions. Also controls client sessions.
+ */
 public class JsonSession {
 
     private static final Gson GSON = new GsonBuilder()

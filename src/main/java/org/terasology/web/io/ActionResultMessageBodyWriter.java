@@ -34,6 +34,9 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
+/**
+ * {@link MessageBodyWriter} implementation for ActionResult, which writes the result of an ActionResult to a stream.
+ */
 @Provider
 @Produces(MediaType.APPLICATION_JSON)
 public class ActionResultMessageBodyWriter implements MessageBodyWriter<ActionResult> {
