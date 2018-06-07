@@ -55,6 +55,9 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+/**
+ * This class manages the whole resource system.
+ */
 public final class ResourceManager implements ResourceObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);

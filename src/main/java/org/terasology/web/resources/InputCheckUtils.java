@@ -21,6 +21,9 @@ import org.terasology.web.resources.base.ResourceAccessException;
 import java.util.Objects;
 import java.util.function.Predicate;
 
+/**
+ * Utility class used to check inputs.
+ */
 public final class InputCheckUtils {
 
     private InputCheckUtils() {
