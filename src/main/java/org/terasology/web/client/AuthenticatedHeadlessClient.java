@@ -19,14 +19,22 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.network.internal.AbstractClient;
 import org.terasology.rendering.nui.Color;
+import org.terasology.web.resources.base.AdminPermissions;
+import org.terasology.web.resources.base.ResourceMethodName;
+import org.terasology.web.resources.base.ResourcePath;
 
 public class AuthenticatedHeadlessClient extends AbstractClient implements HeadlessClient {
 
     private String id;
     private boolean connectedToEntityManager;
+    private AdminPermissions adminPermissions;
 
     public AuthenticatedHeadlessClient(String id) {
         this.id = id;
+    }
+
+    public boolean hasAdminAccessToResource(ResourcePath resourcePath, ResourceMethodName resourceMethodName) {
+        return false;
     }
 
     @Override

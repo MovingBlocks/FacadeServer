@@ -118,10 +118,16 @@ public final class ResourceManager implements ResourceObserver {
     }
 
     private ResourceMethod getResourceMethod(Resource resource, ResourcePath path, ResourceMethodName methodName, HeadlessClient client) throws ResourceAccessException {
+        // needed because the path variable seems to get changed by getMethod()
+        ResourcePath resourcePathOriginal = path;
+        boolean adminRequired = false;
         ResourceMethod method = resource.getMethod(methodName, path);
         if (!method.clientIsAllowed(client.getSecurityInfo())) {
             // TODO: possibly provide a way to explain a reason for denied access (unauthenticated or not admin)
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.FORBIDDEN, "You are not allowed to access this resource."));
+        }
+        if (!client.hasAdminAccessToResource(resourcePathOriginal, methodName)) {
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.FORBIDDEN, "You do not have sufficient admin privileges to access this resource"));
         }
         return method;
     }
