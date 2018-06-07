@@ -20,13 +20,6 @@ package org.terasology.web.resources.base;
  */
 public abstract class AbstractSimpleResource extends AbstractObservableResource {
 
-    /**
-     * Determine which HTTP request method to use based on the methodName.
-     * @param methodName type of http request (GET, PUT, etc.).
-     * @param path path of the URL to the resource (api/resources/console for example).
-     * @return the method used to request the resource.
-     * @throws ResourceAccessException the requested method is not supported by this resource.
-     */
     @Override
     public final ResourceMethod getMethod(ResourceMethodName methodName, ResourcePath path) throws ResourceAccessException {
         switch (methodName) {

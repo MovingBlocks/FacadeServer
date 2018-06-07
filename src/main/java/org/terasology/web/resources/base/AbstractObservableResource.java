@@ -18,8 +18,8 @@ package org.terasology.web.resources.base;
 import org.terasology.entitySystem.entity.EntityRef;
 
 /**
- * Basic implementation of the resource interface for resources that are exposed over REST,
- * taking all methods from the resource observer.
+ * Base class for a {@link org.terasology.web.resources.base.Resource} which can notify an attached resource observer
+ * of events or changes in the resource's data.
  */
 public abstract class AbstractObservableResource implements Resource {
 

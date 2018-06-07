@@ -23,7 +23,7 @@ import org.terasology.web.io.gsonUtils.Validable;
 import java.nio.ByteBuffer;
 
 /**
- * Performs the handshake hello used to communicate between the client and the server.
+ * Represents the data for the handshake hello message used to communicate between the client and the server.
  */
 public class HandshakeHello implements Validable {
 

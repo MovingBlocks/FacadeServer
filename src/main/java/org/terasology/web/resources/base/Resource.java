@@ -22,7 +22,7 @@ public interface Resource {
 
     /**
      * Determine the method used to request a resource.
-     * @param methodName type of http request (GET, PUT, etc.).
+     * @param methodName type of HTTP method (GET, PUT, etc.).
      * @param path path of the URL to the resource (api/resources/console for example).
      * @return the method used to request the resource.
      * @throws ResourceAccessException the requested method is not supported by this resource.

@@ -18,7 +18,9 @@ package org.terasology.web.resources;
 import org.terasology.entitySystem.systems.ComponentSystem;
 
 /**
- * Interface for component systems, same as {@link org.terasology.entitySystem.systems.ComponentSystem} without the autosave methods.
+ * Extension of {@link org.terasology.entitySystem.systems.ComponentSystem} which provides default
+ * do-nothing implementations of the various preBegin(), postSave(), etc methods, so that,
+ * for convenience, implementor classes only need to override the necessary methods
  */
 public interface DefaultComponentSystem extends ComponentSystem {
 

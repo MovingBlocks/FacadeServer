@@ -16,7 +16,7 @@
 package org.terasology.web.resources.base;
 
 /**
- * This enum contains the five HTTP requests used by the server.
+ * This enum contains the five HTTP request methods used by the server.
  */
 public enum ResourceMethodName {
     GET,

@@ -20,8 +20,8 @@ import org.terasology.web.client.ClientSecurityInfo;
 
 /**
  * Interface used to perform a resource request.
- * @param <INTYPE> the parameter received from the client.
- * @param <OUTTYPE> the parameter given to the client.
+ * @param <INTYPE> the parameter received from the client, used for serialization.
+ * @param <OUTTYPE> the parameter given to the client, used for deserialization.
  */
 public interface ResourceMethod<INTYPE, OUTTYPE> {
 
@@ -40,9 +40,9 @@ public interface ResourceMethod<INTYPE, OUTTYPE> {
 
     /**
      * Perform the HTTP request for the client.
-     * @param data the data to send to the server (if any).
-     * @param client the client that requested the perform.
-     * @return the data requested by the server.
+     * @param data the data sent to the server (if any).
+     * @param client the client that performed the request.
+     * @return the data requested by the client.
      * @throws ResourceAccessException the specified resource cannot be retrieved.
      */
     OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException;

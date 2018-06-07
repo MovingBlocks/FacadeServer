@@ -25,7 +25,7 @@ import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.world.chunks.Chunk;
 
 /**
- * Interface for clients attempting to access resources or connect to the game.
+ * Interface for clients attempting to access resources or connect to the web interface frontend.
  */
 public interface HeadlessClient extends Client {
 
