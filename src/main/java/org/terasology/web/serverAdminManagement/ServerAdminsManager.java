@@ -122,6 +122,7 @@ public final class ServerAdminsManager {
     public void addFirstAdminIfNecessary(String id) {
         if (isAnonymousAdminAccessEnabled()) {
             addAdmin(id);
+            adminPermissionManager.giveAllPermissionsToAdmin(id);
         }
     }
 }

@@ -20,8 +20,6 @@ import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
-import org.terasology.logic.console.Console;
-import org.terasology.registry.In;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 
 import java.io.IOException;
@@ -41,7 +39,7 @@ public final class AdminPermissionManager {
     private static AdminPermissionManager instance;
 
     private final Path adminPermissionsFilePath;
-    private final Type typeOfServerAdminSermissions = new TypeToken<Set<AdminPermissions>>() { }.getType();
+    private final Type typeOfServerAdminPermissions = new TypeToken<Set<AdminPermissions>>() { }.getType();
     private Set<AdminPermissions> serverAdminPermissions;
 
     private AdminPermissionManager(Path adminPermissionsFilePath) {
@@ -57,8 +55,50 @@ public final class AdminPermissionManager {
     }
 
     public boolean adminHasPermission(String adminID, ResourcePath path, ResourceMethodName resourceMethodName) {
-        // TODO: permissions (probably switch/case)
+        AdminPermissions permissions = findAdmin(adminID);
+        if (permissions != null) {
+            switch (resourceMethodName) {
+                case GET:
+                    return true;
+                case POST:
+                    if (path.toString().compareTo("console") == 0) {
+                        // TODO: figure out how to determine what permission the command requires
+                        return true;
+                    } else if (path.toString().contains("games")) {
+                        return permissions.hasCreateBackupRenameGames();
+                    } else if (path.toString().contains("serverAdmins")) {
+                        return permissions.hasAdminManagement();
+                    }
+                    return true;
+                case PUT:
+                    if (path.toString().compareTo("engineState") == 0) {
+                        return permissions.hasStartStopGames();
+                    } else if (path.toString().compareTo("modules/installer") == 0) {
+                        return permissions.hasInstallModules();
+                    } else if (path.toString().contains("config")) {
+                        return permissions.hasChangeSettings();
+                    }
+                    return true;
+                case PATCH:
+                    if (path.toString().contains("games")) {
+                        return permissions.hasCreateBackupRenameGames();
+                    } else if (path.toString().contains("serverAdmins")) {
+                        return permissions.hasAdminManagement();
+                    }
+                    return true;
+                case DELETE:
+                    if (path.toString().contains("games")) {
+                        return permissions.hasDeleteGames();
+                    } else if (path.toString().contains("serverAdmins")) {
+                        return permissions.hasAdminManagement();
+                    }
+                }
+            }
         return true;
+    }
+
+    public void giveAllPermissionsToAdmin(String adminId) {
+        setAdminPermission(adminId, new AdminPermissions(adminId, true));
     }
 
     public void setAdminPermission(String adminId, AdminPermissions newPermissions) {
@@ -95,7 +135,7 @@ public final class AdminPermissionManager {
     public void loadAdminPermissionList() {
         Set<AdminPermissions> newValue;
         try {
-            newValue = GSON.fromJson(Files.newBufferedReader(adminPermissionsFilePath), typeOfServerAdminSermissions);
+            newValue = GSON.fromJson(Files.newBufferedReader(adminPermissionsFilePath), typeOfServerAdminPermissions);
             System.out.println(newValue + "nv");
         } catch (IOException ex) {
             logger.warn("Failed to load the admin permissions list, resetting all permissions to false!");
@@ -109,8 +149,12 @@ public final class AdminPermissionManager {
 
     public void saveAdminPermissionList() throws IOException {
         try (Writer writer = Files.newBufferedWriter(adminPermissionsFilePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
-            GSON.toJson(serverAdminPermissions, typeOfServerAdminSermissions, writer);
+            GSON.toJson(serverAdminPermissions, typeOfServerAdminPermissions, writer);
         }
+    }
+
+    public Set<AdminPermissions> getAdminPermissions() {
+        return serverAdminPermissions;
     }
 
     private void setServerAdminPermissions(Set<AdminPermissions> permissions) {

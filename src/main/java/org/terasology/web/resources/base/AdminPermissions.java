@@ -15,11 +15,11 @@
  */
 package org.terasology.web.resources.base;
 
-@SuppressWarnings("unused")
+import java.lang.reflect.Field;
+
 public class AdminPermissions {
 
     private String id;
-    @SuppressWarnings("FieldCanBeLocal")
     private Permissions permissions;
 
     AdminPermissions(String id) {
@@ -27,8 +27,104 @@ public class AdminPermissions {
         permissions = new Permissions();
     }
 
+    AdminPermissions(String id, boolean allPermissions) {
+        this.id = id;
+        if (allPermissions) {
+            setConsoleCheat(true);
+            setConsoleUserManagement(true);
+            setConsoleServerManagement(true);
+            setConsoleDebug(true);
+            setInstallModules(true);
+            setCreateBackupRenameGames(true);
+            setDeleteGames(true);
+            setStartStopGames(true);
+            setChangeSettings(true);
+            setAdminManagement(true);
+        }
+    }
+
     public String getId() {
         return id;
+    }
+
+    public boolean hasConsoleCheat() {
+        return permissions.consoleCheat;
+    }
+
+    public void setConsoleCheat(boolean consoleCheat) {
+        this.permissions.consoleCheat = consoleCheat;
+    }
+
+    public boolean hasConsoleUserManagement() {
+        return permissions.consoleUserManagement;
+    }
+
+    public void setConsoleUserManagement(boolean consoleUserManagement) {
+        this.permissions.consoleUserManagement = consoleUserManagement;
+    }
+
+    public boolean hasConsoleServerManagement() {
+        return permissions.consoleServerManagement;
+    }
+
+    public void setConsoleServerManagement(boolean consoleServerManagement) {
+        this.permissions.consoleServerManagement = consoleServerManagement;
+    }
+
+    public boolean hasConsoleDebug() {
+        return permissions.consoleDebug;
+    }
+
+    public void setConsoleDebug(boolean consoleDebug) {
+        this.permissions.consoleDebug = consoleDebug;
+    }
+
+    public boolean hasInstallModules() {
+        return permissions.installModules;
+    }
+
+    public void setInstallModules(boolean installModules) {
+        this.permissions.installModules = installModules;
+    }
+
+    public boolean hasCreateBackupRenameGames() {
+        return permissions.createBackupRenameGames;
+    }
+
+    public void setCreateBackupRenameGames(boolean createBackupRenameGames) {
+        this.permissions.createBackupRenameGames = createBackupRenameGames;
+    }
+
+    public boolean hasDeleteGames() {
+        return permissions.deleteGames;
+    }
+
+    public void setDeleteGames(boolean deleteGames) {
+        this.permissions.deleteGames = deleteGames;
+    }
+
+    public boolean hasStartStopGames() {
+        return permissions.startStopGames;
+    }
+
+    public void setStartStopGames(boolean startStopGames) {
+        this.permissions.startStopGames = startStopGames;
+    }
+
+    public boolean hasChangeSettings() {
+        return permissions.changeSettings;
+    }
+
+    public void setChangeSettings(boolean changeSettings) {
+        this.permissions.changeSettings = changeSettings;
+    }
+
+    public boolean hasAdminManagement() {
+        return permissions.adminManagement;
+    }
+
+    public void setAdminManagement(boolean adminManagement) {
+        this.permissions.adminManagement = adminManagement;
     }
 
     private static class Permissions {
@@ -39,7 +135,7 @@ public class AdminPermissions {
         private boolean installModules;
         private boolean createBackupRenameGames;
         private boolean deleteGames;
-        private boolean stopGames;
+        private boolean startStopGames;
         private boolean changeSettings;
         private boolean adminManagement;
     }
