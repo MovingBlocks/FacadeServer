@@ -27,14 +27,9 @@ public class AuthenticatedHeadlessClient extends AbstractClient implements Headl
 
     private String id;
     private boolean connectedToEntityManager;
-    private AdminPermissions adminPermissions;
 
     public AuthenticatedHeadlessClient(String id) {
         this.id = id;
-    }
-
-    public boolean hasAdminAccessToResource(ResourcePath resourcePath, ResourceMethodName resourceMethodName) {
-        return false;
     }
 
     @Override

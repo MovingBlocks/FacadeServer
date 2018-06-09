@@ -16,12 +16,12 @@
 package org.terasology.web.resources.serverAdmins;
 
 import org.terasology.web.resources.base.AbstractItemCollectionResource;
+import org.terasology.web.resources.base.AdminPermissionManager;
+import org.terasology.web.resources.base.AdminPermissions;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
-
-import java.util.Set;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
@@ -32,19 +32,19 @@ public class AdminPermissionResource extends AbstractItemCollectionResource {
 
     public AdminPermissionResource(String adminID) {
         this.adminID = adminID;
-        System.out.println("ASDFFDFSADADFs");
+        System.out.println(adminID);
     }
 
     @Override
-    protected ResourceMethod<Void, Set<String>> getGetCollectionMethod() throws ResourceAccessException {
+    protected ResourceMethod<Void, AdminPermissions> getGetCollectionMethod() throws ResourceAccessException {
         return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
-                (data, client) -> ServerAdminsManager.getInstance().getAdminIds());
+                (data, client) -> AdminPermissionManager.getInstance().getPermissionsOfAdmin(adminID));
     }
 
     @Override
-    protected ResourceMethod<Void, Void> getPutItemMethod(String itemId) throws ResourceAccessException {
-        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
-                (data, client) -> ServerAdminsManager.getInstance().addAdmin(itemId));
+    protected ResourceMethod<AdminPermissions, Void> getPatchItemMethod(String itemId) throws ResourceAccessException {
+        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN, AdminPermissions.class,
+                (data, client) -> AdminPermissionManager.getInstance().setAdminPermission(adminID, data));
     }
 
 }

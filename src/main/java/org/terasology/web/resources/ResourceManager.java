@@ -26,14 +26,7 @@ import org.terasology.entitySystem.systems.ComponentSystem;
 import org.terasology.registry.InjectionHelper;
 import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.io.ActionResult;
-import org.terasology.web.resources.base.InputParser;
-import org.terasology.web.resources.base.Resource;
-import org.terasology.web.resources.base.ResourceAccessException;
-import org.terasology.web.resources.base.ResourceMethod;
-import org.terasology.web.resources.base.ResourceMethodName;
-import org.terasology.web.resources.base.ResourceObserver;
-import org.terasology.web.resources.base.ResourcePath;
-import org.terasology.web.resources.base.RouterResource;
+import org.terasology.web.resources.base.*;
 import org.terasology.web.resources.config.ServerMotdResource;
 import org.terasology.web.resources.config.ServerPortResource;
 import org.terasology.web.resources.console.ConsoleResource;
@@ -118,16 +111,15 @@ public final class ResourceManager implements ResourceObserver {
     }
 
     private ResourceMethod getResourceMethod(Resource resource, ResourcePath path, ResourceMethodName methodName, HeadlessClient client) throws ResourceAccessException {
-        // needed because the path variable seems to get changed by getMethod()
+        // needed because the path variable seems to get changed by getMethod() TODO: maybe not needed?
         ResourcePath resourcePathOriginal = path;
-        boolean adminRequired = false;
         ResourceMethod method = resource.getMethod(methodName, path);
         if (!method.clientIsAllowed(client.getSecurityInfo())) {
             // TODO: possibly provide a way to explain a reason for denied access (unauthenticated or not admin)
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.FORBIDDEN, "You are not allowed to access this resource."));
         }
-        if (!client.hasAdminAccessToResource(resourcePathOriginal, methodName)) {
-            throw new ResourceAccessException(new ActionResult(ActionResult.Status.FORBIDDEN, "You do not have sufficient admin privileges to access this resource"));
+        if (!AdminPermissionManager.getInstance().adminHasPermission(client.getId(), resourcePathOriginal, methodName)) {
+            throw new ResourceAccessException(new ActionResult(ActionResult.Status.FORBIDDEN, "You do not have sufficient admin privileges to access this resource."));
         }
         return method;
     }

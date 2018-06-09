@@ -19,6 +19,7 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
+import org.terasology.web.resources.base.AdminPermissionManager;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -34,6 +35,7 @@ public final class ServerAdminsManager {
     private static final Logger logger = LoggerFactory.getLogger(ServerAdminsManager.class);
     private static final Gson GSON = new Gson();
     private static final ServerAdminsManager INSTANCE = new ServerAdminsManager(PathManager.getInstance().getHomePath().resolve("serverAdmins.json"), true);
+    private static AdminPermissionManager adminPermissionManager = AdminPermissionManager.getInstance();
 
     private final Path adminListFilePath;
     private final boolean autoSave;
@@ -69,6 +71,7 @@ public final class ServerAdminsManager {
             newValue = new HashSet<>();
         }
         setServerAdminIds(newValue);
+        adminPermissionManager.loadAdminPermissionList();
     }
 
     public void saveAdminList() {
@@ -76,6 +79,7 @@ public final class ServerAdminsManager {
             try (Writer writer = Files.newBufferedWriter(adminListFilePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 GSON.toJson(serverAdminIds, writer);
             }
+            adminPermissionManager.saveAdminPermissionList();
         } catch (IOException ex) {
             logger.warn("Failed to save serverAdmins.json", ex);
         }
@@ -95,6 +99,7 @@ public final class ServerAdminsManager {
 
     public void addAdmin(String id) {
         serverAdminIds.add(id);
+        adminPermissionManager.addAdmin(id);
         if (autoSave) {
             saveAdminList();
         }
@@ -103,6 +108,7 @@ public final class ServerAdminsManager {
 
     public void removeAdmin(String id) {
         serverAdminIds.remove(id);
+        adminPermissionManager.removeAdmin(id);
         if (autoSave) {
             saveAdminList();
         }

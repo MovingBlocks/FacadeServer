@@ -15,19 +15,33 @@
  */
 package org.terasology.web.resources.base;
 
-public enum AdminPermissions {
-    CONSOLE_CHEAT(new ResourcePath("console")),
-    CONSOLE_USER_MANAGEMENT(new ResourcePath("console")),
-    CONSOLE_SERVER_MANAGEMENT(new ResourcePath("console")),
-    CONSOLE_DEBUG(new ResourcePath("console")),
-    INSTALL_MODULES(new ResourcePath("modules", "installer")),
-    CREATE_BACKUP_RENAME_GAMES(new ResourcePath("games")),
-    DELETE_GAMES(new ResourcePath("games")),
-    STOP_GAMES(new ResourcePath("engineState")),
-    CHANGE_SETTINGS(new ResourcePath("resources", "config")),
-    USER_MANAGEMENT(new ResourcePath("console"));
+@SuppressWarnings("unused")
+public class AdminPermissions {
 
-    AdminPermissions(ResourcePath path) {
+    private String id;
+    @SuppressWarnings("FieldCanBeLocal")
+    private Permissions permissions;
 
+    AdminPermissions(String id) {
+        this.id = id;
+        permissions = new Permissions();
     }
+
+    public String getId() {
+        return id;
+    }
+
+    private static class Permissions {
+        private boolean consoleCheat;
+        private boolean consoleUserManagement;
+        private boolean consoleServerManagement;
+        private boolean consoleDebug;
+        private boolean installModules;
+        private boolean createBackupRenameGames;
+        private boolean deleteGames;
+        private boolean stopGames;
+        private boolean changeSettings;
+        private boolean adminManagement;
+    }
+
 }

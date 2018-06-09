@@ -35,10 +35,6 @@ public interface HeadlessClient extends Client {
         return new ClientSecurityInfo(!isAnonymous(), ServerAdminsManager.getInstance().clientHasAdminPermissions(getId()));
     }
 
-    default boolean hasAdminAccessToResource(ResourcePath resourcePath, ResourceMethodName resourceMethodName) {
-        return false;
-    }
-
     @Override
     default void onChunkRelevant(Vector3i pos, Chunk chunk) {
     }
