@@ -19,7 +19,6 @@ import com.google.gson.Gson;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
-import org.terasology.web.resources.base.AdminPermissionManager;
 
 import java.io.IOException;
 import java.io.Writer;

@@ -16,12 +16,11 @@
 package org.terasology.web.resources.serverAdmins;
 
 import org.terasology.web.resources.base.AbstractItemCollectionResource;
-import org.terasology.web.resources.base.AdminPermissionManager;
-import org.terasology.web.resources.base.AdminPermissions;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
+import org.terasology.web.serverAdminManagement.AdminPermissions;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
-import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;

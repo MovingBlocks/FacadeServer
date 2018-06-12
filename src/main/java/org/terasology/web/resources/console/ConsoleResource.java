@@ -23,6 +23,7 @@ import org.terasology.logic.console.MessageEvent;
 import org.terasology.logic.console.commandSystem.ConsoleCommand;
 import org.terasology.naming.Name;
 import org.terasology.network.ClientComponent;
+import org.terasology.network.events.ConnectedEvent;
 import org.terasology.registry.In;
 import org.terasology.web.resources.DefaultComponentSystem;
 import org.terasology.web.resources.base.ResourceAccessException;
@@ -30,6 +31,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -42,6 +44,13 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
 
     @In
     private Console console;
+
+    @ReceiveEvent
+    public void onConnected(ConnectedEvent event, EntityRef entityRef) {
+        System.out.println("er: " + entityRef);
+        System.out.println("id: " + event.getPlayerStore().getId());
+        AdminPermissionManager.getInstance().updateAdminConsolePermissions(event.getPlayerStore().getId(), entityRef);
+    }
 
     @ReceiveEvent(components = ClientComponent.class)
     public void onMessage(MessageEvent event, EntityRef entityRef) {

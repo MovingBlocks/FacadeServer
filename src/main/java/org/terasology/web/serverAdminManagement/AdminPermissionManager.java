@@ -13,14 +13,23 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources.base;
+package org.terasology.web.serverAdminManagement;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
-import org.terasology.web.serverAdminManagement.ServerAdminsManager;
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.systems.BaseComponentSystem;
+import org.terasology.logic.permission.PermissionManager;
+import org.terasology.logic.permission.PermissionSetComponent;
+import org.terasology.network.ClientComponent;
+import org.terasology.network.NetworkSystem;
+import org.terasology.registry.In;
+import org.terasology.web.resources.DefaultComponentSystem;
+import org.terasology.web.resources.base.ResourceMethodName;
+import org.terasology.web.resources.base.ResourcePath;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -32,7 +41,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class AdminPermissionManager {
+public final class AdminPermissionManager extends BaseComponentSystem {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminPermissionManager.class);
     private static final Gson GSON = new Gson();
@@ -55,46 +64,71 @@ public final class AdminPermissionManager {
     }
 
     public boolean adminHasPermission(String adminID, ResourcePath path, ResourceMethodName resourceMethodName) {
-        AdminPermissions permissions = findAdmin(adminID);
+        AdminPermissions permissions = getPermissionsOfAdmin(adminID);
         if (permissions != null) {
             switch (resourceMethodName) {
                 case GET:
                     return true;
                 case POST:
-                    if (path.toString().compareTo("console") == 0) {
-                        // TODO: figure out how to determine what permission the command requires
-                        return true;
-                    } else if (path.toString().contains("games")) {
-                        return permissions.hasCreateBackupRenameGames();
+                    if (path.toString().contains("games")) {
+                        return permissions.getCreateBackupRenameGames();
                     } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.hasAdminManagement();
+                        return permissions.getAdminManagement();
                     }
                     return true;
                 case PUT:
                     if (path.toString().compareTo("engineState") == 0) {
-                        return permissions.hasStartStopGames();
+                        return permissions.getStartStopGames();
                     } else if (path.toString().compareTo("modules/installer") == 0) {
-                        return permissions.hasInstallModules();
+                        return permissions.getInstallModules();
                     } else if (path.toString().contains("config")) {
-                        return permissions.hasChangeSettings();
+                        return permissions.getChangeSettings();
                     }
                     return true;
                 case PATCH:
                     if (path.toString().contains("games")) {
-                        return permissions.hasCreateBackupRenameGames();
+                        return permissions.getCreateBackupRenameGames();
                     } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.hasAdminManagement();
+                        return permissions.getAdminManagement();
                     }
                     return true;
                 case DELETE:
                     if (path.toString().contains("games")) {
-                        return permissions.hasDeleteGames();
+                        return permissions.getDeleteGames();
                     } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.hasAdminManagement();
+                        return permissions.getAdminManagement();
                     }
-                }
+                    return true;
             }
+        }
         return true;
+    }
+
+    public void updateAdminConsolePermissions(String adminId, EntityRef entityRef) {
+        AdminPermissions permission = getPermissionsOfAdmin(adminId);
+        EntityRef clientInfo = entityRef.getComponent(ClientComponent.class).clientInfo;
+        if (permission != null) {
+            if (permission.getConsoleCheat()) {
+                addPermission(clientInfo, PermissionManager.CHEAT_PERMISSION);
+            } else {
+                removePermission(clientInfo, PermissionManager.CHEAT_PERMISSION);
+            }
+            if (permission.getConsoleUserManagement()) {
+                addPermission(clientInfo, PermissionManager.USER_MANAGEMENT_PERMISSION);
+            } else {
+                removePermission(clientInfo, PermissionManager.USER_MANAGEMENT_PERMISSION);
+            }
+            if (permission.getConsoleServerManagement()) {
+                addPermission(clientInfo, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
+            } else {
+                removePermission(clientInfo, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
+            }
+            if (permission.getConsoleDebug()) {
+                addPermission(clientInfo, PermissionManager.DEBUG_PERMISSION);
+            } else {
+                removePermission(clientInfo, PermissionManager.DEBUG_PERMISSION);
+            }
+        }
     }
 
     public void giveAllPermissionsToAdmin(String adminId) {
@@ -102,11 +136,10 @@ public final class AdminPermissionManager {
     }
 
     public void setAdminPermission(String adminId, AdminPermissions newPermissions) {
-        AdminPermissions permission = findAdmin(adminId);
+        AdminPermissions permission = getPermissionsOfAdmin(adminId);
         serverAdminPermissions.remove(permission);
         serverAdminPermissions.add(newPermissions);
     }
-
 
     public void addAdmin(String id) {
         serverAdminPermissions.add(new AdminPermissions(id));
@@ -118,7 +151,7 @@ public final class AdminPermissionManager {
                 serverAdminPermissions.remove(adminPermission);
             }
         }
-        AdminPermissions adminPermission = findAdmin(id);
+        AdminPermissions adminPermission = getPermissionsOfAdmin(id);
         serverAdminPermissions.remove(adminPermission);
     }
 
@@ -161,13 +194,20 @@ public final class AdminPermissionManager {
         serverAdminPermissions = Collections.synchronizedSet(permissions);
     }
 
-    private AdminPermissions findAdmin(String id) {
-        for (AdminPermissions adminPermission : serverAdminPermissions) {
-            if (adminPermission.getId().compareTo(id) == 0) {
-                serverAdminPermissions.remove(adminPermission);
-            }
+    private void addPermission(EntityRef clientInfo, String permission) {
+        PermissionSetComponent permissionSet = clientInfo.getComponent(PermissionSetComponent.class);
+        if (permissionSet != null) {
+            permissionSet.permissions.add(permission);
+            clientInfo.saveComponent(permissionSet);
         }
-        return null;
+    }
+
+    private void removePermission(EntityRef clientInfo, String permission) {
+        PermissionSetComponent permissionSet = clientInfo.getComponent(PermissionSetComponent.class);
+        if (permissionSet != null) {
+            permissionSet.permissions.remove(permission);
+            clientInfo.saveComponent(permissionSet);
+        }
     }
 
 }
