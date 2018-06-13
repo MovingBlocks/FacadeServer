@@ -34,7 +34,7 @@ public final class ServerAdminsManager {
     private static final Logger logger = LoggerFactory.getLogger(ServerAdminsManager.class);
     private static final Gson GSON = new Gson();
     private static final ServerAdminsManager INSTANCE = new ServerAdminsManager(PathManager.getInstance().getHomePath().resolve("serverAdmins.json"), true);
-    private static AdminPermissionManager adminPermissionManager = AdminPermissionManager.getInstance();;
+    private static AdminPermissionManager adminPermissionManager = AdminPermissionManager.getInstance();
 
     private final Path adminListFilePath;
     private final boolean autoSave;
@@ -120,11 +120,8 @@ public final class ServerAdminsManager {
 
     public void addFirstAdminIfNecessary(String id) {
         if (isAnonymousAdminAccessEnabled()) {
-            System.out.println("before");
             addAdmin(id);
-            System.out.println("middle");
             adminPermissionManager.giveAllPermissionsToAdmin(id);
-            System.out.println("after");
         }
     }
 }

@@ -38,6 +38,9 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Manages the serverAdminPermissions.json file in the server directory.
+ */
 public final class AdminPermissionManager extends BaseComponentSystem {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminPermissionManager.class);

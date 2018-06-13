@@ -25,6 +25,9 @@ import org.terasology.web.resources.base.ResourceMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * Resource used for getting/setting the permissions of a specific admin.
+ */
 public class AdminPermissionResource extends AbstractItemCollectionResource {
 
     private String adminID;

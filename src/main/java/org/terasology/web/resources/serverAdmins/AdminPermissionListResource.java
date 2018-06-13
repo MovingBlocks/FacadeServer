@@ -27,6 +27,9 @@ import java.util.Set;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
+/**
+ * This resource is used to get a list of admin permissions.
+ */
 public class AdminPermissionListResource extends AbstractSimpleResource {
 
     @Override

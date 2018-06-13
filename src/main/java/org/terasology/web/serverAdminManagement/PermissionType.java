@@ -15,6 +15,9 @@
  */
 package org.terasology.web.serverAdminManagement;
 
+/**
+ * This enum is used to get a specific permission of an {@link AdminPermissions}.
+ */
 public enum PermissionType {
     CONSOLE_CHEAT,
     CONSOLE_USER_MANAGEMENT,
@@ -25,5 +28,5 @@ public enum PermissionType {
     DELETE_GAMES,
     START_STOP_GAMES,
     CHANGE_SETTINGS,
-    ADMIN_MANAGEMENT;
+    ADMIN_MANAGEMENT
 }

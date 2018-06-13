@@ -15,16 +15,28 @@
  */
 package org.terasology.web.serverAdminManagement;
 
+/**
+ * Class intended to be used for serializing admin permission JSON objects over the REST API.
+ */
 public class AdminPermissions {
 
     private String id;
     private Permissions permissions;
 
+    /**
+     * create a new admin permissions object, initializing all values to false.
+     * @param id the client id of the admin.
+     */
     AdminPermissions(String id) {
         this.id = id;
         permissions = new Permissions();
     }
 
+    /**
+     * create a new admin permissions object, initializing all values to allPermissions.
+     * @param id the client id of the admin.
+     * @param allPermissions whether or not to give all permissions to the admin.
+     */
     AdminPermissions(String id, boolean allPermissions) {
         this.id = id;
         permissions = new Permissions();
@@ -42,10 +54,19 @@ public class AdminPermissions {
         }
     }
 
+    /**
+     * Get the id of the client who has these permissions.
+     * @return the client id belonging to these permissions
+     */
     public String getId() {
         return id;
     }
 
+    /**
+     * Find the permission of the admin
+     * @param permission the type of permission to look at.
+     * @return whether or not the admin has the permissions.
+     */
     public boolean getPermission(PermissionType permission) {
         switch (permission) {
             case CONSOLE_CHEAT:
@@ -73,6 +94,10 @@ public class AdminPermissions {
         }
     }
 
+    /**
+     * This inner class is used so that the JSON object constructed by serialization
+     * will have an inner permissions object.
+     */
     private static class Permissions {
         private boolean consoleCheat;
         private boolean consoleUserManagement;
