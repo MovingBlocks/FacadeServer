@@ -31,7 +31,6 @@ public class AdminPermissionResource extends AbstractItemCollectionResource {
 
     public AdminPermissionResource(String adminID) {
         this.adminID = adminID;
-        System.out.println(adminID);
     }
 
     @Override
@@ -41,9 +40,9 @@ public class AdminPermissionResource extends AbstractItemCollectionResource {
     }
 
     @Override
-    protected ResourceMethod<AdminPermissions, Void> getPatchItemMethod(String itemId) throws ResourceAccessException {
+    protected ResourceMethod<AdminPermissions, Void> getPatchCollectionMethod() throws ResourceAccessException {
         return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN, AdminPermissions.class,
-                (data, client) -> AdminPermissionManager.getInstance().setAdminPermission(adminID, data));
+                (data, client) -> AdminPermissionManager.getInstance().setAdminPermissions(adminID, data));
     }
 
 }

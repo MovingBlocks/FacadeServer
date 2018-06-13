@@ -47,8 +47,6 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
 
     @ReceiveEvent
     public void onConnected(ConnectedEvent event, EntityRef entityRef) {
-        System.out.println("er: " + entityRef);
-        System.out.println("id: " + event.getPlayerStore().getId());
         AdminPermissionManager.getInstance().updateAdminConsolePermissions(event.getPlayerStore().getId(), entityRef);
     }
 

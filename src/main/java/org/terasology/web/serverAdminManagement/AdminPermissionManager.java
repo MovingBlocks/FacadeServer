@@ -25,9 +25,6 @@ import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.logic.permission.PermissionManager;
 import org.terasology.logic.permission.PermissionSetComponent;
 import org.terasology.network.ClientComponent;
-import org.terasology.network.NetworkSystem;
-import org.terasology.registry.In;
-import org.terasology.web.resources.DefaultComponentSystem;
 import org.terasology.web.resources.base.ResourceMethodName;
 import org.terasology.web.resources.base.ResourcePath;
 
@@ -71,32 +68,32 @@ public final class AdminPermissionManager extends BaseComponentSystem {
                     return true;
                 case POST:
                     if (path.toString().contains("games")) {
-                        return permissions.getCreateBackupRenameGames();
+                        return permissions.getPermission(PermissionType.CREATE_BACKUP_RENAME_GAMES);
                     } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.getAdminManagement();
+                        return permissions.getPermission(PermissionType.ADMIN_MANAGEMENT);
                     }
                     return true;
                 case PUT:
                     if (path.toString().compareTo("engineState") == 0) {
-                        return permissions.getStartStopGames();
+                        return permissions.getPermission(PermissionType.START_STOP_GAMES);
                     } else if (path.toString().compareTo("modules/installer") == 0) {
-                        return permissions.getInstallModules();
+                        return permissions.getPermission(PermissionType.INSTALL_MODULES);
                     } else if (path.toString().contains("config")) {
-                        return permissions.getChangeSettings();
+                        return permissions.getPermission(PermissionType.CHANGE_SETTINGS);
                     }
                     return true;
                 case PATCH:
                     if (path.toString().contains("games")) {
-                        return permissions.getCreateBackupRenameGames();
+                        return permissions.getPermission(PermissionType.CREATE_BACKUP_RENAME_GAMES);
                     } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.getAdminManagement();
+                        return permissions.getPermission(PermissionType.ADMIN_MANAGEMENT);
                     }
                     return true;
                 case DELETE:
                     if (path.toString().contains("games")) {
-                        return permissions.getDeleteGames();
+                        return permissions.getPermission(PermissionType.DELETE_GAMES);
                     } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.getAdminManagement();
+                        return permissions.getPermission(PermissionType.ADMIN_MANAGEMENT);
                     }
                     return true;
             }
@@ -108,22 +105,22 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         AdminPermissions permission = getPermissionsOfAdmin(adminId);
         EntityRef clientInfo = entityRef.getComponent(ClientComponent.class).clientInfo;
         if (permission != null) {
-            if (permission.getConsoleCheat()) {
+            if (permission.getPermission(PermissionType.CONSOLE_CHEAT)) {
                 addPermission(clientInfo, PermissionManager.CHEAT_PERMISSION);
             } else {
                 removePermission(clientInfo, PermissionManager.CHEAT_PERMISSION);
             }
-            if (permission.getConsoleUserManagement()) {
+            if (permission.getPermission(PermissionType.CONSOLE_USER_MANAGEMENT)) {
                 addPermission(clientInfo, PermissionManager.USER_MANAGEMENT_PERMISSION);
             } else {
                 removePermission(clientInfo, PermissionManager.USER_MANAGEMENT_PERMISSION);
             }
-            if (permission.getConsoleServerManagement()) {
+            if (permission.getPermission(PermissionType.CONSOLE_SERVER_MANAGEMENT)) {
                 addPermission(clientInfo, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
             } else {
                 removePermission(clientInfo, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
             }
-            if (permission.getConsoleDebug()) {
+            if (permission.getPermission(PermissionType.CONSOLE_DEBUG)) {
                 addPermission(clientInfo, PermissionManager.DEBUG_PERMISSION);
             } else {
                 removePermission(clientInfo, PermissionManager.DEBUG_PERMISSION);
@@ -132,13 +129,18 @@ public final class AdminPermissionManager extends BaseComponentSystem {
     }
 
     public void giveAllPermissionsToAdmin(String adminId) {
-        setAdminPermission(adminId, new AdminPermissions(adminId, true));
+        setAdminPermissions(adminId, new AdminPermissions(adminId, true));
     }
 
-    public void setAdminPermission(String adminId, AdminPermissions newPermissions) {
+    public void setAdminPermissions(String adminId, AdminPermissions newPermissions) {
         AdminPermissions permission = getPermissionsOfAdmin(adminId);
         serverAdminPermissions.remove(permission);
         serverAdminPermissions.add(newPermissions);
+        try {
+            saveAdminPermissionList();
+        } catch (IOException e) {
+            logger.error("cannot save the admin permission list after adding a permission", e);
+        }
     }
 
     public void addAdmin(String id) {
@@ -169,7 +171,6 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         Set<AdminPermissions> newValue;
         try {
             newValue = GSON.fromJson(Files.newBufferedReader(adminPermissionsFilePath), typeOfServerAdminPermissions);
-            System.out.println(newValue + "nv");
         } catch (IOException ex) {
             logger.warn("Failed to load the admin permissions list, resetting all permissions to false!");
             newValue = new HashSet<>();

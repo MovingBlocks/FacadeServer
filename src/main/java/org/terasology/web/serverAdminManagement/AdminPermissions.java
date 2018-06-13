@@ -27,6 +27,7 @@ public class AdminPermissions {
 
     AdminPermissions(String id, boolean allPermissions) {
         this.id = id;
+        permissions = new Permissions();
         if (allPermissions) {
             permissions.consoleCheat = true;
             permissions.consoleUserManagement = true;
@@ -45,44 +46,31 @@ public class AdminPermissions {
         return id;
     }
 
-    public boolean getConsoleCheat() {
-        return permissions.consoleCheat;
-    }
-
-    public boolean getConsoleUserManagement() {
-        return permissions.consoleUserManagement;
-    }
-
-    public boolean getConsoleServerManagement() {
-        return permissions.consoleServerManagement;
-    }
-
-    public boolean getConsoleDebug() {
-        return permissions.consoleDebug;
-    }
-
-    public boolean getInstallModules() {
-        return permissions.installModules;
-    }
-
-    public boolean getCreateBackupRenameGames() {
-        return permissions.createBackupRenameGames;
-    }
-
-    public boolean getDeleteGames() {
-        return permissions.deleteGames;
-    }
-
-    public boolean getStartStopGames() {
-        return permissions.startStopGames;
-    }
-
-    public boolean getChangeSettings() {
-        return permissions.changeSettings;
-    }
-
-    public boolean getAdminManagement() {
-        return permissions.adminManagement;
+    public boolean getPermission(PermissionType permission) {
+        switch (permission) {
+            case CONSOLE_CHEAT:
+                return permissions.consoleCheat;
+            case CONSOLE_USER_MANAGEMENT:
+                return permissions.consoleUserManagement;
+            case CONSOLE_SERVER_MANAGEMENT:
+                return permissions.consoleServerManagement;
+            case CONSOLE_DEBUG:
+                return permissions.consoleDebug;
+            case INSTALL_MODULES:
+                return permissions.installModules;
+            case CREATE_BACKUP_RENAME_GAMES:
+                return permissions.createBackupRenameGames;
+            case DELETE_GAMES:
+                return permissions.deleteGames;
+            case START_STOP_GAMES:
+                return permissions.startStopGames;
+            case CHANGE_SETTINGS:
+                return permissions.changeSettings;
+            case ADMIN_MANAGEMENT:
+                return permissions.adminManagement;
+            default:
+                return false;
+        }
     }
 
     private static class Permissions {
