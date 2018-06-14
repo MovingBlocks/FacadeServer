@@ -32,6 +32,10 @@ import static org.terasology.web.resources.base.ResourceMethodFactory.createPara
  */
 public class AdminPermissionListResource extends AbstractSimpleResource {
 
+    public AdminPermissionListResource() {
+        AdminPermissionManager.getInstance().setOnListChangedCallback(this::notifyChangedForAllClients);
+    }
+
     @Override
     protected ResourceMethod<Void, Set<AdminPermissions>> getGetMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,

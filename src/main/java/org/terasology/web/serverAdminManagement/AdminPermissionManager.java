@@ -50,6 +50,7 @@ public final class AdminPermissionManager extends BaseComponentSystem {
     private final Path adminPermissionsFilePath;
     private final Type typeOfServerAdminPermissions = new TypeToken<Set<AdminPermissions>>() { }.getType();
     private Set<AdminPermissions> serverAdminPermissions;
+    private Runnable onListChanged = () -> { };
 
     private AdminPermissionManager(Path adminPermissionsFilePath) {
         this.adminPermissionsFilePath = adminPermissionsFilePath;
@@ -148,6 +149,7 @@ public final class AdminPermissionManager extends BaseComponentSystem {
 
     public void addAdmin(String id) {
         serverAdminPermissions.add(new AdminPermissions(id));
+        onListChanged.run();
     }
 
     public void removeAdmin(String id) {
@@ -158,6 +160,7 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         }
         AdminPermissions adminPermission = getPermissionsOfAdmin(id);
         serverAdminPermissions.remove(adminPermission);
+        onListChanged.run();
     }
 
     public AdminPermissions getPermissionsOfAdmin(String id) {
@@ -190,6 +193,10 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         }
     }
 
+    public void setOnListChangedCallback(Runnable callback) {
+        onListChanged = callback;
+    }
+
     public Set<AdminPermissions> getAdminPermissions() {
         return serverAdminPermissions;
     }
@@ -204,6 +211,7 @@ public final class AdminPermissionManager extends BaseComponentSystem {
             permissionSet.permissions.add(permission);
             clientInfo.saveComponent(permissionSet);
         }
+        onListChanged.run();
     }
 
     private void removePermission(EntityRef clientInfo, String permission) {
@@ -212,6 +220,7 @@ public final class AdminPermissionManager extends BaseComponentSystem {
             permissionSet.permissions.remove(permission);
             clientInfo.saveComponent(permissionSet);
         }
+        onListChanged.run();
     }
 
 }
