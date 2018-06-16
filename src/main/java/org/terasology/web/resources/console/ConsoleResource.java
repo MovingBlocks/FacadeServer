@@ -32,6 +32,7 @@ import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.util.Collection;
 import java.util.stream.Collectors;
@@ -57,14 +58,15 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
 
     @Override
     protected ResourceMethod<Void, Collection<String>> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class, (data, client) ->
             console.getCommands().stream().filter(ConsoleCommand::isRunOnServer).map(ConsoleCommand::getName)
                 .map(Name::toString).collect(Collectors.toList()));
     }
 
     @Override
     protected ResourceMethod<String, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_AUTH, String.class,
+        // No permission because console permissions are handled separately.
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_AUTH, PermissionType.NO_PERMISSION, String.class,
                 (data, client) -> console.execute(data, client.getEntity()));
     }
 }

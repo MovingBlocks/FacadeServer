@@ -23,6 +23,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -48,7 +49,7 @@ public class GamesBackupsResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.CREATE_BACKUP_RENAME_GAMES, Void.class,
                 (data, client) -> performBackup());
     }
 

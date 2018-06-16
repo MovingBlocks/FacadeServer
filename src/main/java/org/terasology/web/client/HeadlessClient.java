@@ -21,6 +21,8 @@ import org.terasology.entitySystem.event.Event;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.network.Client;
 import org.terasology.rendering.world.viewDistance.ViewDistance;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
+import org.terasology.web.serverAdminManagement.PermissionType;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.world.chunks.Chunk;
 
@@ -31,6 +33,11 @@ public interface HeadlessClient extends Client {
 
     default ClientSecurityInfo getSecurityInfo() {
         return new ClientSecurityInfo(!isAnonymous(), ServerAdminsManager.getInstance().clientHasAdminPermissions(getId()));
+    }
+
+    default ClientSecurityInfo getSecurityInfoWithAdminPermission(PermissionType permission) {
+        return new ClientSecurityInfo(!isAnonymous(), ServerAdminsManager.getInstance().clientHasAdminPermissions(getId()),
+                AdminPermissionManager.getInstance().adminHasPermission(getId(), permission));
     }
 
     @Override

@@ -22,6 +22,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
@@ -33,13 +34,13 @@ public class EngineStateResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, EngineStateMetadata> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
                 (data, client) -> EngineStateMetadata.build(gameEngine.getState()));
     }
 
     @Override
     protected ResourceMethod<EngineStateMetadata, Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, EngineStateMetadata.class,
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, PermissionType.START_STOP_GAMES, EngineStateMetadata.class,
                 (data, client) -> data.switchEngineToThisState(gameEngine));
     }
 }

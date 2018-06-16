@@ -121,11 +121,8 @@ public final class ResourceManager implements ResourceObserver {
     }
 
     private ResourceMethod getResourceMethod(Resource resource, ResourcePath path, ResourceMethodName methodName, HeadlessClient client) throws ResourceAccessException {
-        if (!AdminPermissionManager.getInstance().adminHasPermission(client.getId(), path, methodName)) {
-            throw new ResourceAccessException(new ActionResult(ActionResult.Status.FORBIDDEN, "You do not have sufficient admin privileges to access this resource."));
-        }
         ResourceMethod method = resource.getMethod(methodName, path);
-        if (!method.clientIsAllowed(client.getSecurityInfo())) {
+        if (!method.clientIsAllowed(client.getSecurityInfoWithAdminPermission(method.getPermissionType()))) {
             // TODO: possibly provide a way to explain a reason for denied access (unauthenticated or not admin)
             throw new ResourceAccessException(new ActionResult(ActionResult.Status.FORBIDDEN, "You are not allowed to access this resource."));
         }

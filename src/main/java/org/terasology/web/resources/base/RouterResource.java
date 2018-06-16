@@ -18,6 +18,7 @@ package org.terasology.web.resources.base;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.network.Client;
 import org.terasology.web.client.ClientSecurityInfo;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -89,6 +90,11 @@ public final class RouterResource implements Resource {
                 @Override
                 public Class<Void> getInType() {
                     return Void.class;
+                }
+
+                @Override
+                public PermissionType getPermissionType() {
+                    return PermissionType.NO_PERMISSION;
                 }
 
                 @Override

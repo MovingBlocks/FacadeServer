@@ -28,6 +28,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,7 +54,7 @@ public class OnlinePlayersResource extends AbstractSimpleResource implements Def
 
     @Override
     protected ResourceMethod<Void, List<OnlinePlayerMetadata>> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class, (data, client) ->
                 StreamSupport.stream(networkSystem.getPlayers().spliterator(), true)
                     .map(OnlinePlayerMetadata::new)
                     .collect(Collectors.toList()));

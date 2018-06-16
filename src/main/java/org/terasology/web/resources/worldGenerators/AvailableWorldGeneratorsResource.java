@@ -21,6 +21,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.PermissionType;
 import org.terasology.world.generator.internal.WorldGeneratorInfo;
 import org.terasology.world.generator.internal.WorldGeneratorManager;
 
@@ -35,7 +36,7 @@ public class AvailableWorldGeneratorsResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, List<WorldGeneratorInfo>> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
                 (data, client) -> worldGeneratorManager.getWorldGenerators());
     }
 }

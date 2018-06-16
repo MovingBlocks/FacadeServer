@@ -17,22 +17,32 @@ package org.terasology.web.resources.base;
 
 import org.terasology.network.Client;
 import org.terasology.web.client.ClientSecurityInfo;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 public class ResourceMethodImpl<INTYPE, OUTTYPE> implements ResourceMethod<INTYPE, OUTTYPE> {
 
     private final Class<INTYPE> inType;
     private final ClientSecurityRequirements securityRequirements;
+    private final PermissionType permissionType;
     private final ParameterlessMethodHandler<INTYPE, OUTTYPE> handler;
 
-    public ResourceMethodImpl(Class<INTYPE> inType, ClientSecurityRequirements securityRequirements, ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) {
+    public ResourceMethodImpl(Class<INTYPE> inType, ClientSecurityRequirements securityRequirements,
+                              PermissionType permissionType, ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) {
         this.inType = inType;
         this.securityRequirements = securityRequirements;
+        this.permissionType = permissionType;
         this.handler = handler;
     }
 
     @Override
     public Class<INTYPE> getInType() {
         return inType;
+    }
+
+    @Override
+    public PermissionType getPermissionType() {
+        return permissionType;
     }
 
     @Override

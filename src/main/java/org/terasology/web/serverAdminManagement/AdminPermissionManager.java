@@ -17,6 +17,7 @@ package org.terasology.web.serverAdminManagement;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import javafx.util.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
@@ -25,8 +26,6 @@ import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.logic.permission.PermissionManager;
 import org.terasology.logic.permission.PermissionSetComponent;
 import org.terasology.network.ClientComponent;
-import org.terasology.web.resources.base.ResourceMethodName;
-import org.terasology.web.resources.base.ResourcePath;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -35,7 +34,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -48,8 +49,8 @@ public final class AdminPermissionManager extends BaseComponentSystem {
     private static AdminPermissionManager instance;
 
     private final Path adminPermissionsFilePath;
-    private final Type typeOfServerAdminPermissions = new TypeToken<Set<AdminPermissions>>() { }.getType();
-    private Set<AdminPermissions> serverAdminPermissions;
+    private final Type typeOfServerAdminPermissions = new TypeToken<Set<Pair<String, Map<PermissionType, Boolean>>>>() { }.getType();
+    private Set<Pair<String, Map<PermissionType, Boolean>>> serverAdminPermissions;
     private Runnable onListChanged = () -> { };
 
     private AdminPermissionManager(Path adminPermissionsFilePath) {
@@ -64,67 +65,42 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         return instance;
     }
 
-    public boolean adminHasPermission(String adminID, ResourcePath path, ResourceMethodName resourceMethodName) {
-        AdminPermissions permissions = getPermissionsOfAdmin(adminID);
+    @SuppressWarnings("SuspiciousMethodCalls")
+    public boolean adminHasPermission(String adminId, PermissionType permission) {
+        if (permission == PermissionType.NO_PERMISSION) {
+            return true;
+        }
+        Pair<String, Map<PermissionType, Boolean>> permissions = getPermissionsOfAdmin(adminId);
         if (permissions != null) {
-            switch (resourceMethodName) {
-                case GET:
-                    return true;
-                case POST:
-                    if (path.toString().contains("games")) {
-                        return permissions.getPermission(PermissionType.CREATE_BACKUP_RENAME_GAMES);
-                    } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.getPermission(PermissionType.ADMIN_MANAGEMENT);
-                    }
-                    return true;
-                case PUT:
-                    if (path.toString().compareTo("engineState") == 0) {
-                        return permissions.getPermission(PermissionType.START_STOP_GAMES);
-                    } else if (path.toString().compareTo("modules/installer") == 0) {
-                        return permissions.getPermission(PermissionType.INSTALL_MODULES);
-                    } else if (path.toString().contains("config")) {
-                        return permissions.getPermission(PermissionType.CHANGE_SETTINGS);
-                    }
-                    return true;
-                case PATCH:
-                    if (path.toString().contains("games")) {
-                        return permissions.getPermission(PermissionType.CREATE_BACKUP_RENAME_GAMES);
-                    } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.getPermission(PermissionType.ADMIN_MANAGEMENT);
-                    }
-                    return true;
-                case DELETE:
-                    if (path.toString().contains("games")) {
-                        return permissions.getPermission(PermissionType.DELETE_GAMES);
-                    } else if (path.toString().contains("serverAdmins")) {
-                        return permissions.getPermission(PermissionType.ADMIN_MANAGEMENT);
-                    }
-                    return true;
+            if (permissions.getValue().get(permission) == null) {
+                return permissions.getValue().get(permission.toString());
+            } else {
+                return permissions.getValue().get(permission);
             }
         }
         return true;
     }
 
     public void updateAdminConsolePermissions(String adminId, EntityRef entityRef) {
-        AdminPermissions permission = getPermissionsOfAdmin(adminId);
+        Pair<String, Map<PermissionType, Boolean>> permission = getPermissionsOfAdmin(adminId);
         EntityRef clientInfo = entityRef.getComponent(ClientComponent.class).clientInfo;
         if (permission != null) {
-            if (permission.getPermission(PermissionType.CONSOLE_CHEAT)) {
+            if (permission.getValue().get(PermissionType.CONSOLE_CHEAT)) {
                 addPermission(clientInfo, PermissionManager.CHEAT_PERMISSION);
             } else {
                 removePermission(clientInfo, PermissionManager.CHEAT_PERMISSION);
             }
-            if (permission.getPermission(PermissionType.CONSOLE_USER_MANAGEMENT)) {
+            if (permission.getValue().get(PermissionType.CONSOLE_USER_MANAGEMENT)) {
                 addPermission(clientInfo, PermissionManager.USER_MANAGEMENT_PERMISSION);
             } else {
                 removePermission(clientInfo, PermissionManager.USER_MANAGEMENT_PERMISSION);
             }
-            if (permission.getPermission(PermissionType.CONSOLE_SERVER_MANAGEMENT)) {
+            if (permission.getValue().get(PermissionType.CONSOLE_SERVER_MANAGEMENT)) {
                 addPermission(clientInfo, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
             } else {
                 removePermission(clientInfo, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
             }
-            if (permission.getPermission(PermissionType.CONSOLE_DEBUG)) {
+            if (permission.getValue().get(PermissionType.CONSOLE_DEBUG)) {
                 addPermission(clientInfo, PermissionManager.DEBUG_PERMISSION);
             } else {
                 removePermission(clientInfo, PermissionManager.DEBUG_PERMISSION);
@@ -133,39 +109,39 @@ public final class AdminPermissionManager extends BaseComponentSystem {
     }
 
     public void giveAllPermissionsToAdmin(String adminId) {
-        setAdminPermissions(adminId, new AdminPermissions(adminId, true));
+        setAdminPermissions(adminId, new Pair<>(adminId, generatePermissionMap(true)));
     }
 
-    public void setAdminPermissions(String adminId, AdminPermissions newPermissions) {
-        AdminPermissions permission = getPermissionsOfAdmin(adminId);
+    public void setAdminPermissions(String adminId, Pair<String, Map<PermissionType, Boolean>> newPermissions) {
+        Pair<String, Map<PermissionType, Boolean>> permission = getPermissionsOfAdmin(adminId);
         serverAdminPermissions.remove(permission);
         serverAdminPermissions.add(newPermissions);
         try {
             saveAdminPermissionList();
         } catch (IOException e) {
-            logger.error("cannot save the admin permission list after adding a permission", e);
+            logger.error("cannot save the admin permission list after setting a permission", e);
         }
     }
 
     public void addAdmin(String id) {
-        serverAdminPermissions.add(new AdminPermissions(id));
+        serverAdminPermissions.add(new Pair<>(id, generatePermissionMap(false)));
         onListChanged.run();
     }
 
     public void removeAdmin(String id) {
-        for (AdminPermissions adminPermission : serverAdminPermissions) {
-            if (adminPermission.getId().compareTo(id) == 0) {
+        for (Pair<String, Map<PermissionType, Boolean>> adminPermission: serverAdminPermissions) {
+            if (adminPermission.getKey().equals(id)) {
                 serverAdminPermissions.remove(adminPermission);
             }
         }
-        AdminPermissions adminPermission = getPermissionsOfAdmin(id);
+        Pair<String, Map<PermissionType, Boolean>> adminPermission = getPermissionsOfAdmin(id);
         serverAdminPermissions.remove(adminPermission);
         onListChanged.run();
     }
 
-    public AdminPermissions getPermissionsOfAdmin(String id) {
-        for (AdminPermissions adminPermission: serverAdminPermissions) {
-            if (adminPermission.getId().compareTo(id) == 0) {
+    public Pair<String, Map<PermissionType, Boolean>> getPermissionsOfAdmin(String id) {
+        for (Pair<String, Map<PermissionType, Boolean>> adminPermission: serverAdminPermissions) {
+            if (adminPermission.getKey().equals(id)) {
                 return adminPermission;
             }
         }
@@ -174,14 +150,14 @@ public final class AdminPermissionManager extends BaseComponentSystem {
 
     @SuppressWarnings("unchecked")
     public void loadAdminPermissionList() {
-        Set<AdminPermissions> newValue;
+        Set<Pair<String, Map<PermissionType, Boolean>>> newValue;
         try {
             newValue = GSON.fromJson(Files.newBufferedReader(adminPermissionsFilePath), typeOfServerAdminPermissions);
         } catch (IOException ex) {
             logger.warn("Failed to load the admin permissions list, resetting all permissions to false!");
             newValue = new HashSet<>();
-            for (String admin : ServerAdminsManager.getInstance().getAdminIds()) {
-                newValue.add(new AdminPermissions(admin));
+            for (String adminId : ServerAdminsManager.getInstance().getAdminIds()) {
+                newValue.add(new Pair<>(adminId, generatePermissionMap(false)));
             }
         }
         setServerAdminPermissions(newValue);
@@ -197,11 +173,11 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         onListChanged = callback;
     }
 
-    public Set<AdminPermissions> getAdminPermissions() {
+    public Set<Pair<String, Map<PermissionType, Boolean>>> getAdminPermissions() {
         return serverAdminPermissions;
     }
 
-    private void setServerAdminPermissions(Set<AdminPermissions> permissions) {
+    private void setServerAdminPermissions(Set<Pair<String, Map<PermissionType, Boolean>>> permissions) {
         serverAdminPermissions = Collections.synchronizedSet(permissions);
     }
 
@@ -221,6 +197,14 @@ public final class AdminPermissionManager extends BaseComponentSystem {
             clientInfo.saveComponent(permissionSet);
         }
         onListChanged.run();
+    }
+
+    private Map<PermissionType, Boolean> generatePermissionMap(boolean initialValues) {
+        Map<PermissionType, Boolean> permissionMap = new HashMap<>();
+        for (PermissionType permissionType : PermissionType.values()) {
+            permissionMap.put(permissionType, initialValues);
+        }
+        return permissionMap;
     }
 
 }

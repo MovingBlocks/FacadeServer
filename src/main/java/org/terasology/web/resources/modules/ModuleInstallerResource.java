@@ -27,6 +27,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.PermissionType;
 import org.terasology.world.generator.internal.WorldGeneratorManager;
 
 import java.util.List;
@@ -53,13 +54,13 @@ public class ModuleInstallerResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, String> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
                 (data, client) -> status);
     }
 
     @Override
     protected ResourceMethod<Name[], Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, Name[].class,
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.INSTALL_MODULES, Name[].class,
                 (data, client) -> installModules(data));
     }
 

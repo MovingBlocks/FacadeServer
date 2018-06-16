@@ -18,15 +18,26 @@ package org.terasology.web.client;
 public class ClientSecurityInfo {
 
     private boolean isAuthenticated;
+    private boolean isAdmin;
     private boolean hasAdminPermission;
 
-    public ClientSecurityInfo(boolean isAuthenticated, boolean hasAdminPermission) {
+    public ClientSecurityInfo(boolean isAuthenticated, boolean isAdmin) {
         this.isAuthenticated = isAuthenticated;
+        this.isAdmin = isAdmin;
+    }
+
+    public ClientSecurityInfo(boolean isAuthenticated, boolean isAdmin, boolean hasAdminPermission) {
+        this.isAuthenticated = isAuthenticated;
+        this.isAdmin = isAdmin;
         this.hasAdminPermission = hasAdminPermission;
     }
 
     public boolean isAuthenticated() {
         return isAuthenticated;
+    }
+
+    public boolean isAdmin() {
+        return isAdmin;
     }
 
     public boolean hasAdminPermission() {

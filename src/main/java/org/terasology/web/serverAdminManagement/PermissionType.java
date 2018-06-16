@@ -16,9 +16,10 @@
 package org.terasology.web.serverAdminManagement;
 
 /**
- * This enum is used to get a specific permission of an {@link AdminPermissions}.
+ * This enum is used for determining admin permissions.
  */
 public enum PermissionType {
+    NO_PERMISSION,
     CONSOLE_CHEAT,
     CONSOLE_USER_MANAGEMENT,
     CONSOLE_SERVER_MANAGEMENT,

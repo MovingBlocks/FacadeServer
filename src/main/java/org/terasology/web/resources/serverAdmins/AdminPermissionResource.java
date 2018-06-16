@@ -15,12 +15,15 @@
  */
 package org.terasology.web.resources.serverAdmins;
 
+import javafx.util.Pair;
 import org.terasology.web.resources.base.AbstractItemCollectionResource;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
-import org.terasology.web.serverAdminManagement.AdminPermissions;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.serverAdminManagement.PermissionType;
+
+import java.util.Map;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
@@ -37,15 +40,18 @@ public class AdminPermissionResource extends AbstractItemCollectionResource {
     }
 
     @Override
-    protected ResourceMethod<Void, AdminPermissions> getGetCollectionMethod() throws ResourceAccessException {
-        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
+    protected ResourceMethod<Void, Pair<String, Map<PermissionType, Boolean>>> getGetCollectionMethod() throws ResourceAccessException {
+        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
                 (data, client) -> AdminPermissionManager.getInstance().getPermissionsOfAdmin(adminID));
     }
 
     @Override
-    protected ResourceMethod<AdminPermissions, Void> getPatchCollectionMethod() throws ResourceAccessException {
-        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN, AdminPermissions.class,
-                (data, client) -> AdminPermissionManager.getInstance().setAdminPermissions(adminID, data));
+    protected ResourceMethod<Pair, Void> getPatchCollectionMethod() throws ResourceAccessException {
+        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.ADMIN_MANAGEMENT, Pair.class,
+                (data, client) -> {
+                    System.out.println("data: " + data);
+                    AdminPermissionManager.getInstance().setAdminPermissions(adminID, data);
+                });
     }
 
 }
