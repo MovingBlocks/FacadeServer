@@ -45,6 +45,7 @@ public class AdminPermissionResource extends AbstractItemCollectionResource {
                 (data, client) -> AdminPermissionManager.getInstance().getPermissionsOfAdmin(adminID));
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected ResourceMethod<Pair, Void> getPatchCollectionMethod() throws ResourceAccessException {
         return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.ADMIN_MANAGEMENT, Pair.class,

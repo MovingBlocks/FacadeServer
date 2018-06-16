@@ -46,7 +46,6 @@ import org.terasology.web.resources.serverAdmins.AdminPermissionListResource;
 import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
 import org.terasology.web.resources.systemStatus.SystemResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
-import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 
 import java.util.Arrays;
 import java.util.Collections;

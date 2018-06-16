@@ -40,7 +40,7 @@ public class EngineStateResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<EngineStateMetadata, Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, PermissionType.START_STOP_GAMES, EngineStateMetadata.class,
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.START_STOP_GAMES, EngineStateMetadata.class,
                 (data, client) -> data.switchEngineToThisState(gameEngine));
     }
 }
