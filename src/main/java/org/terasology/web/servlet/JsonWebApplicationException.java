@@ -19,6 +19,9 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+/**
+ * This exception class is thrown when a JSON session has wrong data.
+ */
 public class JsonWebApplicationException extends WebApplicationException {
 
     private static class ErrorResponse {

@@ -28,6 +28,9 @@ import java.util.List;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
+/**
+ * Resource class used to get a list of world generators.
+ */
 public class AvailableWorldGeneratorsResource extends AbstractSimpleResource {
 
     @In

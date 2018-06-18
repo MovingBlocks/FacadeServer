@@ -55,7 +55,7 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 
 /**
- * Handles JSON data that controls client connection sessions. Also controls client sessions.
+ * Handles the JSON data goes across the REST API.
  */
 public class JsonSession {
 

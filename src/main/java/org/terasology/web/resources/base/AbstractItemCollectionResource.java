@@ -21,6 +21,9 @@ import java.util.function.Function;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.decorateMethod;
 
+/**
+ * Resource class used for resources that need to return a variable amount of items, such as an array.
+ */
 public abstract class AbstractItemCollectionResource extends AbstractObservableResource {
 
     private Map<String, Function<String, Resource>> itemSubResourceProviders;

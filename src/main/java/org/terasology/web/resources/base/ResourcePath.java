@@ -22,7 +22,7 @@ import java.util.Collections;
 import java.util.Deque;
 
 /**
- * This class represents the path to a resource with a collection of strings. Example: config/MOTD
+ * This class represents the path to a resource with a series of strings. Example: config/MOTD
  */
 // TODO: consider making it immutable and returning a new instance for each operation
 public class ResourcePath {

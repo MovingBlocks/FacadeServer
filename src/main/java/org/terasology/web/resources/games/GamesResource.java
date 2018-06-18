@@ -33,6 +33,9 @@ import java.util.stream.Stream;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.decorateMethod;
 
+/**
+ * This resource class handles creating, renaming, and deleting games on the server.
+ */
 public class GamesResource extends StreamBasedItemCollectionResource<GameInfo> {
 
     @In

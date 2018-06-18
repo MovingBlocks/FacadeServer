@@ -34,6 +34,9 @@ import java.util.stream.Collectors;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * {@link org.terasology.web.resources.base.ResourceMethod} used for backing up games.
+ */
 public class GamesBackupsResource extends AbstractSimpleResource {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");

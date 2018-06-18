@@ -27,6 +27,9 @@ import java.util.concurrent.TimeUnit;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
+/**
+ * This resource class is used to get CPU usage, memory usage, and system uptime.
+ */
 public class SystemResource extends AbstractSimpleResource {
 
     private final ScheduledExecutorService refreshSystemInfoService = Executors.newSingleThreadScheduledExecutor();

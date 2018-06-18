@@ -23,7 +23,26 @@ import org.terasology.entitySystem.entity.EntityRef;
  */
 public interface ResourceObserver {
 
+    /**
+     *
+     * @param senderPath
+     * @param eventData
+     * @param targetClientEntity
+     */
     void onEvent(ResourcePath senderPath, Object eventData, EntityRef targetClientEntity);
+
+    /**
+     *
+     * @param senderPath
+     * @param sender
+     * @param targetClientEntity
+     */
     void onChangedForClient(ResourcePath senderPath, Resource sender, EntityRef targetClientEntity);
+
+    /**
+     *
+     * @param senderPath
+     * @param sender
+     */
     void onChangedForAllClients(ResourcePath senderPath, Resource sender);
 }
