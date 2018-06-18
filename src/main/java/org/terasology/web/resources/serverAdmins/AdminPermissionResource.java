@@ -16,6 +16,13 @@
 package org.terasology.web.resources.serverAdmins;
 
 import javafx.util.Pair;
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.entitySystem.event.ReceiveEvent;
+import org.terasology.entitySystem.systems.RegisterSystem;
+import org.terasology.network.NetworkSystem;
+import org.terasology.network.events.ConnectedEvent;
+import org.terasology.registry.In;
+import org.terasology.web.resources.DefaultComponentSystem;
 import org.terasology.web.resources.base.AbstractItemCollectionResource;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
@@ -31,12 +38,22 @@ import static org.terasology.web.resources.base.ResourceMethodFactory.createVoid
 /**
  * Resource used for getting/setting the permissions of a specific admin.
  */
-public class AdminPermissionResource extends AbstractItemCollectionResource {
+@RegisterSystem
+public class AdminPermissionResource extends AbstractItemCollectionResource implements DefaultComponentSystem {
+
+    @In
+    private NetworkSystem networkSystem;
 
     private String adminID;
 
     public AdminPermissionResource(String adminID) {
         this.adminID = adminID;
+    }
+
+    @ReceiveEvent
+    public void onConnected(ConnectedEvent event, EntityRef entityRef) {
+        System.out.println("er: " + entityRef);
+        AdminPermissionManager.getInstance().updateAdminConsolePermissions(event.getPlayerStore().getId(), entityRef);
     }
 
     @Override
@@ -48,11 +65,9 @@ public class AdminPermissionResource extends AbstractItemCollectionResource {
     @SuppressWarnings("unchecked")
     @Override
     protected ResourceMethod<Pair, Void> getPatchCollectionMethod() throws ResourceAccessException {
+        System.out.println("ns: " + networkSystem);
         return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.ADMIN_MANAGEMENT, Pair.class,
-                (data, client) -> {
-                    System.out.println("data: " + data);
-                    AdminPermissionManager.getInstance().setAdminPermissions(adminID, data);
-                });
+                (data, client) -> AdminPermissionManager.getInstance().setAdminPermissionsAndUpdateConsolePermissions(adminID, data, networkSystem));
     }
 
 }

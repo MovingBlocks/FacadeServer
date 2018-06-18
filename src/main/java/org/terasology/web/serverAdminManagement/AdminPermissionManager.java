@@ -25,7 +25,10 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.logic.permission.PermissionManager;
 import org.terasology.logic.permission.PermissionSetComponent;
+import org.terasology.network.Client;
 import org.terasology.network.ClientComponent;
+import org.terasology.network.NetworkSystem;
+import org.terasology.registry.CoreRegistry;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -112,7 +115,20 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         setAdminPermissions(adminId, new Pair<>(adminId, generatePermissionMap(true)));
     }
 
-    public void setAdminPermissions(String adminId, Pair<String, Map<PermissionType, Boolean>> newPermissions) {
+    public void setAdminPermissionsAndUpdateConsolePermissions(String adminId, Pair<String, Map<PermissionType, Boolean>> newPermissions, NetworkSystem networkSystem) {
+        EntityRef playerToChange = EntityRef.NULL;
+        System.out.println("ns1: " + networkSystem);
+        for (Client player : networkSystem.getPlayers()) {
+            if (player.getId().equals(adminId)) {
+                playerToChange = player.getEntity();
+            }
+        }
+        System.out.println("ptc: " + playerToChange);
+        setAdminPermissions(adminId, newPermissions);
+        updateAdminConsolePermissions(adminId, playerToChange);
+    }
+
+    private void setAdminPermissions(String adminId, Pair<String, Map<PermissionType, Boolean>> newPermissions) {
         Pair<String, Map<PermissionType, Boolean>> permission = getPermissionsOfAdmin(adminId);
         serverAdminPermissions.remove(permission);
         serverAdminPermissions.add(newPermissions);
