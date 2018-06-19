@@ -199,8 +199,8 @@ public final class ServerMain {
         } else if (Files.exists(PathManager.getInstance().getHomePath().resolve("server").resolve("keystore.jks"))) {
             logger.info("Using keystore file found in the server directory");
         } else {
-            logger.info("keystore file not found, https connections unavailable! Create a keystore file and put it into " +
-                    "the server directory inside user home to allow connecting with the server through https.");
+            logger.info("keystore file not found, https connections unavailable! Create a keystore file, name it keystore.jks," +
+                    " and put it into the Terasology saved games server directory to enable https.");
         }
         if (keyStorePath != null) {
             try {
