@@ -15,6 +15,12 @@
  */
 package org.terasology.web.serverAdminManagement;
 
+import org.terasology.logic.permission.PermissionManager;
+
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
+
 /**
  * This enum is used for determining admin permissions.
  */
@@ -29,5 +35,14 @@ public enum PermissionType {
     DELETE_GAMES,
     START_STOP_GAMES,
     CHANGE_SETTINGS,
-    ADMIN_MANAGEMENT
+    ADMIN_MANAGEMENT;
+
+    public static Map<PermissionType, String> getConsolePermissionsMap() {
+        Map<PermissionType, String> consolePermissionsMap = new HashMap<>();
+        consolePermissionsMap.put(CONSOLE_CHEAT, PermissionManager.CHEAT_PERMISSION);
+        consolePermissionsMap.put(CONSOLE_USER_MANAGEMENT, PermissionManager.USER_MANAGEMENT_PERMISSION);
+        consolePermissionsMap.put(CONSOLE_SERVER_MANAGEMENT, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
+        consolePermissionsMap.put(CONSOLE_DEBUG, PermissionManager.DEBUG_PERMISSION);
+        return Collections.unmodifiableMap(consolePermissionsMap);
+    }
 }

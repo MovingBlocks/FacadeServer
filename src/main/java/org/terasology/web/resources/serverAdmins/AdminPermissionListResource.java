@@ -16,6 +16,8 @@
 package org.terasology.web.resources.serverAdmins;
 
 import javafx.util.Pair;
+import org.terasology.network.NetworkSystem;
+import org.terasology.registry.In;
 import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 import org.terasology.web.resources.base.ClientSecurityRequirements;

@@ -41,9 +41,6 @@ import static org.terasology.web.resources.base.ResourceMethodFactory.createVoid
 @RegisterSystem
 public class AdminPermissionResource extends AbstractItemCollectionResource implements DefaultComponentSystem {
 
-    @In
-    private NetworkSystem networkSystem;
-
     private String adminID;
 
     public AdminPermissionResource(String adminID) {
@@ -52,7 +49,6 @@ public class AdminPermissionResource extends AbstractItemCollectionResource impl
 
     @ReceiveEvent
     public void onConnected(ConnectedEvent event, EntityRef entityRef) {
-        System.out.println("er: " + entityRef);
         AdminPermissionManager.getInstance().updateAdminConsolePermissions(event.getPlayerStore().getId(), entityRef);
     }
 
@@ -65,9 +61,8 @@ public class AdminPermissionResource extends AbstractItemCollectionResource impl
     @SuppressWarnings("unchecked")
     @Override
     protected ResourceMethod<Pair, Void> getPatchCollectionMethod() throws ResourceAccessException {
-        System.out.println("ns: " + networkSystem);
         return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.ADMIN_MANAGEMENT, Pair.class,
-                (data, client) -> AdminPermissionManager.getInstance().setAdminPermissionsAndUpdateConsolePermissions(adminID, data, networkSystem));
+                (data, client) -> AdminPermissionManager.getInstance().setAdminPermissions(adminID, data));
     }
 
 }

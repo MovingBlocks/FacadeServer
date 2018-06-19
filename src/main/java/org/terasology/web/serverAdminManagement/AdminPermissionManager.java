@@ -15,6 +15,7 @@
  */
 package org.terasology.web.serverAdminManagement;
 
+import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.util.Pair;
@@ -22,13 +23,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.systems.BaseComponentSystem;
 import org.terasology.logic.permission.PermissionManager;
 import org.terasology.logic.permission.PermissionSetComponent;
 import org.terasology.network.Client;
 import org.terasology.network.ClientComponent;
 import org.terasology.network.NetworkSystem;
-import org.terasology.registry.CoreRegistry;
+import org.terasology.registry.In;
+import org.terasology.web.resources.DefaultComponentSystem;
 
 import java.io.IOException;
 import java.io.Writer;
@@ -45,11 +46,14 @@ import java.util.Set;
 /**
  * Manages the serverAdminPermissions.json file in the server directory.
  */
-public final class AdminPermissionManager extends BaseComponentSystem {
+public final class AdminPermissionManager implements DefaultComponentSystem {
 
     private static final Logger logger = LoggerFactory.getLogger(AdminPermissionManager.class);
     private static final Gson GSON = new Gson();
     private static AdminPermissionManager instance;
+
+    @In
+    private NetworkSystem networkSystem;
 
     private final Path adminPermissionsFilePath;
     private final Type typeOfServerAdminPermissions = new TypeToken<Set<Pair<String, Map<PermissionType, Boolean>>>>() { }.getType();
@@ -75,7 +79,7 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         }
         Pair<String, Map<PermissionType, Boolean>> permissions = getPermissionsOfAdmin(adminId);
         if (permissions != null) {
-            if (permissions.getValue().get(permission) == null) {
+            if (permissions.getValue().get(PermissionType.NO_PERMISSION) == null) {
                 return permissions.getValue().get(permission.toString());
             } else {
                 return permissions.getValue().get(permission);
@@ -84,29 +88,26 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         return true;
     }
 
+    @SuppressWarnings("SuspiciousMethodCalls")
     public void updateAdminConsolePermissions(String adminId, EntityRef entityRef) {
-        Pair<String, Map<PermissionType, Boolean>> permission = getPermissionsOfAdmin(adminId);
+        Pair<String, Map<PermissionType, Boolean>> permissions = getPermissionsOfAdmin(adminId);
         EntityRef clientInfo = entityRef.getComponent(ClientComponent.class).clientInfo;
-        if (permission != null) {
-            if (permission.getValue().get(PermissionType.CONSOLE_CHEAT)) {
-                addPermission(clientInfo, PermissionManager.CHEAT_PERMISSION);
-            } else {
-                removePermission(clientInfo, PermissionManager.CHEAT_PERMISSION);
-            }
-            if (permission.getValue().get(PermissionType.CONSOLE_USER_MANAGEMENT)) {
-                addPermission(clientInfo, PermissionManager.USER_MANAGEMENT_PERMISSION);
-            } else {
-                removePermission(clientInfo, PermissionManager.USER_MANAGEMENT_PERMISSION);
-            }
-            if (permission.getValue().get(PermissionType.CONSOLE_SERVER_MANAGEMENT)) {
-                addPermission(clientInfo, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
-            } else {
-                removePermission(clientInfo, PermissionManager.SERVER_MANAGEMENT_PERMISSION);
-            }
-            if (permission.getValue().get(PermissionType.CONSOLE_DEBUG)) {
-                addPermission(clientInfo, PermissionManager.DEBUG_PERMISSION);
-            } else {
-                removePermission(clientInfo, PermissionManager.DEBUG_PERMISSION);
+        if (permissions != null) {
+            Map<PermissionType, String> consolePermissionsMap = PermissionType.getConsolePermissionsMap();
+            for (PermissionType permissionType : consolePermissionsMap.keySet()) {
+                if (permissions.getValue().get(permissionType) == null) {
+                    if (permissions.getValue().get(permissionType.toString())) {
+                        addPermission(clientInfo, consolePermissionsMap.get(permissionType.toString()));
+                    } else {
+                        removePermission(clientInfo, consolePermissionsMap.get(permissionType.toString()));
+                    }
+                } else {
+                    if (permissions.getValue().get(permissionType)) {
+                        addPermission(clientInfo, consolePermissionsMap.get(permissionType));
+                    } else {
+                        removePermission(clientInfo, consolePermissionsMap.get(permissionType));
+                    }
+                }
             }
         }
     }
@@ -115,20 +116,7 @@ public final class AdminPermissionManager extends BaseComponentSystem {
         setAdminPermissions(adminId, new Pair<>(adminId, generatePermissionMap(true)));
     }
 
-    public void setAdminPermissionsAndUpdateConsolePermissions(String adminId, Pair<String, Map<PermissionType, Boolean>> newPermissions, NetworkSystem networkSystem) {
-        EntityRef playerToChange = EntityRef.NULL;
-        System.out.println("ns1: " + networkSystem);
-        for (Client player : networkSystem.getPlayers()) {
-            if (player.getId().equals(adminId)) {
-                playerToChange = player.getEntity();
-            }
-        }
-        System.out.println("ptc: " + playerToChange);
-        setAdminPermissions(adminId, newPermissions);
-        updateAdminConsolePermissions(adminId, playerToChange);
-    }
-
-    private void setAdminPermissions(String adminId, Pair<String, Map<PermissionType, Boolean>> newPermissions) {
+    public void setAdminPermissions(String adminId, Pair<String, Map<PermissionType, Boolean>> newPermissions) {
         Pair<String, Map<PermissionType, Boolean>> permission = getPermissionsOfAdmin(adminId);
         serverAdminPermissions.remove(permission);
         serverAdminPermissions.add(newPermissions);
@@ -136,6 +124,15 @@ public final class AdminPermissionManager extends BaseComponentSystem {
             saveAdminPermissionList();
         } catch (IOException e) {
             logger.error("cannot save the admin permission list after setting a permission", e);
+        }
+        EntityRef playerToChange = EntityRef.NULL;
+        for (Client player : networkSystem.getPlayers()) {
+            if (player.getId().equals(adminId)) {
+                playerToChange = player.getEntity();
+            }
+        }
+        if (playerToChange != EntityRef.NULL) {
+            updateAdminConsolePermissions(adminId, playerToChange);
         }
     }
 
