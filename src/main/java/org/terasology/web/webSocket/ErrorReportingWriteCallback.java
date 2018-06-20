@@ -18,6 +18,9 @@ package org.terasology.web.webSocket;
 import org.eclipse.jetty.websocket.api.WriteCallback;
 import org.slf4j.Logger;
 
+/**
+ * This class outputs an error message when sending a message to the client over WebSocket.
+ */
 public class ErrorReportingWriteCallback implements WriteCallback {
 
     private final Logger targetLogger;

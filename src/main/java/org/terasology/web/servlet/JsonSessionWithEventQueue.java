@@ -25,7 +25,7 @@ import java.util.List;
 import java.util.Queue;
 
 /**
- * Wrapper for {@link JsonSession} for use with the REST api.
+ * Wrapper for {@link JsonSession} for use with the REST api. Used in authentication.
  */
 public class JsonSessionWithEventQueue {
 

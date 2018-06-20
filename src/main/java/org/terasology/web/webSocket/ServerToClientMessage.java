@@ -19,6 +19,9 @@ import com.google.gson.JsonElement;
 
 import java.util.Collection;
 
+/**
+ * Represents a message to the client from the server.
+ */
 public class ServerToClientMessage {
 
     public enum MessageType {

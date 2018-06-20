@@ -113,6 +113,11 @@ public final class ResourceManager implements ResourceObserver {
         rootResource.notifyChangedForAllClients();
     }
 
+    /**
+     * initialize a resource by either registering it as component system if possible, or injecting it otherwise.
+     * @param context the context of the game engine.
+     * @param resource the resource to initialize.
+     */
     private void initializeResource(Context context, Resource resource) {
         ComponentSystemManager componentSystemManager = context.get(ComponentSystemManager.class);
         if (resource instanceof ComponentSystem && componentSystemManager != null) {
