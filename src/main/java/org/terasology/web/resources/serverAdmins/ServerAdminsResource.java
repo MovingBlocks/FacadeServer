@@ -37,19 +37,19 @@ public class ServerAdminsResource extends AbstractItemCollectionResource {
 
     @Override
     protected ResourceMethod<Void, Set<String>> getGetCollectionMethod() throws ResourceAccessException {
-        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
+        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> ServerAdminsManager.getInstance().getAdminIds());
     }
 
     @Override
     protected ResourceMethod<Void, Void> getPostItemMethod(String itemId) throws ResourceAccessException {
-        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.ADMIN_MANAGEMENT, Void.class,
+        return createVoidParameterlessMethod(ClientSecurityRequirements.requireAdminPermission(PermissionType.ADMIN_MANAGEMENT), Void.class,
                 (data, client) -> ServerAdminsManager.getInstance().addAdmin(itemId));
     }
 
     @Override
     protected ResourceMethod<Void, Void> getDeleteItemMethod(String itemId) throws ResourceAccessException {
-        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.ADMIN_MANAGEMENT, Void.class,
+        return createVoidParameterlessMethod(ClientSecurityRequirements.requireAdminPermission(PermissionType.ADMIN_MANAGEMENT), Void.class,
                 (data, client) -> ServerAdminsManager.getInstance().removeAdmin(itemId));
     }
 }

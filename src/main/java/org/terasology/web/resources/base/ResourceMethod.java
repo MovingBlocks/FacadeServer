@@ -23,8 +23,6 @@ public interface ResourceMethod<INTYPE, OUTTYPE> {
 
     Class<INTYPE> getInType();
 
-    PermissionType getPermissionType();
-
     boolean clientIsAllowed(ClientSecurityInfo securityInfo);
 
     OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException;

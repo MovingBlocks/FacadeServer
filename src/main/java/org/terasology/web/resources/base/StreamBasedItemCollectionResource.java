@@ -38,13 +38,13 @@ public abstract class StreamBasedItemCollectionResource<T> extends AbstractItemC
 
     @Override
     public final ResourceMethod<Void, List<T>> getGetCollectionMethod() throws ResourceAccessException {
-        return createParameterlessMethod(getGetMethodSecurityRequirements(), getPermissionType(), Void.class,
+        return createParameterlessMethod(getGetMethodSecurityRequirements(), Void.class,
                 (data, client) -> getDataSourceStream().collect(Collectors.toList()));
     }
 
     @Override
     public final ResourceMethod<Void, T> getGetItemMethod(String itemId) throws ResourceAccessException {
-        return createParameterlessMethod(getGetMethodSecurityRequirements(), getPermissionType(), Void.class, (data, client) -> {
+        return createParameterlessMethod(getGetMethodSecurityRequirements(), Void.class, (data, client) -> {
             Optional<T> result = getDataSourceStream()
                     .filter(item -> itemMatchesId(itemId, item))
                     .findFirst();
@@ -57,10 +57,6 @@ public abstract class StreamBasedItemCollectionResource<T> extends AbstractItemC
 
     protected ClientSecurityRequirements getGetMethodSecurityRequirements() {
         return ClientSecurityRequirements.PUBLIC;
-    }
-
-    private PermissionType getPermissionType() {
-        return PermissionType.NO_PERMISSION;
     }
 
     protected abstract Stream<T> getDataSourceStream();

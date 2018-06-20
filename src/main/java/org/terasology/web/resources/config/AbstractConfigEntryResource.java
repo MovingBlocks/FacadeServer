@@ -34,12 +34,12 @@ public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResou
 
     @Override
     protected ResourceMethod<Void, T> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class, (data, client) -> get(config));
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) -> get(config));
     }
 
     @Override
     protected ResourceMethod<T, Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.CHANGE_SETTINGS, getDataType(), (data, client) -> {
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.requireAdminPermission(PermissionType.CHANGE_SETTINGS), getDataType(), (data, client) -> {
             set(config, data);
             config.save();
             notifyChangedForAllClients();

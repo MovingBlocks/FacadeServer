@@ -54,7 +54,7 @@ public class OnlinePlayersResource extends AbstractSimpleResource implements Def
 
     @Override
     protected ResourceMethod<Void, List<OnlinePlayerMetadata>> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class, (data, client) ->
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
                 StreamSupport.stream(networkSystem.getPlayers().spliterator(), true)
                     .map(OnlinePlayerMetadata::new)
                     .collect(Collectors.toList()));

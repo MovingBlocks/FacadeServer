@@ -93,11 +93,6 @@ public final class RouterResource implements Resource {
                 }
 
                 @Override
-                public PermissionType getPermissionType() {
-                    return PermissionType.NO_PERMISSION;
-                }
-
-                @Override
                 public boolean clientIsAllowed(ClientSecurityInfo securityInfo) {
                     return true;
                 }

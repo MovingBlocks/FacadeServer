@@ -16,33 +16,37 @@
 package org.terasology.web.resources.base;
 
 import org.terasology.web.client.ClientSecurityInfo;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 public final class ClientSecurityRequirements {
 
     public static final ClientSecurityRequirements PUBLIC = new ClientSecurityRequirements(false, false);
     public static final ClientSecurityRequirements REQUIRE_AUTH = new ClientSecurityRequirements(true, false);
     public static final ClientSecurityRequirements REQUIRE_ADMIN = new ClientSecurityRequirements(false, true);
-    public static final ClientSecurityRequirements REQUIRE_ADMIN_PERMISSION = new ClientSecurityRequirements(false, true, true);
     public static final ClientSecurityRequirements REQUIRE_AUTH_ADMIN = new ClientSecurityRequirements(true, true);
 
     private boolean requireAuthentication;
     private boolean requireAdminPermission;
-    private boolean requireExtraAdminPermission;
+    private PermissionType requiredPermission;
 
     private ClientSecurityRequirements(boolean requireAuthentication, boolean requireAdminPermission) {
         this.requireAuthentication = requireAuthentication;
         this.requireAdminPermission = requireAdminPermission;
     }
 
-    private ClientSecurityRequirements(boolean requireAuthentication, boolean requireAdminPermission, boolean requireExtraAdminPermission) {
+    private ClientSecurityRequirements(boolean requireAuthentication, boolean requireAdminPermission, PermissionType requiredPermission) {
         this.requireAuthentication = requireAuthentication;
         this.requireAdminPermission = requireAdminPermission;
-        this.requireExtraAdminPermission = requireExtraAdminPermission;
+        this.requiredPermission = requiredPermission;
+    }
+
+    public static ClientSecurityRequirements requireAdminPermission(PermissionType permissionType) {
+        return new ClientSecurityRequirements(false, true, permissionType);
     }
 
     public boolean clientIsAllowed(ClientSecurityInfo client) {
         return !((requireAuthentication && !client.isAuthenticated())
                 || (requireAdminPermission && !client.isAdmin())
-                || (requireExtraAdminPermission && !client.hasAdminPermission()));
+                || (requiredPermission != null && !client.ownsPermission(requiredPermission)));
     }
 }

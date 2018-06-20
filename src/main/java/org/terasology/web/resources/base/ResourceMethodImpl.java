@@ -23,25 +23,17 @@ public class ResourceMethodImpl<INTYPE, OUTTYPE> implements ResourceMethod<INTYP
 
     private final Class<INTYPE> inType;
     private final ClientSecurityRequirements securityRequirements;
-    private final PermissionType permissionType;
     private final ParameterlessMethodHandler<INTYPE, OUTTYPE> handler;
 
-    public ResourceMethodImpl(Class<INTYPE> inType, ClientSecurityRequirements securityRequirements,
-                              PermissionType permissionType, ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) {
+    public ResourceMethodImpl(Class<INTYPE> inType, ClientSecurityRequirements securityRequirements, ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) {
         this.inType = inType;
         this.securityRequirements = securityRequirements;
-        this.permissionType = permissionType;
         this.handler = handler;
     }
 
     @Override
     public Class<INTYPE> getInType() {
         return inType;
-    }
-
-    @Override
-    public PermissionType getPermissionType() {
-        return permissionType;
     }
 
     @Override

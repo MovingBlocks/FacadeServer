@@ -23,6 +23,7 @@ import org.terasology.logic.console.MessageEvent;
 import org.terasology.logic.console.commandSystem.ConsoleCommand;
 import org.terasology.naming.Name;
 import org.terasology.network.ClientComponent;
+import org.terasology.network.events.ConnectedEvent;
 import org.terasology.registry.In;
 import org.terasology.web.resources.DefaultComponentSystem;
 import org.terasology.web.resources.base.ResourceAccessException;
@@ -30,6 +31,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.util.Collection;
@@ -44,6 +46,11 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
     @In
     private Console console;
 
+    @ReceiveEvent
+    public void onConnected(ConnectedEvent event, EntityRef entityRef) {
+        AdminPermissionManager.getInstance().updateAdminConsolePermissions(event.getPlayerStore().getId(), entityRef);
+    }
+
     @ReceiveEvent(components = ClientComponent.class)
     public void onMessage(MessageEvent event, EntityRef entityRef) {
         notifyEvent(entityRef, event.getFormattedMessage());
@@ -51,7 +58,7 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
 
     @Override
     protected ResourceMethod<Void, Collection<String>> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class, (data, client) ->
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
             console.getCommands().stream().filter(ConsoleCommand::isRunOnServer).map(ConsoleCommand::getName)
                 .map(Name::toString).collect(Collectors.toList()));
     }
@@ -59,7 +66,7 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
     @Override
     protected ResourceMethod<String, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
         // No permission because console permissions are handled separately.
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_AUTH, PermissionType.NO_PERMISSION, String.class,
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_AUTH, String.class,
                 (data, client) -> console.execute(data, client.getEntity()));
     }
 }

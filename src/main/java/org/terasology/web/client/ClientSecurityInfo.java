@@ -15,21 +15,20 @@
  */
 package org.terasology.web.client;
 
+import org.terasology.web.serverAdminManagement.PermissionType;
+
+import java.util.List;
+
 public class ClientSecurityInfo {
 
     private boolean isAuthenticated;
     private boolean isAdmin;
-    private boolean hasAdminPermission;
+    private List<PermissionType> clientPermissions;
 
-    public ClientSecurityInfo(boolean isAuthenticated, boolean isAdmin) {
+    public ClientSecurityInfo(boolean isAuthenticated, boolean isAdmin, List<PermissionType> clientPermissions) {
         this.isAuthenticated = isAuthenticated;
         this.isAdmin = isAdmin;
-    }
-
-    public ClientSecurityInfo(boolean isAuthenticated, boolean isAdmin, boolean hasAdminPermission) {
-        this.isAuthenticated = isAuthenticated;
-        this.isAdmin = isAdmin;
-        this.hasAdminPermission = hasAdminPermission;
+        this.clientPermissions = clientPermissions;
     }
 
     public boolean isAuthenticated() {
@@ -40,7 +39,7 @@ public class ClientSecurityInfo {
         return isAdmin;
     }
 
-    public boolean hasAdminPermission() {
-        return hasAdminPermission;
+    public boolean ownsPermission(PermissionType permissionType) {
+        return clientPermissions.contains(permissionType);
     }
 }

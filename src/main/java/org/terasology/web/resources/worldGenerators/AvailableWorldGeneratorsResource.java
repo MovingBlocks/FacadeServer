@@ -36,7 +36,7 @@ public class AvailableWorldGeneratorsResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, List<WorldGeneratorInfo>> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> worldGeneratorManager.getWorldGenerators());
     }
 }

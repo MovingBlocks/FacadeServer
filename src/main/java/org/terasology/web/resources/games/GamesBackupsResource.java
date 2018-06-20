@@ -49,7 +49,7 @@ public class GamesBackupsResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.CREATE_BACKUP_RENAME_GAMES, Void.class,
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.requireAdminPermission(PermissionType.CREATE_BACKUP_RENAME_GAMES), Void.class,
                 (data, client) -> performBackup());
     }
 

@@ -38,7 +38,6 @@ import static org.terasology.web.resources.base.ResourceMethodFactory.createVoid
 /**
  * Resource used for getting/setting the permissions of a specific admin.
  */
-@RegisterSystem
 public class AdminPermissionResource extends AbstractItemCollectionResource implements DefaultComponentSystem {
 
     private String adminID;
@@ -47,21 +46,16 @@ public class AdminPermissionResource extends AbstractItemCollectionResource impl
         this.adminID = adminID;
     }
 
-    @ReceiveEvent
-    public void onConnected(ConnectedEvent event, EntityRef entityRef) {
-        AdminPermissionManager.getInstance().updateAdminConsolePermissions(event.getPlayerStore().getId(), entityRef);
-    }
-
     @Override
     protected ResourceMethod<Void, Pair<String, Map<PermissionType, Boolean>>> getGetCollectionMethod() throws ResourceAccessException {
-        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
+        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> AdminPermissionManager.getInstance().getPermissionsOfAdmin(adminID));
     }
 
     @SuppressWarnings("unchecked")
     @Override
     protected ResourceMethod<Pair, Void> getPatchCollectionMethod() throws ResourceAccessException {
-        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.ADMIN_MANAGEMENT, Pair.class,
+        return createVoidParameterlessMethod(ClientSecurityRequirements.requireAdminPermission(PermissionType.ADMIN_MANAGEMENT), Pair.class,
                 (data, client) -> AdminPermissionManager.getInstance().setAdminPermissions(adminID, data));
     }
 

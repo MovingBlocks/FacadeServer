@@ -44,7 +44,7 @@ public class NewGameMethod extends ResourceMethodImpl<NewGameMetadata, Void> {
     private DependencyResolver dependencyResolver;
 
     public NewGameMethod(PathManager pathManager, DependencyResolver dependencyResolver) {
-        super(NewGameMetadata.class, ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.CREATE_BACKUP_RENAME_GAMES, null);
+        super(NewGameMetadata.class, ClientSecurityRequirements.requireAdminPermission(PermissionType.CREATE_BACKUP_RENAME_GAMES), null);
         this.pathManager = pathManager;
         this.dependencyResolver = dependencyResolver;
     }

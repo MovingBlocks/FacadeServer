@@ -38,7 +38,7 @@ public class SystemResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, SystemMetadata> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> SystemMetadata.getInstance());
     }
 

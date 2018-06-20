@@ -15,7 +15,6 @@
  */
 package org.terasology.web.serverAdminManagement;
 
-import com.google.common.collect.Sets;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import javafx.util.Pair;
@@ -24,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.terasology.engine.paths.PathManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.permission.PermissionManager;
-import org.terasology.logic.permission.PermissionSetComponent;
 import org.terasology.network.Client;
 import org.terasology.network.ClientComponent;
 import org.terasology.network.NetworkSystem;
@@ -37,9 +35,11 @@ import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardOpenOption;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -54,11 +54,15 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
 
     @In
     private NetworkSystem networkSystem;
+    @In
+    private PermissionManager permissionManager;
 
     private final Path adminPermissionsFilePath;
-    private final Type typeOfServerAdminPermissions = new TypeToken<Set<Pair<String, Map<PermissionType, Boolean>>>>() { }.getType();
+    private final Type typeOfServerAdminPermissions = new TypeToken<Set<Pair<String, Map<PermissionType, Boolean>>>>() {
+    }.getType();
     private Set<Pair<String, Map<PermissionType, Boolean>>> serverAdminPermissions;
-    private Runnable onListChanged = () -> { };
+    private Runnable onListChanged = () -> {
+    };
 
     private AdminPermissionManager(Path adminPermissionsFilePath) {
         this.adminPermissionsFilePath = adminPermissionsFilePath;
@@ -73,40 +77,16 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     }
 
     @SuppressWarnings("SuspiciousMethodCalls")
-    public boolean adminHasPermission(String adminId, PermissionType permission) {
-        if (permission == PermissionType.NO_PERMISSION) {
-            return true;
-        }
-        Pair<String, Map<PermissionType, Boolean>> permissions = getPermissionsOfAdmin(adminId);
-        if (permissions != null) {
-            if (permissions.getValue().get(PermissionType.NO_PERMISSION) == null) {
-                return permissions.getValue().get(permission.toString());
-            } else {
-                return permissions.getValue().get(permission);
-            }
-        }
-        return true;
-    }
-
-    @SuppressWarnings("SuspiciousMethodCalls")
     public void updateAdminConsolePermissions(String adminId, EntityRef entityRef) {
         Pair<String, Map<PermissionType, Boolean>> permissions = getPermissionsOfAdmin(adminId);
         EntityRef clientInfo = entityRef.getComponent(ClientComponent.class).clientInfo;
         if (permissions != null) {
             Map<PermissionType, String> consolePermissionsMap = PermissionType.getConsolePermissionsMap();
             for (PermissionType permissionType : consolePermissionsMap.keySet()) {
-                if (permissions.getValue().get(permissionType) == null) {
-                    if (permissions.getValue().get(permissionType.toString())) {
-                        addPermission(clientInfo, consolePermissionsMap.get(permissionType.toString()));
-                    } else {
-                        removePermission(clientInfo, consolePermissionsMap.get(permissionType.toString()));
-                    }
+                if (permissions.getValue().get(permissionType)) {
+                    permissionManager.addPermission(clientInfo, consolePermissionsMap.get(permissionType));
                 } else {
-                    if (permissions.getValue().get(permissionType)) {
-                        addPermission(clientInfo, consolePermissionsMap.get(permissionType));
-                    } else {
-                        removePermission(clientInfo, consolePermissionsMap.get(permissionType));
-                    }
+                    permissionManager.removePermission(clientInfo, consolePermissionsMap.get(permissionType));
                 }
             }
         }
@@ -116,10 +96,17 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
         setAdminPermissions(adminId, new Pair<>(adminId, generatePermissionMap(true)));
     }
 
+    @SuppressWarnings({"SuspiciousToArrayCall", "SuspiciousMethodCalls"})
     public void setAdminPermissions(String adminId, Pair<String, Map<PermissionType, Boolean>> newPermissions) {
         Pair<String, Map<PermissionType, Boolean>> permission = getPermissionsOfAdmin(adminId);
         serverAdminPermissions.remove(permission);
-        serverAdminPermissions.add(newPermissions);
+        // Hack: somewhere along the line, the values of newPermissions get changed to Strings instead of PermissionTypes.
+        // This causes casting errors unless they are all turned back into PermissionTypes.
+        Map<PermissionType, Boolean> fixedNewPermissions = new HashMap<>();
+        for (String permissionType : newPermissions.getValue().keySet().toArray(new String[0])) {
+            fixedNewPermissions.put(PermissionType.valueOf(permissionType), newPermissions.getValue().get(permissionType));
+        }
+        serverAdminPermissions.add(new Pair<>(adminId, fixedNewPermissions));
         try {
             saveAdminPermissionList();
         } catch (IOException e) {
@@ -142,7 +129,7 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     }
 
     public void removeAdmin(String id) {
-        for (Pair<String, Map<PermissionType, Boolean>> adminPermission: serverAdminPermissions) {
+        for (Pair<String, Map<PermissionType, Boolean>> adminPermission : serverAdminPermissions) {
             if (adminPermission.getKey().equals(id)) {
                 serverAdminPermissions.remove(adminPermission);
             }
@@ -153,12 +140,26 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     }
 
     public Pair<String, Map<PermissionType, Boolean>> getPermissionsOfAdmin(String id) {
-        for (Pair<String, Map<PermissionType, Boolean>> adminPermission: serverAdminPermissions) {
+        for (Pair<String, Map<PermissionType, Boolean>> adminPermission : serverAdminPermissions) {
             if (adminPermission.getKey().equals(id)) {
                 return adminPermission;
             }
         }
         return null;
+    }
+
+    @SuppressWarnings("SuspiciousMethodCalls")
+    public List<PermissionType> getOwnedPermissions(String id) {
+        Pair<String, Map<PermissionType, Boolean>> permissions = getPermissionsOfAdmin(id);
+        List<PermissionType> permissionList = new ArrayList<>();
+        if (permissions != null) {
+            for (PermissionType permissionType : permissions.getValue().keySet()) {
+                if (permissions.getValue().get(permissionType)) {
+                    permissionList.add(permissionType);
+                }
+            }
+        }
+        return permissionList;
     }
 
     @SuppressWarnings("unchecked")
@@ -192,24 +193,6 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
 
     private void setServerAdminPermissions(Set<Pair<String, Map<PermissionType, Boolean>>> permissions) {
         serverAdminPermissions = Collections.synchronizedSet(permissions);
-    }
-
-    private void addPermission(EntityRef clientInfo, String permission) {
-        PermissionSetComponent permissionSet = clientInfo.getComponent(PermissionSetComponent.class);
-        if (permissionSet != null) {
-            permissionSet.permissions.add(permission);
-            clientInfo.saveComponent(permissionSet);
-        }
-        onListChanged.run();
-    }
-
-    private void removePermission(EntityRef clientInfo, String permission) {
-        PermissionSetComponent permissionSet = clientInfo.getComponent(PermissionSetComponent.class);
-        if (permissionSet != null) {
-            permissionSet.permissions.remove(permission);
-            clientInfo.saveComponent(permissionSet);
-        }
-        onListChanged.run();
     }
 
     private Map<PermissionType, Boolean> generatePermissionMap(boolean initialValues) {

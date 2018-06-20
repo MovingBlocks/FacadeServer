@@ -42,7 +42,7 @@ public class AdminPermissionListResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, Set<Pair<String, Map<PermissionType, Boolean>>>> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
+        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> AdminPermissionManager.getInstance().getAdminPermissions());
     }
 

@@ -54,13 +54,13 @@ public class ModuleInstallerResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, String> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, PermissionType.NO_PERMISSION, Void.class,
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> status);
     }
 
     @Override
     protected ResourceMethod<Name[], Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.INSTALL_MODULES, Name[].class,
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.requireAdminPermission(PermissionType.INSTALL_MODULES), Name[].class,
                 (data, client) -> installModules(data));
     }
 

@@ -26,45 +26,45 @@ public final class ResourceMethodFactory {
     }
 
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParametrizedMethod(
-            ResourcePath path, ClientSecurityRequirements securityRequirements, PermissionType permissionType, Class<INTYPE> inType,
+            ResourcePath path, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
             ParametrizedMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
         String parameter = path.assertAndConsumeLastItem();
-        return createParametrizedMethod(parameter, securityRequirements, permissionType, inType, handler);
+        return createParametrizedMethod(parameter, securityRequirements, inType, handler);
     }
 
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParametrizedMethod(
-            String parameter, ClientSecurityRequirements securityRequirements, PermissionType permissionType, Class<INTYPE> inType,
+            String parameter, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
             ParametrizedMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
-        return new ResourceMethodImpl<>(inType, securityRequirements, permissionType, (data, client) -> handler.perform(data, parameter, client));
+        return new ResourceMethodImpl<>(inType, securityRequirements, (data, client) -> handler.perform(data, parameter, client));
     }
 
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParameterlessMethod(
-            ClientSecurityRequirements securityRequirements, PermissionType permissionType, Class<INTYPE> inType,
+            ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
             ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
-        return new ResourceMethodImpl<>(inType, securityRequirements, permissionType, handler);
+        return new ResourceMethodImpl<>(inType, securityRequirements, handler);
     }
 
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParameterlessMethod(
-            ResourcePath path, ClientSecurityRequirements securityRequirements, PermissionType permissionType, Class<INTYPE> inType,
+            ResourcePath path, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
             ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
         path.assertEmpty();
-        return createParameterlessMethod(securityRequirements, permissionType, inType, handler);
+        return createParameterlessMethod(securityRequirements, inType, handler);
     }
 
     public static <INTYPE> ResourceMethod<INTYPE, Void> createVoidParameterlessMethod(
-            ClientSecurityRequirements securityRequirements, PermissionType permissionType, Class<INTYPE> inType,
+            ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
             VoidParameterlessMethodHandler<INTYPE> handler) throws ResourceAccessException {
-        return createParameterlessMethod(securityRequirements, permissionType, inType, (data, client) -> {
+        return createParameterlessMethod(securityRequirements, inType, (data, client) -> {
             handler.perform(data, client);
             return null;
         });
     }
 
     public static <INTYPE> ResourceMethod<INTYPE, Void> createVoidParameterlessMethod(
-            ResourcePath path, ClientSecurityRequirements securityRequirements, PermissionType permissionType, Class<INTYPE> inType,
+            ResourcePath path, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
             VoidParameterlessMethodHandler<INTYPE> handler) throws ResourceAccessException {
         path.assertEmpty();
-        return createVoidParameterlessMethod(securityRequirements, permissionType, inType, handler);
+        return createVoidParameterlessMethod(securityRequirements, inType, handler);
     }
 
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> decorateMethod(
@@ -73,11 +73,6 @@ public final class ResourceMethodFactory {
             @Override
             public Class<INTYPE> getInType() {
                 return base.getInType();
-            }
-
-            @Override
-            public PermissionType getPermissionType() {
-                return base.getPermissionType();
             }
 
             @Override

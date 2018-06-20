@@ -34,7 +34,7 @@ public class DeleteGameMethod extends ResourceMethodImpl<Void, Void> {
     private String gameName;
 
     public DeleteGameMethod(PathManager pathManager, String gameName) {
-        super(Void.class, ClientSecurityRequirements.REQUIRE_ADMIN_PERMISSION, PermissionType.DELETE_GAMES, null);
+        super(Void.class, ClientSecurityRequirements.requireAdminPermission(PermissionType.DELETE_GAMES), null);
         this.pathManager = pathManager;
         this.gameName = gameName;
     }
