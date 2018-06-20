@@ -22,7 +22,6 @@ import org.terasology.math.geom.Vector3i;
 import org.terasology.network.Client;
 import org.terasology.rendering.world.viewDistance.ViewDistance;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
-import org.terasology.web.serverAdminManagement.PermissionType;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.world.chunks.Chunk;
 

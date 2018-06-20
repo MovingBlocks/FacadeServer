@@ -15,8 +15,6 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.web.serverAdminManagement.PermissionType;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;

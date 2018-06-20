@@ -18,7 +18,6 @@ package org.terasology.web.resources.base;
 import org.terasology.network.Client;
 import org.terasology.web.ThrowingRunnable;
 import org.terasology.web.client.ClientSecurityInfo;
-import org.terasology.web.serverAdminManagement.PermissionType;
 
 public final class ResourceMethodFactory {
 

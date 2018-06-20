@@ -20,7 +20,6 @@ import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
-import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;

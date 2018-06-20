@@ -32,7 +32,6 @@ import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
-import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.util.Collection;
 import java.util.stream.Collectors;

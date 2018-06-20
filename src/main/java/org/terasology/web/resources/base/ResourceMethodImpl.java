@@ -17,7 +17,6 @@ package org.terasology.web.resources.base;
 
 import org.terasology.network.Client;
 import org.terasology.web.client.ClientSecurityInfo;
-import org.terasology.web.serverAdminManagement.PermissionType;
 
 public class ResourceMethodImpl<INTYPE, OUTTYPE> implements ResourceMethod<INTYPE, OUTTYPE> {
 

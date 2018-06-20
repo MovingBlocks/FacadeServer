@@ -16,12 +16,6 @@
 package org.terasology.web.resources.serverAdmins;
 
 import javafx.util.Pair;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.network.NetworkSystem;
-import org.terasology.network.events.ConnectedEvent;
-import org.terasology.registry.In;
 import org.terasology.web.resources.DefaultComponentSystem;
 import org.terasology.web.resources.base.AbstractItemCollectionResource;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
