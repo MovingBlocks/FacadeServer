@@ -24,8 +24,6 @@ import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.serverAdminManagement.IdPermissionPair;
 import org.terasology.web.serverAdminManagement.PermissionType;
 
-import java.util.Map;
-
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
@@ -41,9 +39,9 @@ public class AdminPermissionResource extends AbstractItemCollectionResource impl
     }
 
     @Override
-    protected ResourceMethod<Void, IdPermissionPair<String, Map<PermissionType, Boolean>>> getGetCollectionMethod() throws ResourceAccessException {
+    protected ResourceMethod<Void, IdPermissionPair> getGetCollectionMethod() throws ResourceAccessException {
         return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
-                (data, client) -> new IdPermissionPair<>(adminID, AdminPermissionManager.getInstance().getPermissionsOfAdmin(adminID)));
+                (data, client) -> new IdPermissionPair(adminID, AdminPermissionManager.getInstance().getPermissionsOfAdmin(adminID)));
     }
 
     @SuppressWarnings("unchecked")

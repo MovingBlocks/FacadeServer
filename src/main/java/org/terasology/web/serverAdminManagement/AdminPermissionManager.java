@@ -55,9 +55,9 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     private PermissionManager permissionManager;
 
     private final Path adminPermissionsFilePath;
-    private final Type typeOfServerAdminPermissions = new TypeToken<Set<IdPermissionPair<String, Map<PermissionType, Boolean>>>>() {
+    private final Type typeOfServerAdminPermissions = new TypeToken<Set<IdPermissionPair>>() {
     }.getType();
-    private Set<IdPermissionPair<String, Map<PermissionType, Boolean>>> serverAdminPermissions;
+    private Set<IdPermissionPair> serverAdminPermissions;
     private Runnable onListChanged = () -> {
     };
 
@@ -90,13 +90,13 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     }
 
     public void giveAllPermissionsToAdmin(String adminId) {
-        setAdminPermissions(adminId, new IdPermissionPair<>(adminId, generatePermissionMap(true)));
+        setAdminPermissions(adminId, new IdPermissionPair(adminId, generatePermissionMap(true)));
     }
 
     @SuppressWarnings({"SuspiciousToArrayCall", "SuspiciousMethodCalls"})
-    public void setAdminPermissions(String adminId, IdPermissionPair<String, Map<PermissionType, Boolean>> newPermissions) {
+    public void setAdminPermissions(String adminId, IdPermissionPair newPermissions) {
         Map<PermissionType, Boolean> permission = getPermissionsOfAdmin(adminId);
-        serverAdminPermissions.remove(new IdPermissionPair<>(adminId, permission));
+        serverAdminPermissions.remove(new IdPermissionPair(adminId, permission));
         // Hack: somewhere along the line, the values of newPermissions get changed to Strings instead of PermissionTypes.
         // This causes casting errors unless they are all turned back into PermissionTypes.
         // However, adding the first admin works correctly, so we need to check it.
@@ -107,7 +107,7 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
                 fixedNewPermissions.put(PermissionType.valueOf(permissionType), newPermissions.getPermissions().get(permissionType));
             }
         }
-        serverAdminPermissions.add(new IdPermissionPair<>(adminId, fixedNewPermissions));
+        serverAdminPermissions.add(new IdPermissionPair(adminId, fixedNewPermissions));
         try {
             saveAdminPermissionList();
         } catch (IOException e) {
@@ -125,23 +125,23 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     }
 
     public void addAdmin(String id) {
-        serverAdminPermissions.add(new IdPermissionPair<>(id, generatePermissionMap(false)));
+        serverAdminPermissions.add(new IdPermissionPair(id, generatePermissionMap(false)));
         onListChanged.run();
     }
 
     public void removeAdmin(String id) {
-        for (IdPermissionPair<String, Map<PermissionType, Boolean>> adminPermission : serverAdminPermissions) {
+        for (IdPermissionPair adminPermission : serverAdminPermissions) {
             if (adminPermission.getId().equals(id)) {
                 serverAdminPermissions.remove(adminPermission);
             }
         }
-        IdPermissionPair<String, Map<PermissionType, Boolean>> adminPermission = new IdPermissionPair<>(id, getPermissionsOfAdmin(id));
+        IdPermissionPair adminPermission = new IdPermissionPair(id, getPermissionsOfAdmin(id));
         serverAdminPermissions.remove(adminPermission);
         onListChanged.run();
     }
 
     public Map<PermissionType, Boolean> getPermissionsOfAdmin(String id) {
-        for (IdPermissionPair<String, Map<PermissionType, Boolean>> adminPermission : serverAdminPermissions) {
+        for (IdPermissionPair adminPermission : serverAdminPermissions) {
             if (adminPermission.getId().equals(id)) {
                 return adminPermission.getPermissions();
             }
@@ -151,14 +151,14 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
 
     @SuppressWarnings("unchecked")
     public void loadAdminPermissionList() {
-        Set<IdPermissionPair<String, Map<PermissionType, Boolean>>> newValue;
+        Set<IdPermissionPair> newValue;
         try {
             newValue = GSON.fromJson(Files.newBufferedReader(adminPermissionsFilePath), typeOfServerAdminPermissions);
         } catch (IOException ex) {
             logger.warn("Failed to load the admin permissions list, resetting all permissions to false!");
             newValue = new HashSet<>();
             for (String adminId : ServerAdminsManager.getInstance().getAdminIds()) {
-                newValue.add(new IdPermissionPair<>(adminId, generatePermissionMap(false)));
+                newValue.add(new IdPermissionPair(adminId, generatePermissionMap(false)));
             }
         }
         setServerAdminPermissions(newValue);
@@ -174,11 +174,11 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
         onListChanged = callback;
     }
 
-    public Set<IdPermissionPair<String, Map<PermissionType, Boolean>>> getAdminPermissions() {
+    public Set<IdPermissionPair> getAdminPermissions() {
         return serverAdminPermissions;
     }
 
-    private void setServerAdminPermissions(Set<IdPermissionPair<String, Map<PermissionType, Boolean>>> permissions) {
+    private void setServerAdminPermissions(Set<IdPermissionPair> permissions) {
         serverAdminPermissions = Collections.synchronizedSet(permissions);
     }
 

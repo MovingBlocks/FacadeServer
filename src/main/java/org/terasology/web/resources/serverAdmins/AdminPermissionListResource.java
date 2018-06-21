@@ -22,9 +22,7 @@ import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
 import org.terasology.web.serverAdminManagement.IdPermissionPair;
-import org.terasology.web.serverAdminManagement.PermissionType;
 
-import java.util.Map;
 import java.util.Set;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
@@ -39,7 +37,7 @@ public class AdminPermissionListResource extends AbstractSimpleResource {
     }
 
     @Override
-    protected ResourceMethod<Void, Set<IdPermissionPair<String, Map<PermissionType, Boolean>>>> getGetMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod<Void, Set<IdPermissionPair>> getGetMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> AdminPermissionManager.getInstance().getAdminPermissions());
     }

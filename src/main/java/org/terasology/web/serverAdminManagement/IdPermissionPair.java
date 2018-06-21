@@ -15,28 +15,28 @@
  */
 package org.terasology.web.serverAdminManagement;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
  * This class is a simple container that follows the pair pattern.
- * @param <T> the first part of the pair.
- * @param <U> the second part of the pair.
  */
-public class IdPermissionPair<T, U> {
+public class IdPermissionPair {
 
-    private T id;
-    private U permissions;
+    private String id;
 
-    public IdPermissionPair(T id, U permissions) {
+    private Map<PermissionType, Boolean> permissions;
+
+    public IdPermissionPair(String id, Map<PermissionType, Boolean> permissions) {
         this.id = id;
         this.permissions = permissions;
     }
 
-    public T getId() {
+    public String getId() {
         return id;
     }
 
-    public U getPermissions() {
+    public Map<PermissionType, Boolean> getPermissions() {
         return permissions;
     }
 
@@ -49,7 +49,7 @@ public class IdPermissionPair<T, U> {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        IdPermissionPair<?, ?> that = (IdPermissionPair<?, ?>) o;
+        IdPermissionPair that = (IdPermissionPair) o;
         return Objects.equals(id, that.id) && Objects.equals(permissions, that.permissions);
     }
 
