@@ -15,13 +15,13 @@
  */
 package org.terasology.web.resources.serverAdmins;
 
-import javafx.util.Pair;
 import org.terasology.web.resources.DefaultComponentSystem;
 import org.terasology.web.resources.base.AbstractItemCollectionResource;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.serverAdminManagement.IdPermissionPair;
 import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.util.Map;
@@ -41,15 +41,15 @@ public class AdminPermissionResource extends AbstractItemCollectionResource impl
     }
 
     @Override
-    protected ResourceMethod<Void, Pair<String, Map<PermissionType, Boolean>>> getGetCollectionMethod() throws ResourceAccessException {
+    protected ResourceMethod<Void, IdPermissionPair<String, Map<PermissionType, Boolean>>> getGetCollectionMethod() throws ResourceAccessException {
         return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
-                (data, client) -> AdminPermissionManager.getInstance().getPermissionsOfAdmin(adminID));
+                (data, client) -> new IdPermissionPair<>(adminID, AdminPermissionManager.getInstance().getPermissionsOfAdmin(adminID)));
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    protected ResourceMethod<Pair, Void> getPatchCollectionMethod() throws ResourceAccessException {
-        return createVoidParameterlessMethod(ClientSecurityRequirements.requireAdminPermission(PermissionType.ADMIN_MANAGEMENT), Pair.class,
+    protected ResourceMethod<IdPermissionPair, Void> getPatchCollectionMethod() throws ResourceAccessException {
+        return createVoidParameterlessMethod(ClientSecurityRequirements.requireAdminPermission(PermissionType.ADMIN_MANAGEMENT), IdPermissionPair.class,
                 (data, client) -> AdminPermissionManager.getInstance().setAdminPermissions(adminID, data));
     }
 

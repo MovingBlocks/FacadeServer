@@ -32,7 +32,7 @@ public interface HeadlessClient extends Client {
 
     default ClientSecurityInfo getSecurityInfo() {
         return new ClientSecurityInfo(!isAnonymous(), ServerAdminsManager.getInstance().clientHasAdminPermissions(getId()),
-                AdminPermissionManager.getInstance().getOwnedPermissions(getId()));
+                AdminPermissionManager.getInstance().getPermissionsOfAdmin(getId()));
     }
 
     @Override
