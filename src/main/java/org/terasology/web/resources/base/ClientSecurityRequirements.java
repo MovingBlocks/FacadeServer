@@ -16,6 +16,7 @@
 package org.terasology.web.resources.base;
 
 import org.terasology.web.client.ClientSecurityInfo;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 public final class ClientSecurityRequirements {
 
@@ -26,14 +27,26 @@ public final class ClientSecurityRequirements {
 
     private boolean requireAuthentication;
     private boolean requireAdminPermission;
+    private PermissionType requiredPermission;
 
     private ClientSecurityRequirements(boolean requireAuthentication, boolean requireAdminPermission) {
         this.requireAuthentication = requireAuthentication;
         this.requireAdminPermission = requireAdminPermission;
     }
 
+    private ClientSecurityRequirements(boolean requireAuthentication, boolean requireAdminPermission, PermissionType requiredPermission) {
+        this.requireAuthentication = requireAuthentication;
+        this.requireAdminPermission = requireAdminPermission;
+        this.requiredPermission = requiredPermission;
+    }
+
+    public static ClientSecurityRequirements requireAdminPermission(PermissionType permissionType) {
+        return new ClientSecurityRequirements(false, true, permissionType);
+    }
+
     public boolean clientIsAllowed(ClientSecurityInfo client) {
         return !((requireAuthentication && !client.isAuthenticated())
-                || (requireAdminPermission && !client.hasAdminPermission()));
+                || (requireAdminPermission && !client.isAdmin())
+                || (requiredPermission != null && !client.ownsPermission(requiredPermission)));
     }
 }

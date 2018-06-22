@@ -27,6 +27,7 @@ import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethodImpl;
+import org.terasology.web.serverAdminManagement.PermissionType;
 import org.terasology.world.internal.WorldInfo;
 import org.terasology.world.time.WorldTime;
 
@@ -43,7 +44,7 @@ public class NewGameMethod extends ResourceMethodImpl<NewGameMetadata, Void> {
     private DependencyResolver dependencyResolver;
 
     public NewGameMethod(PathManager pathManager, DependencyResolver dependencyResolver) {
-        super(NewGameMetadata.class, ClientSecurityRequirements.REQUIRE_ADMIN, null);
+        super(NewGameMetadata.class, ClientSecurityRequirements.requireAdminPermission(PermissionType.CREATE_BACKUP_RENAME_GAMES), null);
         this.pathManager = pathManager;
         this.dependencyResolver = dependencyResolver;
     }

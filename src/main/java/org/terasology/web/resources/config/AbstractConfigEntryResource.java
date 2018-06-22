@@ -22,6 +22,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
@@ -38,7 +39,7 @@ public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResou
 
     @Override
     protected ResourceMethod<T, Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, getDataType(), (data, client) -> {
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.requireAdminPermission(PermissionType.CHANGE_SETTINGS), getDataType(), (data, client) -> {
             set(config, data);
             config.save();
             notifyChangedForAllClients();

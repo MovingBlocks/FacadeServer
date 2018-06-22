@@ -42,9 +42,11 @@ import org.terasology.web.resources.games.GamesResource;
 import org.terasology.web.resources.modules.AvailableModulesResource;
 import org.terasology.web.resources.modules.ModuleInstallerResource;
 import org.terasology.web.resources.onlinePlayers.OnlinePlayersResource;
+import org.terasology.web.resources.serverAdmins.AdminPermissionListResource;
 import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
 import org.terasology.web.resources.systemStatus.SystemResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -94,9 +96,11 @@ public final class ResourceManager implements ResourceObserver {
                         .addSubResource("MOTD", new ServerMotdResource())
                         .build())
                 .addSubResource("serverAdmins", new ServerAdminsResource())
+                .addSubResource("serverAdminPermissions", new AdminPermissionListResource())
                 .addSubResource("system", systemResource)
                 .build();
         systemResource.startSystemInfoRefreshService();
+        InjectionHelper.inject(AdminPermissionManager.getInstance(), context);
         rootResource.setObserver(this);
         additionalResourcesToUpdate = new HashMap<>();
         // when /modules/installer changes, also update /modules/available and /worldGenerators
