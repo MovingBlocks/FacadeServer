@@ -66,6 +66,13 @@ dependencies {
     testCompile group: 'org.mockito', name: 'mockito-core', version: '2.7.22'
 }
 
+jar {
+    manifest {
+        attributes('Main-Class': mainClassName)
+        attributes('Class-Path': configurations.runtime.collect { it.getName() }.join(' '))
+    }
+}
+
 // Copied from PC facade
 // By delaying this task to doLast (the << bit) we don't get the headless server dir set up unless actually wanting it
 // TODO: This is not the Gradle Way. Needs more declared output-fu to determine up-to-date instead of the if
