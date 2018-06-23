@@ -15,22 +15,24 @@
  */
 package org.terasology.web.resources.worldMap;
 
-import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.registry.In;
 import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
-import org.terasology.world.generator.internal.WorldGeneratorInfo;
-
-import java.util.List;
+import org.terasology.world.WorldProvider;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
 public class WorldMapResource extends AbstractSimpleResource {
 
+    @In
+    private WorldProvider worldProvider;
+
     @Override
-    protected ResourceMethod<Void, List<WorldGeneratorInfo>> getGetMethod(ResourcePath path) throws ResourceAccessException {
+    protected ResourceMethod<Void, WorldMapMetadata> getGetMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
-                (data, client) -> null);
+                (data, client) -> new WorldMapMetadata(worldProvider));
     }
 }
