@@ -17,7 +17,6 @@ package org.terasology.web.resources;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.assets.management.AssetManager;
 import org.terasology.context.Context;
 import org.terasology.engine.ComponentSystemManager;
 import org.terasology.engine.TerasologyEngine;
@@ -46,7 +45,6 @@ import org.terasology.web.resources.onlinePlayers.OnlinePlayersResource;
 import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
 import org.terasology.web.resources.systemStatus.SystemResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
-import org.terasology.web.resources.worldMap.WorldMapMetadata;
 import org.terasology.web.resources.worldMap.WorldMapResource;
 
 import java.util.Arrays;
