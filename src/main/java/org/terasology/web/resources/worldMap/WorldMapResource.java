@@ -35,4 +35,10 @@ public class WorldMapResource extends AbstractSimpleResource {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
                 (data, client) -> new WorldMapMetadata(worldProvider));
     }
+
+    @Override
+    protected ResourceMethod<WorldMapInput, WorldMapMetadata> getPutMethod(ResourcePath path) throws ResourceAccessException {
+        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, WorldMapInput.class,
+                (data, client) -> new WorldMapMetadata(worldProvider, data.getCenter(), data.getMapBlockWidth(), data.getMapBlockLength()));
+    }
 }
