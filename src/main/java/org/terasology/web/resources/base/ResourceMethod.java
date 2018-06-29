@@ -20,8 +20,8 @@ import org.terasology.web.client.ClientSecurityInfo;
 
 /**
  * Interface used to perform a resource request.
- * @param <INTYPE> the parameter received from the client, used for serialization.
- * @param <OUTTYPE> the parameter given to the client, used for deserialization.
+ * @param <INTYPE> the parameter received from the client, used for deserialization.
+ * @param <OUTTYPE> the parameter given to the client, used for serialization.
  */
 public interface ResourceMethod<INTYPE, OUTTYPE> {
 

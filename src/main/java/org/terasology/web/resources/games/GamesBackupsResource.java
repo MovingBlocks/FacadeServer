@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
 /**
- * {@link org.terasology.web.resources.base.ResourceMethod} used for backing up games.
+ * {@link org.terasology.web.resources.base.Resource} used for backing up games.
  */
 public class GamesBackupsResource extends AbstractSimpleResource {
 

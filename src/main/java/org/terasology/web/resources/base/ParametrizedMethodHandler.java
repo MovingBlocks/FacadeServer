@@ -21,7 +21,7 @@ import org.terasology.network.Client;
  * Method handler for {@link ResourceMethodFactory} which is used for resources where the client needs to
  * give extra parameters to the server for execution. Currently unused.
  * @param <INTYPE> the type of data sent to the server from the client through the {@link ResourceMethod}.
- * @param <OUTTYPE> the type of data received from server by the {@link ResourceMethod} after executing.
+ * @param <OUTTYPE> the type of data sent from the server to the client by the {@link ResourceMethod} after executing.
  */
 @FunctionalInterface
 public interface ParametrizedMethodHandler<INTYPE, OUTTYPE> {
