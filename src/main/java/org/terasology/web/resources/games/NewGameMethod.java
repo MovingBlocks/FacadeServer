@@ -38,6 +38,9 @@ import java.nio.file.Path;
 import static org.terasology.web.resources.InputCheckUtils.checkNotNull;
 import static org.terasology.web.resources.InputCheckUtils.checkNotNullOrEmpty;
 
+/**
+ * {@link org.terasology.web.resources.base.ResourceMethod} used for creating new games.
+ */
 public class NewGameMethod extends ResourceMethodImpl<NewGameMetadata, Void> {
 
     private PathManager pathManager;

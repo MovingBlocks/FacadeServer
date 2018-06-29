@@ -28,6 +28,9 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * {@link org.terasology.web.resources.base.ResourceMethod} used for deleting games.
+ */
 public class DeleteGameMethod extends ResourceMethodImpl<Void, Void> {
 
     private PathManager pathManager;

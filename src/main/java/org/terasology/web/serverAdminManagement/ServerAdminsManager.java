@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,6 +29,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This class loads, adds, and removes admins by changing the serverAdmins.json file.
+ * As a special case, when no admins are on the list, the first client to connect is given admin permissions.
+ */
 public final class ServerAdminsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerAdminsManager.class);
@@ -88,6 +92,10 @@ public final class ServerAdminsManager {
         return isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId);
     }
 
+    /**
+     * Determine if anyone can become an admin simply by joining the game.
+     * @return whether the admin list is empty or not.
+     */
     public boolean isAnonymousAdminAccessEnabled() {
         return serverAdminIds.isEmpty();
     }
@@ -118,6 +126,10 @@ public final class ServerAdminsManager {
         return Collections.unmodifiableSet(serverAdminIds);
     }
 
+    /**
+     * Add the first admin if none are currently set.
+     * @param id the client id of the new admin
+     */
     public void addFirstAdminIfNecessary(String id) {
         if (isAnonymousAdminAccessEnabled()) {
             addAdmin(id);

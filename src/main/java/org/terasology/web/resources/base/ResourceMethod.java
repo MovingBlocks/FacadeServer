@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,11 +18,32 @@ package org.terasology.web.resources.base;
 import org.terasology.network.Client;
 import org.terasology.web.client.ClientSecurityInfo;
 
+/**
+ * Interface used to perform a resource request.
+ * @param <INTYPE> the parameter received from the client, used for deserialization.
+ * @param <OUTTYPE> the parameter given to the client, used for serialization.
+ */
 public interface ResourceMethod<INTYPE, OUTTYPE> {
 
+    /**
+     * Get the type of INTYPE.
+     * @return the type of INTYPE.
+     */
     Class<INTYPE> getInType();
 
+    /**
+     * Determine if the client has sufficient permission to execute the method.
+     * @param securityInfo the client requesting the command's security permissions.
+     * @return whether the client has the permissions required.
+     */
     boolean clientIsAllowed(ClientSecurityInfo securityInfo);
 
+    /**
+     * Perform the HTTP request for the client.
+     * @param data the data sent to the server (if any).
+     * @param client the client that performed the request.
+     * @return the data requested by the client.
+     * @throws ResourceAccessException the specified resource cannot be retrieved.
+     */
     OUTTYPE perform(INTYPE data, Client client) throws ResourceAccessException;
 }

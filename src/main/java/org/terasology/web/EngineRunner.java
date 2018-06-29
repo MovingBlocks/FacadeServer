@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -33,6 +33,9 @@ import org.terasology.web.io.JsonSession;
 import org.terasology.web.resources.ResourceManager;
 import org.terasology.web.serverAdminManagement.ServerAdminListUpdaterSystem;
 
+/**
+ * This class starts and runs the engine, similarly to the PC facade's Terasology class.
+ */
 public final class EngineRunner {
 
     private static final EngineRunner INSTANCE = new EngineRunner();

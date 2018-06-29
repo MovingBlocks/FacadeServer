@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ import java.util.stream.Collectors;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
+/**
+ * This resource is used to access the in-game console and send commands to it.
+ */
 @RegisterSystem
 public class ConsoleResource extends AbstractSimpleResource implements DefaultComponentSystem {
 

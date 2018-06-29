@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,6 +25,9 @@ import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.world.chunks.Chunk;
 
+/**
+ * Interface for clients attempting to access resources or connect to the web interface frontend.
+ */
 public interface HeadlessClient extends Client {
 
     void connect(EntityManager entityManager);

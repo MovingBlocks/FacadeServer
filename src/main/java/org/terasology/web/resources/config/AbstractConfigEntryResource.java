@@ -27,6 +27,10 @@ import org.terasology.web.serverAdminManagement.PermissionType;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * This {@link org.terasology.web.resources.base.Resource} provides methods common to all simple config settings.
+ * @param <T> the type to be sent to or received by the server.
+ */
 public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResource {
 
     @In

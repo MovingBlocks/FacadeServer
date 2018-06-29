@@ -18,6 +18,9 @@ package org.terasology.web.resources.base;
 import org.terasology.web.client.ClientSecurityInfo;
 import org.terasology.web.serverAdminManagement.PermissionType;
 
+/**
+ * This class contains information on the security requirements of a resource, and checks if the client can access it.
+ */
 public final class ClientSecurityRequirements {
 
     public static final ClientSecurityRequirements PUBLIC = new ClientSecurityRequirements(false, false);

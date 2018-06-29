@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -18,6 +18,9 @@ package org.terasology.web.client;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.web.EngineRunner;
 
+/**
+ * This factory is used to generate instances of headless clients
+ */
 public class HeadlessClientFactory {
 
     private final EntityManager entityManager;

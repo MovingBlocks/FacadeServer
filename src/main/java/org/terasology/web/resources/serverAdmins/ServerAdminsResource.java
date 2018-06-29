@@ -28,6 +28,9 @@ import java.util.Set;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * Resource class used to get a list of server admins.
+ */
 public class ServerAdminsResource extends AbstractItemCollectionResource {
 
     public ServerAdminsResource() {

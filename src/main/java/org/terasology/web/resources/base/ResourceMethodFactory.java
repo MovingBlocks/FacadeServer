@@ -19,6 +19,9 @@ import org.terasology.network.Client;
 import org.terasology.web.ThrowingRunnable;
 import org.terasology.web.client.ClientSecurityInfo;
 
+/**
+ * This factory is used to make {@link ResourceMethod}s for {@link Resource} classes.
+ */
 public final class ResourceMethodFactory {
 
     private ResourceMethodFactory() {
@@ -37,12 +40,26 @@ public final class ResourceMethodFactory {
         return new ResourceMethodImpl<>(inType, securityRequirements, (data, client) -> handler.perform(data, parameter, client));
     }
 
+    /**
+     * Create a {@link ResourceMethod} with a parameterless handler.
+     * @param securityRequirements the security requirements of the method.
+     * @param inType the type of
+     * @param handler
+     * @param <INTYPE>
+     * @param <OUTTYPE>
+     * @return the {@link ResourceMethod} for the given method of the resource.
+     * @throws ResourceAccessException
+     */
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParameterlessMethod(
             ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
             ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {
         return new ResourceMethodImpl<>(inType, securityRequirements, handler);
     }
 
+    /**
+     * Create a {@link ResourceMethod} with a parameterless handler while checking that the path to the resource is valid.
+     * @param path the resource's path.
+     */
     public static <INTYPE, OUTTYPE> ResourceMethod<INTYPE, OUTTYPE> createParameterlessMethod(
             ResourcePath path, ClientSecurityRequirements securityRequirements, Class<INTYPE> inType,
             ParameterlessMethodHandler<INTYPE, OUTTYPE> handler) throws ResourceAccessException {

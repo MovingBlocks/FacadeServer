@@ -20,6 +20,9 @@ import org.terasology.naming.Name;
 
 import java.util.List;
 
+/**
+ * Metadata class used in creating and renaming games.
+ */
 public class NewGameMetadata {
 
     private String gameName;

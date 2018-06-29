@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,8 +56,9 @@ import org.terasology.web.servlet.HttpAPIServlet;
 import org.terasology.web.servlet.LogServlet;
 import org.terasology.web.servlet.WsConnectionServlet;
 
-
 /**
+ * Main class from which the server facade is started.
+ * It defines command-line usage, starts the Jetty server, and establishes connections.
  */
 public final class ServerMain {
 
@@ -165,6 +166,15 @@ public final class ServerMain {
         LoggingContext.initialize(path);
     }
 
+    /**
+     * Create a Jetty server with the appropriate configurations.
+     * @param httpPort port for http connections (default 8080).
+     * @param httpsPort port for https connections (default 8443).
+     * @param keystorePassword password for keystore used in https connections (default ServerKeyPassword).
+     * @param annotatedObjects servlets used by the server.
+     * @return A properly configured jetty server.
+     * @throws Exception an error occurred in setting up the server
+     */
     private static Server createServer(int httpPort, int httpsPort, String keystorePassword, Object... annotatedObjects) throws Exception {
         Server server = new Server(httpPort);
 

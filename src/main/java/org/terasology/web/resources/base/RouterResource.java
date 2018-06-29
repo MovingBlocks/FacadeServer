@@ -23,6 +23,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Consumer;
 
+/**
+ * Resource class that acts as an entry resource for building other resources.
+ */
 public final class RouterResource implements Resource {
 
     private final Resource rootResource;
@@ -72,6 +75,9 @@ public final class RouterResource implements Resource {
         }
     }
 
+    /**
+     * Empty resource class intended to be used as a placeholder for empty resources.
+     */
     private static final class NullResource extends AbstractObservableResource {
 
         private static final NullResource INSTANCE = new NullResource();
@@ -109,6 +115,9 @@ public final class RouterResource implements Resource {
         }
     }
 
+    /**
+     * Builder for the router resource.
+     */
     public static final class Builder {
 
         private final RouterResource result;

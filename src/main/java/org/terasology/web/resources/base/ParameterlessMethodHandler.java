@@ -17,6 +17,12 @@ package org.terasology.web.resources.base;
 
 import org.terasology.network.Client;
 
+/**
+ * Method handler for {@link ResourceMethodFactory} which is used for resources where the client needs to get
+ * data from the server after the {@link ResourceMethod} finishes executing. Used in GET methods.
+ * @param <INTYPE> the type of data sent to the server from the client through the {@link ResourceMethod}.
+ * @param <OUTTYPE> the type of data sent from the server to the client by the {@link ResourceMethod} after executing.
+ */
 @FunctionalInterface
 public interface ParameterlessMethodHandler<INTYPE, OUTTYPE> {
 

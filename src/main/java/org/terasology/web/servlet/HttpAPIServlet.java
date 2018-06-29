@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,6 +39,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
+/**
+ * Servlet used to expose the REST API over http.
+ */
 @Path("api")
 public class HttpAPIServlet {
 
@@ -98,6 +101,11 @@ public class HttpAPIServlet {
         return session.finishAuthentication(data);
     }
 
+    /**
+     * End an http session by logging out of it.
+     * @param request http request containing information on the session.
+     * @return result that tells caller to end the session.
+     */
     @DELETE
     @Path("auth")
     @Produces(MediaType.APPLICATION_JSON)

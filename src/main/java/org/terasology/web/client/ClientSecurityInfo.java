@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@ import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.util.Map;
 
+/**
+ * This class contains information on whether a client is authenticated or has admin permission.
+ * All clients connecting to the server facade use this.
+ */
 public class ClientSecurityInfo {
 
     private boolean isAuthenticated;

@@ -54,6 +54,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 
+/**
+ * Handles the JSON data that goes across the REST API and manages client connections.
+ */
 public class JsonSession {
 
     private static final Gson GSON = new GsonBuilder()

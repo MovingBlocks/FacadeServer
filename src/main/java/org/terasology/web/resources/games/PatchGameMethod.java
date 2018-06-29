@@ -31,6 +31,9 @@ import java.nio.file.Path;
 import static org.terasology.web.resources.InputCheckUtils.checkNotNullOrEmpty;
 import static org.terasology.web.resources.InputCheckUtils.checkNull;
 
+/**
+ * {@link org.terasology.web.resources.base.ResourceMethod} used for renaming games.
+ */
 public class PatchGameMethod extends ResourceMethodImpl<NewGameMetadata, Void> {
 
     private PathManager pathManager;
