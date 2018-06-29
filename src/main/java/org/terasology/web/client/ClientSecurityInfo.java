@@ -15,6 +15,10 @@
  */
 package org.terasology.web.client;
 
+import org.terasology.web.serverAdminManagement.PermissionType;
+
+import java.util.Map;
+
 /**
  * This class contains information on whether a client is authenticated or has admin permission.
  * All clients connecting to the server facade use this.
@@ -22,18 +26,24 @@ package org.terasology.web.client;
 public class ClientSecurityInfo {
 
     private boolean isAuthenticated;
-    private boolean hasAdminPermission;
+    private boolean isAdmin;
+    private Map<PermissionType, Boolean> clientPermissions;
 
-    public ClientSecurityInfo(boolean isAuthenticated, boolean hasAdminPermission) {
+    public ClientSecurityInfo(boolean isAuthenticated, boolean isAdmin, Map<PermissionType, Boolean> clientPermissions) {
         this.isAuthenticated = isAuthenticated;
-        this.hasAdminPermission = hasAdminPermission;
+        this.isAdmin = isAdmin;
+        this.clientPermissions = clientPermissions;
     }
 
     public boolean isAuthenticated() {
         return isAuthenticated;
     }
 
-    public boolean hasAdminPermission() {
-        return hasAdminPermission;
+    public boolean isAdmin() {
+        return isAdmin;
+    }
+
+    public boolean ownsPermission(PermissionType permissionType) {
+        return clientPermissions.get(permissionType);
     }
 }

@@ -173,6 +173,65 @@
           }
         }
       },
+      "IdPermissionPair": {
+        "description": "Contains information on the permissions of an admin.",
+        "properties": {
+          "id": {
+            "type": "string",
+            "description": "The id of the client."
+          },
+          "permissions": {
+            "type": "object",
+            "description": "Permissions of the client.",
+            "properties": {
+              "NO_PERMISSION": {
+                "type": "boolean",
+                "description": "Dummy permission for use in the backend."
+              },
+              "CONSOLE_CHEAT": {
+                "type": "boolean",
+                "description": "Whether or not the client can perform console cheat commands."
+              },
+              "CONSOLE_USER_MANAGEMENT": {
+                "type": "boolean",
+                "description": "Whether or not the client can perform console user management commands."
+              },
+              "CONSOLE_SERVER_MANAGEMENT": {
+                "type": "boolean",
+                "description": "Whether or not the client can perform console server management commands."
+              },
+              "CONSOLE_DEBUG": {
+                "type": "boolean",
+                "description": "Whether or not the client can perform console debug commands."
+              },
+              "INSTALL_MODULES": {
+                "type": "boolean",
+                "description": "Whether or not the client can install modules."
+              },
+              "CREATE_BACKUP_RENAME_GAMES": {
+                "type": "boolean",
+                "description": "Whether or not the client can create, backup, or rename games."
+              },
+              "DELETE_GAMES": {
+                "type": "boolean",
+                "description": "Whether or not the client can delete games."
+              },
+              "START_STOP_GAMES": {
+                "type": "boolean",
+                "description": "Whether or not the client can start or stop games."
+              },
+              "CHANGE_SETTINGS": {
+                "type": "boolean",
+                "description": "Whether or not the client can change server settings."
+              },
+              "ADMIN_MANAGEMENT": {
+                "type": "boolean",
+                "description": "Whether or not the client can add, remove, or modify permissions of admins."
+              }
+            }
+          }
+        }
+      },
       "SystemMetadata": {
         "description": "Contains information on the machine running the server.",
         "properties": {
@@ -208,7 +267,7 @@
         "description": "No game with the specified title exists on this server."
       },
       "ForbiddenNotAdmin": {
-        "description": "The client is not allowed to access this resource because it hasn't server administration privileges."
+        "description": "The client is not allowed to access this resource because it doesn't have server administration privileges."
       },
       "ForbiddenNotAuthenticated": {
         "description": "The client is not allowed to access this resource because it's not authenticated."
@@ -910,6 +969,73 @@
         }
       }
     },
+    "/resources/serverAdmins/{clientId}/permissions": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Session-Token"
+        },
+        {
+          "in": "path",
+          "name": "clientId",
+          "required": true,
+          "schema": {
+            "type": "string"
+          },
+          "description": "ID of the client to get or change the permissions of."
+        }
+      ],
+      "get": {
+        "summary": "Returns the specified client ID's administrator permissions.",
+        "responses": {
+          "200": {
+            "description": "The permissions of the client ID.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/IdPermissionPair"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "summary": "Changes the administrator permissions of the client.",
+        "responses": {
+          "200": {
+            "description": "The specified client ID's permissions have been changed."
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenNotAdmin"
+          }
+        }
+      }
+    },
+    "/resources/serverAdminPermissions": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Session-Token"
+        }
+      ],
+      "get": {
+        "summary": "Returns a list of all admin ids on the server and their permissions.",
+        "responses": {
+          "200": {
+            "description": "A list of all admin permissions with their ids.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/IdPermissionPair"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/resources/system": {
       "parameters": [
         {
@@ -917,7 +1043,7 @@
         }
       ],
       "get": {
-        "summary": "Gets information on the system running the server.",
+        "summary": "Returns information on the system running the server.",
         "responses": {
           "200": {
             "description": "System status, including the cpu usage, memory usage, system uptime, and jvm memory usage.",
