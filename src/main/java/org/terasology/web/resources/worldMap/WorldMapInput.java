@@ -22,6 +22,7 @@ public class WorldMapInput {
     private Vector3i center;
     private int mapBlockWidth;
     private int mapBlockLength;
+    private boolean surface;
 
     public Vector3i getCenter() {
         return center;
@@ -33,5 +34,9 @@ public class WorldMapInput {
 
     public int getMapBlockLength() {
         return mapBlockLength;
+    }
+
+    public boolean isSurface() {
+        return surface;
     }
 }

@@ -35,50 +35,43 @@ public final class WorldMapMetadata {
 
     private transient WorldProvider worldProvider;
     private transient Logger logger = LoggerFactory.getLogger(WorldMapMetadata.class);
-    private Vector3i topLeft;
+    private transient boolean isSurface;
+    private Vector3i center;
     private List<List<String>> blocks;
     private Map<String, String> blockLut;
     private int mapBlockWidth;
     private int mapBlockLength;
 
-    // TODO remove test constructor
-    WorldMapMetadata(WorldProvider worldProvider) {
-        topLeft = new Vector3i(-16, 35, -16);
-        mapBlockWidth = 32;
-        mapBlockLength = 32;
-        this.worldProvider = worldProvider;
-        blocks = new ArrayList<>(mapBlockWidth);
-        for (int i = 0; i < mapBlockWidth; i++) {
-            blocks.add(i, new ArrayList<>(mapBlockLength));
-        }
-        blockLut = new HashMap<>();
-        this.getWorldMapData();
-    }
-
-    WorldMapMetadata(WorldProvider worldProvider, Vector3i topLeft, int mapBlockWidth, int mapBlockLength) {
-        this.topLeft = topLeft;
+    WorldMapMetadata(WorldProvider worldProvider, Vector3i center, int mapBlockWidth, int mapBlockLength, boolean isSurface) {
+        this.isSurface = isSurface;
+        this.center = center;
         this.mapBlockWidth = mapBlockWidth;
         this.mapBlockLength = mapBlockLength;
         this.worldProvider = worldProvider;
-        blocks = new ArrayList<>();
-        blockLut = new HashMap<>();
+        this.blocks = new ArrayList<>(mapBlockWidth);
+        for (int i = 0; i < mapBlockWidth; i++) {
+            blocks.add(i, new ArrayList<>(mapBlockLength));
+        }
+        this.blockLut = new HashMap<>();
         this.getWorldMapData();
     }
 
     private void getWorldMapData() {
-        for (int x = topLeft.getX(); x < mapBlockWidth + topLeft.getX(); ++x) {
-            for (int z = topLeft.getZ(); z < mapBlockLength + topLeft.getZ(); ++z) {
-                Block block = worldProvider.getBlock(x, topLeft.getY(), z);
+        int y = 40;
+        for (int x = (int) Math.floor((double) center.getX() - mapBlockWidth / 2); x < (int) Math.ceil((double) mapBlockWidth / 2 + center.getX()); ++x) {
+            for (int z = (int) Math.floor((double) center.getZ() - mapBlockLength / 2); z < (int) Math.ceil((double) mapBlockLength / 2 + center.getZ()); ++z) {
+                y = isSurface ? getSurfaceY(x, y, z) : center.getY();
+                Block block = worldProvider.getBlock(x, y, z);
                 ResourceUrn blockUrn = block.getURI().getBlockFamilyDefinitionUrn();
                 if (blockLut.get(blockUrn.toString()) == null) {
                     if (Assets.get(blockUrn, BlockTile.class).isPresent()) {
                         BufferedImage blockImage = Assets.get(blockUrn, BlockTile.class).get().getImage();
                         blockLut.put(blockUrn.toString(), Integer.toHexString(getAverageRGB(blockImage)));
                     } else {
-                        logger.error("unable to get the texture for block " + blockUrn.toString());
+                        logger.info("unable to get the texture for block " + blockUrn.toString());
                     }
                 }
-                blocks.get(x - topLeft.getX()).add(z - topLeft.getZ(), blockUrn.toString());
+                blocks.get(x - center.getX() + mapBlockWidth / 2).add(z - center.getZ() + mapBlockLength / 2, blockUrn.toString());
             }
         }
     }
@@ -101,5 +94,28 @@ public final class WorldMapMetadata {
         b /= imageSize;
         // get rid of the alpha because it is always 255
         return new Color(r, g, b).getRGB() & 0x00FFFFFF;
+    }
+
+    //This method is heavily inspired by the renderCell method of the MinimapGrid class in the Minimap module.
+    private int getSurfaceY(int x, int yEstimate, int z) {
+        int y = yEstimate;
+        Block block = worldProvider.getBlock(x, yEstimate, z);
+        if (isIgnoredByMinimap(block)) {
+            while (isIgnoredByMinimap(block)) {
+                --y;
+                block = worldProvider.getBlock(x, y, z);
+            }
+        } else {
+            while (!isIgnoredByMinimap(block)) {
+                ++y;
+                block = worldProvider.getBlock(x, y, z);
+            }
+            --y;
+        }
+        return y;
+    }
+
+    private static boolean isIgnoredByMinimap(Block block) {
+        return block.isPenetrable() && !block.isWater();
     }
 }
