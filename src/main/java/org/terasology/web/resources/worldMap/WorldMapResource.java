@@ -18,6 +18,9 @@ package org.terasology.web.resources.worldMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.assets.ResourceUrn;
+import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.registry.In;
@@ -27,9 +30,12 @@ import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.world.RelevanceRegionComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.tiles.BlockTile;
+import org.terasology.world.chunks.ChunkConstants;
+import org.terasology.world.chunks.ChunkProvider;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
@@ -40,6 +46,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.locks.Condition;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
@@ -50,14 +60,17 @@ public class WorldMapResource extends AbstractSimpleResource {
     @In
     private WorldProvider worldProvider;
 
+    @In
+    private EntityManager entityManager;
+
     // TODO: reimplement this as a GET request with parameters
     @Override
     protected ResourceMethod<WorldMapInput, String> getPutMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, WorldMapInput.class,
-                (data, client) -> getWorldMapBase64ImageString(data.getCenter(), data.getMapBlockWidth(), data.getMapBlockLength(), data.isSurface()));
+                (data, client) -> getWorldMapBase64ImageString(data.getCenter(), data.getMapBlockWidth(), data.getMapBlockLength(), data.isSurface(), client.getEntity()));
     }
 
-    private String getWorldMapBase64ImageString(Vector3i center, int mapBlockWidth, int mapBlockLength, boolean isSurface) {
+    private String getWorldMapBase64ImageString(Vector3i center, int mapBlockWidth, int mapBlockLength, boolean isSurface, EntityRef clientEntity) {
         final int colorSizeMultiplier = mapBlockWidth * mapBlockLength <= 125 * 125 ? 60 : 30;
         int blockY = 40;
         List<List<Color>> colors = new ArrayList<>(mapBlockWidth);
@@ -65,8 +78,20 @@ public class WorldMapResource extends AbstractSimpleResource {
             colors.add(i, new ArrayList<>(mapBlockLength));
         }
 
+
+        loadChunks(center, mapBlockWidth, mapBlockLength);
+
         for (int x = (int) Math.floor((double) center.getX() - mapBlockWidth / 2); x < (int) Math.ceil((double) mapBlockWidth / 2 + center.getX()); ++x) {
             for (int z = (int) Math.floor((double) center.getZ() - mapBlockLength / 2); z < (int) Math.ceil((double) mapBlockLength / 2 + center.getZ()); ++z) {
+                /*synchronized (this) {
+                    while (worldProvider.getBlock(x, blockY, z).getURI().toString().equals("engine:unloaded")) {
+                        try {
+                            wait(1000);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }*/
                 blockY = isSurface ? getSurfaceY(x, blockY, z) : center.getY();
                 Block block = worldProvider.getBlock(x, blockY, z);
                 ResourceUrn blockUrn = block.getURI().getBlockFamilyDefinitionUrn();
@@ -133,17 +158,25 @@ public class WorldMapResource extends AbstractSimpleResource {
 
     //This method is heavily inspired by the renderCell method of the MinimapGrid class in the Minimap module.
     private int getSurfaceY(int x, int yEstimate, int z) {
+        final int yMinimum = 0;
+        final int yMaximum = 200;
         int y = yEstimate;
         Block block = worldProvider.getBlock(x, yEstimate, z);
         if (isIgnoredByMinimap(block)) {
             while (isIgnoredByMinimap(block)) {
                 --y;
                 block = worldProvider.getBlock(x, y, z);
+                if (y <= yMinimum) {
+                    return yMinimum;
+                }
             }
         } else {
             while (!isIgnoredByMinimap(block)) {
                 ++y;
                 block = worldProvider.getBlock(x, y, z);
+                if (y >= yMaximum) {
+                    return yMaximum;
+                }
             }
             --y;
         }
@@ -151,7 +184,17 @@ public class WorldMapResource extends AbstractSimpleResource {
     }
 
     private static boolean isIgnoredByMinimap(Block block) {
-        return block.isPenetrable() && !block.isWater();
+        return block.isPenetrable() && !block.isWater() && !block.getURI().toString().equals("engine:unloaded");
+    }
+
+    private void loadChunks(Vector3i center, int mapBlockWidth, int mapBlockLength) {
+        final int maximumVerticalChunks = 5;
+        LocationComponent locationComponent = new LocationComponent();
+        locationComponent.setWorldPosition(center.toVector3f());
+        RelevanceRegionComponent relevanceRegionComponent = new RelevanceRegionComponent();
+        relevanceRegionComponent.distance = new Vector3i(((int) Math.ceil((double) mapBlockWidth / ChunkConstants.SIZE_X) * 2) + 2, maximumVerticalChunks,
+                ((int) Math.ceil((double) mapBlockLength / ChunkConstants.SIZE_Z) * 2) + 2);
+        entityManager.create(locationComponent, relevanceRegionComponent);
     }
 
 }
