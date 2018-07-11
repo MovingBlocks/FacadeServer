@@ -18,6 +18,11 @@ package org.terasology.web.resources.base;
 import org.terasology.network.Client;
 import org.terasology.web.client.ClientSecurityInfo;
 
+/**
+ * Implementation of {@link ResourceMethod}.
+ * @param <INTYPE> the type of data sent to the server from the client.
+ * @param <OUTTYPE> the type of data sent from the server to the client.
+ */
 public class ResourceMethodImpl<INTYPE, OUTTYPE> implements ResourceMethod<INTYPE, OUTTYPE> {
 
     private final Class<INTYPE> inType;

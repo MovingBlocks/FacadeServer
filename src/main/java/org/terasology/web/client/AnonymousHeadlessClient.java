@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,6 +19,10 @@ import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.rendering.nui.Color;
 
+/**
+ * This class is used to make an anonymous client, which is used to get read-only access to resources.
+ * @see HeadlessClientFactory
+ */
 public class AnonymousHeadlessClient implements HeadlessClient {
 
     private EntityRef entity = EntityRef.NULL;

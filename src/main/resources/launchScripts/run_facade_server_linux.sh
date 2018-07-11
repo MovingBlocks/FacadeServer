@@ -1,0 +1,2 @@
+java -Xms128m -Xmx1536m -jar libs/FacadeServer-1.0.0-SNAPSHOT.jar -homedir="$HOME/.local/share/Terasology/server"
+# Alternatively use our Launcher from: https://github.com/MovingBlocks/TerasologyLauncher/releases

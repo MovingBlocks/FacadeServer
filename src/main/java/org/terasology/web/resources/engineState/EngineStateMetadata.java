@@ -35,6 +35,9 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
+/**
+ * Metadata sent across REST for use in {@link EngineStateResource}.
+ */
 public final class EngineStateMetadata {
 
     public enum State {

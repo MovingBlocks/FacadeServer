@@ -22,6 +22,9 @@ import org.terasology.web.resources.base.ResourceMethodName;
 
 import java.util.Collection;
 
+/**
+ * Represents a client request for a {@link org.terasology.web.resources.base.Resource}.
+ */
 public class ResourceRequestClientMessage implements Validable {
 
     private ResourceMethodName method;

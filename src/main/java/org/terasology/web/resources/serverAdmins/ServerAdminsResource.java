@@ -15,20 +15,26 @@
  */
 package org.terasology.web.resources.serverAdmins;
 
-import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.AbstractItemCollectionResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
+import org.terasology.web.serverAdminManagement.PermissionType;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 
+import java.util.Collections;
 import java.util.Set;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * Resource class used to get a list of server admins.
+ */
 public class ServerAdminsResource extends AbstractItemCollectionResource {
 
     public ServerAdminsResource() {
+        super(Collections.singletonMap("permissions", AdminPermissionResource::new));
         ServerAdminsManager.getInstance().setOnListChangedCallback(this::notifyChangedForAllClients);
     }
 
@@ -40,13 +46,13 @@ public class ServerAdminsResource extends AbstractItemCollectionResource {
 
     @Override
     protected ResourceMethod<Void, Void> getPostItemMethod(String itemId) throws ResourceAccessException {
-        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
+        return createVoidParameterlessMethod(ClientSecurityRequirements.requireAdminPermission(PermissionType.ADMIN_MANAGEMENT), Void.class,
                 (data, client) -> ServerAdminsManager.getInstance().addAdmin(itemId));
     }
 
     @Override
     protected ResourceMethod<Void, Void> getDeleteItemMethod(String itemId) throws ResourceAccessException {
-        return createVoidParameterlessMethod(ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
+        return createVoidParameterlessMethod(ClientSecurityRequirements.requireAdminPermission(PermissionType.ADMIN_MANAGEMENT), Void.class,
                 (data, client) -> ServerAdminsManager.getInstance().removeAdmin(itemId));
     }
 }

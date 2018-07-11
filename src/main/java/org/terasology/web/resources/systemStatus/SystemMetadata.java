@@ -23,7 +23,7 @@ import java.lang.management.RuntimeMXBean;
 
 
 /**
- * This class contains the data for system resources
+ * This class contains the data for system resources.
  */
 
 public final class SystemMetadata {

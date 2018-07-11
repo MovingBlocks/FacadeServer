@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -42,10 +42,12 @@ import org.terasology.web.resources.games.GamesResource;
 import org.terasology.web.resources.modules.AvailableModulesResource;
 import org.terasology.web.resources.modules.ModuleInstallerResource;
 import org.terasology.web.resources.onlinePlayers.OnlinePlayersResource;
+import org.terasology.web.resources.serverAdmins.AdminPermissionListResource;
 import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
 import org.terasology.web.resources.systemStatus.SystemResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
 import org.terasology.web.resources.worldMap.WorldMapResource;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -56,6 +58,9 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+/**
+ * This class manages the whole resource system.
+ */
 public final class ResourceManager implements ResourceObserver {
 
     private static final Logger logger = LoggerFactory.getLogger(ResourceManager.class);
@@ -74,6 +79,10 @@ public final class ResourceManager implements ResourceObserver {
         return INSTANCE;
     }
 
+    /**
+     * Initialize the resource manager. Note that the subresources' paths are determined here by their name.
+     * @param gameEngine the game engine that the server is running
+     */
     public void initialize(TerasologyEngine gameEngine) {
         GameState gameState = gameEngine.getState();
         Context context = gameState.getContext();
@@ -96,9 +105,11 @@ public final class ResourceManager implements ResourceObserver {
                         .addSubResource("MOTD", new ServerMotdResource())
                         .build())
                 .addSubResource("serverAdmins", new ServerAdminsResource())
+                .addSubResource("serverAdminPermissions", new AdminPermissionListResource())
                 .addSubResource("system", systemResource)
                 .build();
         systemResource.startSystemInfoRefreshService();
+        InjectionHelper.inject(AdminPermissionManager.getInstance(), context);
         rootResource.setObserver(this);
         additionalResourcesToUpdate = new HashMap<>();
         // when /modules/installer changes, also update /modules/available and /worldGenerators
@@ -108,6 +119,11 @@ public final class ResourceManager implements ResourceObserver {
         rootResource.notifyChangedForAllClients();
     }
 
+    /**
+     * initialize a resource by either registering it as component system if possible, or injecting it otherwise.
+     * @param context the context of the game engine.
+     * @param resource the resource to initialize.
+     */
     private void initializeResource(Context context, Resource resource) {
         ComponentSystemManager componentSystemManager = context.get(ComponentSystemManager.class);
         if (resource instanceof ComponentSystem && componentSystemManager != null) {

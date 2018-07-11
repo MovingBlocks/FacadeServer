@@ -22,18 +22,22 @@ import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethodImpl;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+/**
+ * {@link org.terasology.web.resources.base.ResourceMethod} used for deleting games.
+ */
 public class DeleteGameMethod extends ResourceMethodImpl<Void, Void> {
 
     private PathManager pathManager;
     private String gameName;
 
     public DeleteGameMethod(PathManager pathManager, String gameName) {
-        super(Void.class, ClientSecurityRequirements.REQUIRE_ADMIN, null);
+        super(Void.class, ClientSecurityRequirements.requireAdminPermission(PermissionType.DELETE_GAMES), null);
         this.pathManager = pathManager;
         this.gameName = gameName;
     }

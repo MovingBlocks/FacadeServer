@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,10 @@ package org.terasology.web.resources.base;
 
 import org.terasology.web.io.ActionResult;
 
+/**
+ * This exception is thrown in several different situations, such as when attempting to access a
+ * resource which does not exist or when the requested resource doesn't support the specified method.
+ */
 // TODO: consider decoupling from ActionResult (which is JSON specific)
 public class ResourceAccessException extends Exception {
 

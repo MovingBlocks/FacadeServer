@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,6 +20,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.KeyStore;
@@ -55,8 +56,9 @@ import org.terasology.web.servlet.HttpAPIServlet;
 import org.terasology.web.servlet.LogServlet;
 import org.terasology.web.servlet.WsConnectionServlet;
 
-
 /**
+ * Main class from which the server facade is started.
+ * It defines command-line usage, starts the Jetty server, and establishes connections.
  */
 public final class ServerMain {
 
@@ -164,6 +166,15 @@ public final class ServerMain {
         LoggingContext.initialize(path);
     }
 
+    /**
+     * Create a Jetty server with the appropriate configurations.
+     * @param httpPort port for http connections (default 8080).
+     * @param httpsPort port for https connections (default 8443).
+     * @param keystorePassword password for keystore used in https connections (default ServerKeyPassword).
+     * @param annotatedObjects servlets used by the server.
+     * @return A properly configured jetty server.
+     * @throws Exception an error occurred in setting up the server
+     */
     private static Server createServer(int httpPort, int httpsPort, String keystorePassword, Object... annotatedObjects) throws Exception {
         Server server = new Server(httpPort);
 
@@ -191,24 +202,34 @@ public final class ServerMain {
         }
 
         KeyStore keyStore = KeyStore.getInstance("JKS");
-        Path keyStorePath = PathManager.getInstance().getInstallPath().resolve("facades").resolve("Server").resolve("keystore.jks");
-        File keyStoreFile = new File(keyStorePath.toString());
-        try {
-            keyStore.load(new FileInputStream(keyStoreFile), keystorePassword.toCharArray());
-        } catch (FileNotFoundException e) {
-            logger.error("Keystore file not found");
-            e.printStackTrace();
+        Path keyStorePath = null;
+        if (Files.exists(PathManager.getInstance().getInstallPath().resolve("facades").resolve("Server").resolve("keystore.jks"))) {
+            keyStorePath = PathManager.getInstance().getInstallPath().resolve("facades").resolve("Server").resolve("keystore.jks");
+            logger.info("Using default keystore given by the facade server.");
+        } else if (Files.exists(PathManager.getInstance().getHomePath().resolve("server").resolve("keystore.jks"))) {
+            logger.info("Using keystore file found in the server directory");
+        } else {
+            logger.info("keystore file not found, https connections unavailable! Create a keystore file, name it keystore.jks," +
+                    " and put it into the Terasology saved games server directory to enable https.");
         }
+        if (keyStorePath != null) {
+            try {
+                File keyStoreFile = new File(keyStorePath.toString());
+                keyStore.load(new FileInputStream(keyStoreFile), keystorePassword.toCharArray());
+                SslContextFactory sslContextFactory = new SslContextFactory();
+                sslContextFactory.setKeyStorePath(keyStorePath.toString());
+                sslContextFactory.setKeyStorePassword(keystorePassword);
 
-        SslContextFactory sslContextFactory = new SslContextFactory();
-        sslContextFactory.setKeyStorePath(keyStorePath.toString());
-        sslContextFactory.setKeyStorePassword(keystorePassword);
+                ServerConnector sslConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory,
+                        HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory());
 
-        ServerConnector sslConnector = new ServerConnector(server, new SslConnectionFactory(sslContextFactory,
-                HttpVersion.HTTP_1_1.asString()), new HttpConnectionFactory());
-
-        sslConnector.setPort(httpsPort);
-        server.addConnector(sslConnector);
+                sslConnector.setPort(httpsPort);
+                server.addConnector(sslConnector);
+            } catch (FileNotFoundException e) {
+                logger.error("Keystore file not found");
+                e.printStackTrace();
+            }
+        }
 
         ServletContextHandler jerseyContext = new ServletContextHandler(ServletContextHandler.GZIP);
         jerseyContext.setResourceBase("templates");

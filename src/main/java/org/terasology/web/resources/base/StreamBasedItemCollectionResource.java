@@ -24,6 +24,10 @@ import java.util.stream.Stream;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
+/**
+ * Resource class used for when the resource needs to send a stream across REST.
+ * @param <T> the datatype of data in the stream.
+ */
 public abstract class StreamBasedItemCollectionResource<T> extends AbstractItemCollectionResource {
 
     protected StreamBasedItemCollectionResource(Map<String, Function<String, Resource>> itemSubResourceProviders) {

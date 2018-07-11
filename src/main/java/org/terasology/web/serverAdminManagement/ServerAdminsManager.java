@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -29,11 +29,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * This class loads, adds, and removes admins by changing the serverAdmins.json file.
+ * As a special case, when no admins are on the list, the first client to connect is given admin permissions.
+ */
 public final class ServerAdminsManager {
 
     private static final Logger logger = LoggerFactory.getLogger(ServerAdminsManager.class);
     private static final Gson GSON = new Gson();
     private static final ServerAdminsManager INSTANCE = new ServerAdminsManager(PathManager.getInstance().getHomePath().resolve("serverAdmins.json"), true);
+    private static AdminPermissionManager adminPermissionManager = AdminPermissionManager.getInstance();
 
     private final Path adminListFilePath;
     private final boolean autoSave;
@@ -69,6 +74,7 @@ public final class ServerAdminsManager {
             newValue = new HashSet<>();
         }
         setServerAdminIds(newValue);
+        adminPermissionManager.loadAdminPermissionList();
     }
 
     public void saveAdminList() {
@@ -76,6 +82,7 @@ public final class ServerAdminsManager {
             try (Writer writer = Files.newBufferedWriter(adminListFilePath, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING)) {
                 GSON.toJson(serverAdminIds, writer);
             }
+            adminPermissionManager.saveAdminPermissionList();
         } catch (IOException ex) {
             logger.warn("Failed to save serverAdmins.json", ex);
         }
@@ -85,6 +92,10 @@ public final class ServerAdminsManager {
         return isAnonymousAdminAccessEnabled() || clientIsInAdminList(clientId);
     }
 
+    /**
+     * Determine if anyone can become an admin simply by joining the game.
+     * @return whether the admin list is empty or not.
+     */
     public boolean isAnonymousAdminAccessEnabled() {
         return serverAdminIds.isEmpty();
     }
@@ -95,6 +106,7 @@ public final class ServerAdminsManager {
 
     public void addAdmin(String id) {
         serverAdminIds.add(id);
+        adminPermissionManager.addAdmin(id);
         if (autoSave) {
             saveAdminList();
         }
@@ -103,6 +115,7 @@ public final class ServerAdminsManager {
 
     public void removeAdmin(String id) {
         serverAdminIds.remove(id);
+        adminPermissionManager.removeAdmin(id);
         if (autoSave) {
             saveAdminList();
         }
@@ -113,9 +126,14 @@ public final class ServerAdminsManager {
         return Collections.unmodifiableSet(serverAdminIds);
     }
 
+    /**
+     * Add the first admin if none are currently set.
+     * @param id the client id of the new admin
+     */
     public void addFirstAdminIfNecessary(String id) {
         if (isAnonymousAdminAccessEnabled()) {
             addAdmin(id);
+            adminPermissionManager.giveAllPermissionsToAdmin(id);
         }
     }
 }

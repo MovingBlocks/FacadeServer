@@ -17,6 +17,11 @@ package org.terasology.web.resources.base;
 
 import org.terasology.network.Client;
 
+/**
+ * Method handler for {@link ResourceMethodFactory} that is used for resources where the server does not need to
+ * give any data back to the client after the method executes. Used in PUT, POST, PATCH, and DELETE methods.
+ * @param <INTYPE> the type of data sent to the server from the client through the {@link ResourceMethod}.
+ */
 public interface VoidParameterlessMethodHandler<INTYPE> {
 
     void perform(INTYPE data, Client client) throws ResourceAccessException;

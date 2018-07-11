@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -22,6 +22,9 @@ import org.terasology.web.io.gsonUtils.Validable;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Represents the data for the handshake hello message used to communicate between the client and the server.
+ */
 public class HandshakeHello implements Validable {
 
     private byte[] random;
@@ -51,6 +54,11 @@ public class HandshakeHello implements Validable {
         return Bytes.concat(a.toByteArray(), b.toByteArray());
     }
 
+    /**
+     * To validate the handshake, both the server and the client must have identity certificates that contain
+     * the id, modulus, exponent, and signature.
+     * @throws InvalidClientMessageException the certificate provided is not valid.
+     */
     @Override
     public void validate() throws InvalidClientMessageException {
         if (random == null || certificate == null || timestamp == null) {

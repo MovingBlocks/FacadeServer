@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,16 +21,21 @@ import org.terasology.entitySystem.event.Event;
 import org.terasology.math.geom.Vector3i;
 import org.terasology.network.Client;
 import org.terasology.rendering.world.viewDistance.ViewDistance;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.world.chunks.Chunk;
 
+/**
+ * Interface for clients attempting to access resources or connect to the web interface frontend.
+ */
 public interface HeadlessClient extends Client {
 
     void connect(EntityManager entityManager);
     boolean isAnonymous();
 
     default ClientSecurityInfo getSecurityInfo() {
-        return new ClientSecurityInfo(!isAnonymous(), ServerAdminsManager.getInstance().clientHasAdminPermissions(getId()));
+        return new ClientSecurityInfo(!isAnonymous(), ServerAdminsManager.getInstance().clientHasAdminPermissions(getId()),
+                AdminPermissionManager.getInstance().getPermissionsOfAdmin(getId()));
     }
 
     @Override

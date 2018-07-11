@@ -15,7 +15,14 @@
  */
 package org.terasology.web.io.gsonUtils;
 
+/**
+ * Interface for validating messages sent to the server.
+ */
 public interface Validable {
 
+    /**
+     * Determines if the sent message is valid.
+     * @throws InvalidClientMessageException the sent message is not valid.
+     */
     void validate() throws InvalidClientMessageException;
 }

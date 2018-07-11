@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,11 @@ package org.terasology.web.resources;
 
 import org.terasology.entitySystem.systems.ComponentSystem;
 
+/**
+ * Extension of {@link org.terasology.entitySystem.systems.ComponentSystem} which provides default
+ * do-nothing implementations of the various preBegin(), postSave(), etc methods, so that,
+ * for convenience, implementor classes only need to override the necessary methods
+ */
 public interface DefaultComponentSystem extends ComponentSystem {
 
     @Override

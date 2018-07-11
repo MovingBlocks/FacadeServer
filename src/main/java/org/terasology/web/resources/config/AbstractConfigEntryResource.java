@@ -22,10 +22,15 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * This {@link org.terasology.web.resources.base.Resource} provides methods common to all simple config settings.
+ * @param <T> the type to be sent to or received by the server.
+ */
 public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResource {
 
     @In
@@ -38,7 +43,7 @@ public abstract class AbstractConfigEntryResource<T> extends AbstractSimpleResou
 
     @Override
     protected ResourceMethod<T, Void> getPutMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, getDataType(), (data, client) -> {
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.requireAdminPermission(PermissionType.CHANGE_SETTINGS), getDataType(), (data, client) -> {
             set(config, data);
             config.save();
             notifyChangedForAllClients();

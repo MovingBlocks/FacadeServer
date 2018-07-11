@@ -17,6 +17,9 @@ package org.terasology.web.resources.config;
 
 import org.terasology.config.Config;
 
+/**
+ * Resource used to get and set the server port.
+ */
 public class ServerPortResource extends AbstractConfigEntryResource<Integer> {
 
     @Override

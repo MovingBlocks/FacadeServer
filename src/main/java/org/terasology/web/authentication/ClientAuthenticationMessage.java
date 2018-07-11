@@ -18,6 +18,9 @@ package org.terasology.web.authentication;
 import org.terasology.web.io.gsonUtils.InvalidClientMessageException;
 import org.terasology.web.io.gsonUtils.Validable;
 
+/**
+ * Represents a message sent from the client to the server where the client is requesting authentication.
+ */
 public class ClientAuthenticationMessage implements Validable {
 
     private HandshakeHello clientHello;

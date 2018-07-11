@@ -23,6 +23,7 @@ import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.PermissionType;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -34,6 +35,9 @@ import java.util.stream.Collectors;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createVoidParameterlessMethod;
 
+/**
+ * {@link org.terasology.web.resources.base.Resource} used for backing up games.
+ */
 public class GamesBackupsResource extends AbstractSimpleResource {
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy_MM_dd_HH_mm_ss");
@@ -48,7 +52,7 @@ public class GamesBackupsResource extends AbstractSimpleResource {
 
     @Override
     protected ResourceMethod<Void, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_ADMIN, Void.class,
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.requireAdminPermission(PermissionType.CREATE_BACKUP_RENAME_GAMES), Void.class,
                 (data, client) -> performBackup());
     }
 

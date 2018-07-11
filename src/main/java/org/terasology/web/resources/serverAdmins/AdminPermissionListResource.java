@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 MovingBlocks
+ * Copyright 2018 MovingBlocks
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -13,35 +13,33 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package org.terasology.web.resources.systemStatus;
+package org.terasology.web.resources.serverAdmins;
 
 import org.terasology.web.resources.base.AbstractSimpleResource;
+import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.IdPermissionPair;
 
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUnit;
+import java.util.Set;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
 /**
- * This resource class is used to get CPU usage, memory usage, and system uptime.
+ * This resource is used to get a list of admin permissions.
  */
-public class SystemResource extends AbstractSimpleResource {
+public class AdminPermissionListResource extends AbstractSimpleResource {
 
-    private final ScheduledExecutorService refreshSystemInfoService = Executors.newSingleThreadScheduledExecutor();
-
-    public void startSystemInfoRefreshService() {
-        refreshSystemInfoService.scheduleAtFixedRate(this::notifyChangedForAllClients, 1000, 1000, TimeUnit.MILLISECONDS);
+    public AdminPermissionListResource() {
+        AdminPermissionManager.getInstance().setOnListChangedCallback(this::notifyChangedForAllClients);
     }
 
     @Override
-    protected ResourceMethod<Void, SystemMetadata> getGetMethod(ResourcePath path) throws ResourceAccessException {
-        return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class,
-                (data, client) -> SystemMetadata.getInstance());
+    protected ResourceMethod<Void, Set<IdPermissionPair>> getGetMethod(ResourcePath path) throws ResourceAccessException {
+        return createParameterlessMethod(ClientSecurityRequirements.PUBLIC, Void.class,
+                (data, client) -> AdminPermissionManager.getInstance().getAdminPermissions());
     }
 
 }
