@@ -35,7 +35,6 @@ import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
 import org.terasology.world.block.tiles.BlockTile;
 import org.terasology.world.chunks.ChunkConstants;
-import org.terasology.world.chunks.ChunkProvider;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
@@ -46,16 +45,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.locks.Condition;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
 public class WorldMapResource extends AbstractSimpleResource {
 
     private static final Logger logger = LoggerFactory.getLogger(WorldMapResource.class);
+    private static final int BLOCK_Y_DEFAULT = 40;
 
     @In
     private WorldProvider worldProvider;
@@ -72,7 +68,7 @@ public class WorldMapResource extends AbstractSimpleResource {
 
     private String getWorldMapBase64ImageString(Vector3i center, int mapBlockWidth, int mapBlockLength, boolean isSurface, EntityRef clientEntity) {
         final int colorSizeMultiplier = mapBlockWidth * mapBlockLength <= 125 * 125 ? 60 : 30;
-        int blockY = 40;
+        int blockY = BLOCK_Y_DEFAULT;
         List<List<Color>> colors = new ArrayList<>(mapBlockWidth);
         for (int i = 0; i < mapBlockWidth; ++i) {
             colors.add(i, new ArrayList<>(mapBlockLength));
@@ -165,7 +161,7 @@ public class WorldMapResource extends AbstractSimpleResource {
                 --y;
                 block = worldProvider.getBlock(x, y, z);
                 if (y <= yMinimum) {
-                    return yMinimum;
+                    return BLOCK_Y_DEFAULT;
                 }
             }
         } else {
@@ -173,7 +169,7 @@ public class WorldMapResource extends AbstractSimpleResource {
                 ++y;
                 block = worldProvider.getBlock(x, y, z);
                 if (y >= yMaximum) {
-                    return yMaximum;
+                    return BLOCK_Y_DEFAULT;
                 }
             }
             --y;
@@ -186,7 +182,7 @@ public class WorldMapResource extends AbstractSimpleResource {
     }
 
     private void loadChunks(Vector3i center, int mapBlockWidth, int mapBlockLength) {
-        final int maximumVerticalChunks = 5;
+        final int maximumVerticalChunks = 8;
         LocationComponent locationComponent = new LocationComponent();
         locationComponent.setWorldPosition(center.toVector3f());
         RelevanceRegionComponent relevanceRegionComponent = new RelevanceRegionComponent();
