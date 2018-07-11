@@ -17,7 +17,11 @@ package org.terasology.web.resources.worldMap;
 
 import org.terasology.math.geom.Vector3i;
 
-public class WorldMapInput {
+/**
+ * This class defines the data format that is sent from the frontend for use in {@link WorldMapResource}.
+ */
+@SuppressWarnings("unused")
+public final class WorldMapInput {
 
     private Vector3i center;
     private int mapBlockWidth;

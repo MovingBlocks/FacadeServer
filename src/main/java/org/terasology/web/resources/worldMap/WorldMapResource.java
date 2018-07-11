@@ -19,7 +19,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector3i;
@@ -48,6 +47,9 @@ import java.util.List;
 
 import static org.terasology.web.resources.base.ResourceMethodFactory.createParameterlessMethod;
 
+/**
+ * {@link org.terasology.web.resources.base.Resource} class used for sending png images of the world map, encoded in base64.
+ */
 public class WorldMapResource extends AbstractSimpleResource {
 
     private static final Logger logger = LoggerFactory.getLogger(WorldMapResource.class);
@@ -63,17 +65,24 @@ public class WorldMapResource extends AbstractSimpleResource {
     @Override
     protected ResourceMethod<WorldMapInput, String> getPutMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, WorldMapInput.class,
-                (data, client) -> getWorldMapBase64ImageString(data.getCenter(), data.getMapBlockWidth(), data.getMapBlockLength(), data.isSurface(), client.getEntity()));
+                (data, client) -> getWorldMapBase64ImageString(data.getCenter(), data.getMapBlockWidth(), data.getMapBlockLength(), data.isSurface()));
     }
 
-    private String getWorldMapBase64ImageString(Vector3i center, int mapBlockWidth, int mapBlockLength, boolean isSurface, EntityRef clientEntity) {
+    /**
+     * Get the color of blocks in the world map and convert them into a base64 encoded image.
+     * @param center the location of the block in the center of the map.
+     * @param mapBlockWidth the width of the map.
+     * @param mapBlockLength the length of the map.
+     * @param isSurface whether or not to get blocks on the surface (using the block at the highest elevation that isn't air).
+     * @return a base64 encoded png image of the world map with location and size depending on the parameters.
+     */
+    private String getWorldMapBase64ImageString(Vector3i center, int mapBlockWidth, int mapBlockLength, boolean isSurface) {
         final int colorSizeMultiplier = mapBlockWidth * mapBlockLength <= 125 * 125 ? 60 : 30;
         int blockY = BLOCK_Y_DEFAULT;
         List<List<Color>> colors = new ArrayList<>(mapBlockWidth);
         for (int i = 0; i < mapBlockWidth; ++i) {
             colors.add(i, new ArrayList<>(mapBlockLength));
         }
-
 
         loadChunks(center, mapBlockWidth, mapBlockLength);
 
@@ -113,6 +122,11 @@ public class WorldMapResource extends AbstractSimpleResource {
         return convertImageToBase64String(mapImage);
     }
 
+    /**
+     * Converts a BufferedImage into a base64 string.
+     * @param img the image to convert.
+     * @return a base64 encoded string representation of the image, or null if the image cannot be converted.
+     */
     private String convertImageToBase64String(final BufferedImage img) {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
@@ -124,6 +138,12 @@ public class WorldMapResource extends AbstractSimpleResource {
         return null;
     }
 
+    /**
+     * Get the average color of an individual block's texture and adjust its brightness, where a lower y-coordinate is darker.
+     * @param bufferedImage the texture of a single block.
+     * @param blockY the y coordinate of the block for use in determining brightness.
+     * @return the average color of the block with brightness changed.
+     */
     private int getColorOfTexture(BufferedImage bufferedImage, int blockY) {
         double brightnessMin = 0.85;
         double blockYCoordinateBrightnessChange = 0.0015;
@@ -150,14 +170,21 @@ public class WorldMapResource extends AbstractSimpleResource {
         return new Color(r, g, b).getRGB() & 0x00FFFFFF;
     }
 
-    //This method is heavily inspired by the renderCell method of the MinimapGrid class in the Minimap module.
+    /**
+     * Get the y coordinate of the block at the given x and z coordinates where the block is at the surface.
+     * This method is heavily inspired by the renderCell method of the MinimapGrid class in the Minimap module.
+     * @param x the x coordinate of the block
+     * @param yEstimate an estimate of the y coordinate
+     * @param z the z coordinate of the block
+     * @return the y coordinate of the block
+     */
     private int getSurfaceY(int x, int yEstimate, int z) {
         final int yMinimum = 0;
         final int yMaximum = 200;
         int y = yEstimate;
         Block block = worldProvider.getBlock(x, yEstimate, z);
-        if (isIgnoredByMinimap(block)) {
-            while (isIgnoredByMinimap(block)) {
+        if (isIgnoredByMap(block)) {
+            while (isIgnoredByMap(block)) {
                 --y;
                 block = worldProvider.getBlock(x, y, z);
                 if (y <= yMinimum) {
@@ -165,7 +192,7 @@ public class WorldMapResource extends AbstractSimpleResource {
                 }
             }
         } else {
-            while (!isIgnoredByMinimap(block)) {
+            while (!isIgnoredByMap(block)) {
                 ++y;
                 block = worldProvider.getBlock(x, y, z);
                 if (y >= yMaximum) {
@@ -177,10 +204,21 @@ public class WorldMapResource extends AbstractSimpleResource {
         return y;
     }
 
-    private static boolean isIgnoredByMinimap(Block block) {
+    /**
+     * Determine if the given block should be ignored when trying to find the y-coordinate of a block.
+     * @param block the block to check.
+     * @return whether or not the block should be ignored.
+     */
+    private static boolean isIgnoredByMap(Block block) {
         return block.isPenetrable() && !block.isWater() && !block.getURI().toString().equals("engine:unloaded");
     }
 
+    /**
+     * load all chunks around the designated map area so that the texture of each can be obtained.
+     * @param center the location of the block in the center of the map.
+     * @param mapBlockWidth the width of the map.
+     * @param mapBlockLength the length of the map.
+     */
     private void loadChunks(Vector3i center, int mapBlockWidth, int mapBlockLength) {
         final int maximumVerticalChunks = 8;
         LocationComponent locationComponent = new LocationComponent();

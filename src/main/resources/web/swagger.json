@@ -260,6 +260,41 @@
             "description": "Maximum available RAM memory for the JVM"
           }
         }
+      },
+      "WorldMapInput": {
+        "description": "Describes the format for the frontend to use when requesting world map data",
+        "properties": {
+          "center": {
+            "type": "object",
+            "description": "the coordinates of the center block",
+            "properties": {
+              "x": {
+                "type": "integer",
+                "description": "the x coordinate of the center block"
+              },
+              "y": {
+                "type": "integer",
+                "description": "(optional) the y coordinate of the center block"
+              },
+              "z": {
+                "type": "integer",
+                "description": "the z coordinate of the center block"
+              }
+            }
+          },
+          "mapBlockWidth": {
+            "type": "number",
+            "description": "the width of the map"
+          },
+          "mapBlockLength": {
+            "type": "number",
+            "description": "the length of the map"
+          },
+          "surface": {
+            "type": "boolean",
+            "description": "whether or not to display the surface of the world"
+          }
+        }
       }
     },
     "responses": {
@@ -1051,6 +1086,38 @@
               "application/json": {
                 "schema": {
                   "$ref": "#/components/schemas/SystemMetadata"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/resources/worldMap": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Session-Token"
+        }
+      ],
+      "put": {
+        "summary": "Returns a base64 encoded image of a specified part of the world map (Warning: this may be changed in the future to a get request!)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/WorldMapInput"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "A base 64 encoded image of the map",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
                 }
               }
             }
