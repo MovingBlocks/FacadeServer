@@ -83,15 +83,13 @@ public class WorldMapResource extends AbstractSimpleResource {
 
         for (int x = (int) Math.floor((double) center.getX() - mapBlockWidth / 2); x < (int) Math.ceil((double) mapBlockWidth / 2 + center.getX()); ++x) {
             for (int z = (int) Math.floor((double) center.getZ() - mapBlockLength / 2); z < (int) Math.ceil((double) mapBlockLength / 2 + center.getZ()); ++z) {
-                /*synchronized (this) {
-                    while (worldProvider.getBlock(x, blockY, z).getURI().toString().equals("engine:unloaded")) {
-                        try {
-                            wait(1000);
-                        } catch (InterruptedException e) {
-                            e.printStackTrace();
-                        }
+                while (worldProvider.getBlock(x, blockY, z).getURI().toString().equals("engine:unloaded")) {
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-                }*/
+                }
                 blockY = isSurface ? getSurfaceY(x, blockY, z) : center.getY();
                 Block block = worldProvider.getBlock(x, blockY, z);
                 ResourceUrn blockUrn = block.getURI().getBlockFamilyDefinitionUrn();
