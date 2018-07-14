@@ -23,6 +23,7 @@ import org.terasology.engine.TerasologyEngine;
 import org.terasology.engine.modes.GameState;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.systems.ComponentSystem;
+import org.terasology.network.internal.ServerConnectListManager;
 import org.terasology.registry.InjectionHelper;
 import org.terasology.web.client.HeadlessClient;
 import org.terasology.web.io.ActionResult;
@@ -36,6 +37,7 @@ import org.terasology.web.resources.base.ResourcePath;
 import org.terasology.web.resources.base.RouterResource;
 import org.terasology.web.resources.config.ServerMotdResource;
 import org.terasology.web.resources.config.ServerPortResource;
+import org.terasology.web.resources.connectLists.ConnectListResource;
 import org.terasology.web.resources.console.ConsoleResource;
 import org.terasology.web.resources.engineState.EngineStateResource;
 import org.terasology.web.resources.games.GamesResource;
@@ -103,6 +105,8 @@ public final class ResourceManager implements ResourceObserver {
                         .addSubResource("MOTD", new ServerMotdResource())
                         .build())
                 .addSubResource("serverAdmins", new ServerAdminsResource())
+                .addSubResource("blacklist", new ConnectListResource(context.get(ServerConnectListManager.class), ConnectListResource.ConnectListType.BLACKLIST))
+                .addSubResource("whitelist", new ConnectListResource(context.get(ServerConnectListManager.class), ConnectListResource.ConnectListType.WHITELIST))
                 .addSubResource("serverAdminPermissions", new AdminPermissionListResource())
                 .addSubResource("system", systemResource)
                 .build();
