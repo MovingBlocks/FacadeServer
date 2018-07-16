@@ -19,9 +19,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.assets.ResourceUrn;
 import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.location.LocationComponent;
 import org.terasology.math.TeraMath;
 import org.terasology.math.geom.Vector3i;
+import org.terasology.network.Client;
 import org.terasology.registry.In;
 import org.terasology.utilities.Assets;
 import org.terasology.web.resources.base.AbstractSimpleResource;
@@ -29,6 +31,7 @@ import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.serverAdminManagement.ServerAdminsManager;
 import org.terasology.world.RelevanceRegionComponent;
 import org.terasology.world.WorldProvider;
 import org.terasology.world.block.Block;
@@ -65,7 +68,7 @@ public class WorldMapResource extends AbstractSimpleResource {
     @Override
     protected ResourceMethod<WorldMapInput, String> getPutMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, WorldMapInput.class,
-                (data, client) -> getWorldMapBase64ImageString(data.getCenter(), data.getMapBlockWidth(), data.getMapBlockLength(), data.isSurface()));
+                (data, client) -> getWorldMapBase64ImageString(data.getCenter(), data.getMapBlockWidth(), data.getMapBlockLength(), data.isSurface(), client));
     }
 
     /**
@@ -76,15 +79,22 @@ public class WorldMapResource extends AbstractSimpleResource {
      * @param isSurface whether or not to get blocks on the surface (using the block at the highest elevation that isn't air).
      * @return a base64 encoded png image of the world map with location and size depending on the parameters.
      */
-    private String getWorldMapBase64ImageString(Vector3i center, int mapBlockWidth, int mapBlockLength, boolean isSurface) {
-        final int colorSizeMultiplier = mapBlockWidth * mapBlockLength <= 125 * 125 ? 60 : 30;
+    private String getWorldMapBase64ImageString(Vector3i center, int mapBlockWidth, int mapBlockLength, boolean isSurface, Client client) {
+        final int mapColorSizeDecreaseThreshold = 125 * 125;
+        final int largerColorSizeMultiplier = 60;
+        final int smallerColorSizeMultiplier = 30;
+        final int colorSizeMultiplier = mapBlockWidth * mapBlockLength <= mapColorSizeDecreaseThreshold ? largerColorSizeMultiplier : smallerColorSizeMultiplier;
         int blockY = BLOCK_Y_DEFAULT;
         List<List<Color>> colors = new ArrayList<>(mapBlockWidth);
         for (int i = 0; i < mapBlockWidth; ++i) {
             colors.add(i, new ArrayList<>(mapBlockLength));
         }
 
-        loadChunks(center, mapBlockWidth, mapBlockLength);
+        EntityRef mapLoadingRef = EntityRef.NULL;
+        // TODO: Change this check to be configurable, so it can be disabled. Also provide feedback for when this doesn't trigger
+        if (ServerAdminsManager.getInstance().getAdminIds().contains(client.getId())) {
+            mapLoadingRef = loadChunks(center, mapBlockWidth, mapBlockLength);
+        }
 
         for (int x = (int) Math.floor((double) center.getX() - mapBlockWidth / 2); x < (int) Math.ceil((double) mapBlockWidth / 2 + center.getX()); ++x) {
             for (int z = (int) Math.floor((double) center.getZ() - mapBlockLength / 2); z < (int) Math.ceil((double) mapBlockLength / 2 + center.getZ()); ++z) {
@@ -95,6 +105,7 @@ public class WorldMapResource extends AbstractSimpleResource {
                         e.printStackTrace();
                     }
                 }
+                mapLoadingRef.destroy();
                 blockY = isSurface ? getSurfaceY(x, blockY, z) : center.getY();
                 Block block = worldProvider.getBlock(x, blockY, z);
                 ResourceUrn blockUrn = block.getURI().getBlockFamilyDefinitionUrn();
@@ -219,14 +230,14 @@ public class WorldMapResource extends AbstractSimpleResource {
      * @param mapBlockWidth the width of the map.
      * @param mapBlockLength the length of the map.
      */
-    private void loadChunks(Vector3i center, int mapBlockWidth, int mapBlockLength) {
+    private EntityRef loadChunks(Vector3i center, int mapBlockWidth, int mapBlockLength) {
         final int maximumVerticalChunks = 8;
         LocationComponent locationComponent = new LocationComponent();
         locationComponent.setWorldPosition(center.toVector3f());
         RelevanceRegionComponent relevanceRegionComponent = new RelevanceRegionComponent();
         relevanceRegionComponent.distance = new Vector3i(((int) Math.ceil((double) mapBlockWidth / ChunkConstants.SIZE_X) * 2) + 2, maximumVerticalChunks,
                 ((int) Math.ceil((double) mapBlockLength / ChunkConstants.SIZE_Z) * 2) + 2);
-        entityManager.create(locationComponent, relevanceRegionComponent);
+        return entityManager.create(locationComponent, relevanceRegionComponent);
     }
 
 }
