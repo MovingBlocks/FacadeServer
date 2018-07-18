@@ -48,6 +48,7 @@ public class ConnectListResource extends AbstractItemCollectionResource {
                 (data, client) -> typeOfList == ConnectListType.BLACKLIST ? serverConnectListManager.getBlacklist() : serverConnectListManager.getWhitelist());
     }
 
+    // TODO: validate input (check that the input is in the form of a player id: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx) where x is an alphanumeric character
     @Override
     protected ResourceMethod<Void, Void> getPostItemMethod(String itemId) throws ResourceAccessException {
         return createVoidParameterlessMethod(ClientSecurityRequirements.requireAdminPermission(PermissionType.CONSOLE_USER_MANAGEMENT), Void.class,
@@ -57,6 +58,7 @@ public class ConnectListResource extends AbstractItemCollectionResource {
                     } else {
                         serverConnectListManager.addToWhitelist(itemId);
                     }
+                    notifyChangedForAllClients();
                 });
     }
 
@@ -69,6 +71,7 @@ public class ConnectListResource extends AbstractItemCollectionResource {
                     } else {
                         serverConnectListManager.removeFromWhitelist(itemId);
                     }
+                    notifyChangedForAllClients();
                 });
     }
 
