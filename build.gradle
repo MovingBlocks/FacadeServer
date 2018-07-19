@@ -69,7 +69,7 @@ dependencies {
 jar {
     manifest {
         attributes('Main-Class': mainClassName)
-        attributes('Class-Path': configurations.runtime.collect { it.getName() }.join(' '))
+        attributes('Class-Path': "jopenvr.jar " + configurations.runtime.collect { it.getName() }.join(' '))
     }
 }
 
