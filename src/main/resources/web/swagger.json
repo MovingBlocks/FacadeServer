@@ -429,6 +429,24 @@
           "$ref": "#/components/parameters/Session-Token"
         }
       ],
+      "get": {
+        "summary": "Returns a list of console commands that can be run on a server",
+        "responses": {
+          "200": {
+            "description": "The console commands that are designated by the console as runnable on the server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string",
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Executes a console command",
         "requestBody": {
@@ -448,6 +466,28 @@
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenNotAuthenticated"
+          }
+        }
+      }
+    },
+    "/resources/consoleHelp": {
+      "parameters" : [
+        {
+          "$ref": "#/components/parameters/Session-Token"
+        }
+      ],
+      "get": {
+        "summary": "Returns a help text filtered to only show commands that can be executed on the server",
+        "responses": {
+          "200": {
+            "description": "a single string to be displayed on the frontend when the help command is run",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           }
         }
       }

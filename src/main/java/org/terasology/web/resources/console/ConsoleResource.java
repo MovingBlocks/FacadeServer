@@ -61,7 +61,7 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
     @Override
     protected ResourceMethod<Void, Collection<String>> getGetMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
-            console.getCommands().stream().filter(ConsoleCommand::isRunOnServer).map(ConsoleCommand::getName)
+            console.getCommands().stream().filter(ConsoleCommand::isRunOnServer).sorted().map(ConsoleCommand::getName)
                 .map(Name::toString).collect(Collectors.toList()));
     }
 
