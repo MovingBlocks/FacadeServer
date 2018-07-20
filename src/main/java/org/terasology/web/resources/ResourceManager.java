@@ -46,6 +46,7 @@ import org.terasology.web.resources.serverAdmins.AdminPermissionListResource;
 import org.terasology.web.resources.serverAdmins.ServerAdminsResource;
 import org.terasology.web.resources.systemStatus.SystemResource;
 import org.terasology.web.resources.worldGenerators.AvailableWorldGeneratorsResource;
+import org.terasology.web.resources.worldMap.WorldMapResource;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 
 import java.util.Arrays;
@@ -98,6 +99,7 @@ public final class ResourceManager implements ResourceObserver {
                         .addSubResource("installer", new ModuleInstallerResource())
                         .build())
                 .addSubResource("worldGenerators", new AvailableWorldGeneratorsResource())
+                .addSubResource("worldMap", new WorldMapResource())
                 .addSubResource("config", new RouterResource.Builder(resourceInitializer)
                         .addSubResource("serverPort", new ServerPortResource())
                         .addSubResource("MOTD", new ServerMotdResource())
