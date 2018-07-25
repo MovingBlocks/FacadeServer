@@ -439,7 +439,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "string",
+                    "type": "string"
                   }
                 }
               }
@@ -466,28 +466,6 @@
           },
           "403": {
             "$ref": "#/components/responses/ForbiddenNotAuthenticated"
-          }
-        }
-      }
-    },
-    "/resources/consoleHelp": {
-      "parameters" : [
-        {
-          "$ref": "#/components/parameters/Session-Token"
-        }
-      ],
-      "get": {
-        "summary": "Returns a help text filtered to only show commands that can be executed on the server",
-        "responses": {
-          "200": {
-            "description": "a single string to be displayed on the frontend when the help command is run",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
           }
         }
       }

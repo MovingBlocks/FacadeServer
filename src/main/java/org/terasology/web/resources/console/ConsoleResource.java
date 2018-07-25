@@ -19,18 +19,18 @@ import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.entitySystem.event.ReceiveEvent;
 import org.terasology.entitySystem.systems.RegisterSystem;
 import org.terasology.logic.console.Console;
+import org.terasology.logic.console.ConsoleColors;
+import org.terasology.logic.console.ConsoleMessageEvent;
 import org.terasology.logic.console.MessageEvent;
 import org.terasology.logic.console.commandSystem.ConsoleCommand;
 import org.terasology.naming.Name;
 import org.terasology.network.ClientComponent;
 import org.terasology.network.events.ConnectedEvent;
 import org.terasology.registry.In;
+import org.terasology.rendering.FontColor;
+import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.DefaultComponentSystem;
-import org.terasology.web.resources.base.ResourceAccessException;
-import org.terasology.web.resources.base.AbstractSimpleResource;
-import org.terasology.web.resources.base.ClientSecurityRequirements;
-import org.terasology.web.resources.base.ResourceMethod;
-import org.terasology.web.resources.base.ResourcePath;
+import org.terasology.web.resources.base.*;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 
 import java.util.Collection;
@@ -61,14 +61,34 @@ public class ConsoleResource extends AbstractSimpleResource implements DefaultCo
     @Override
     protected ResourceMethod<Void, Collection<String>> getGetMethod(ResourcePath path) throws ResourceAccessException {
         return createParameterlessMethod(path, ClientSecurityRequirements.PUBLIC, Void.class, (data, client) ->
-            console.getCommands().stream().filter(ConsoleCommand::isRunOnServer).sorted().map(ConsoleCommand::getName)
-                .map(Name::toString).collect(Collectors.toList()));
+                getConsoleCommands());
     }
 
     @Override
     protected ResourceMethod<String, Void> getPostMethod(ResourcePath path) throws ResourceAccessException {
         // No permission because console permissions are handled separately.
-        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_AUTH, String.class,
-                (data, client) -> console.execute(data, client.getEntity()));
+        return createVoidParameterlessMethod(path, ClientSecurityRequirements.REQUIRE_AUTH, String.class, (data, client) -> {
+            String command = !data.contains(" ") ? data : data.substring(0, data.indexOf(" "));
+            if (command.equals("help")) {
+                onMessage(new ConsoleMessageEvent(getHelpMessage()), client.getEntity());
+            } else if (getConsoleCommands().contains(command)) {
+                console.execute(data, client.getEntity());
+            } else {
+                throw new ResourceAccessException(new ActionResult(ActionResult.Status.BAD_REQUEST, "Invalid command"));
+            }
+        });
+    }
+
+    private Collection<String> getConsoleCommands() {
+        return console.getCommands().stream().filter(ConsoleCommand::isRunOnServer).sorted().map(ConsoleCommand::getName)
+                .map(Name::toString).collect(Collectors.toList());
+    }
+
+    private String getHelpMessage() {
+        return "\n" + console.getCommands().stream().filter(ConsoleCommand::isRunOnServer).sorted().map(this::appendDescriptionToCommand).collect(Collectors.joining("\n"));
+    }
+
+    private String appendDescriptionToCommand(ConsoleCommand command) {
+        return FontColor.getColored(command.getUsage(), ConsoleColors.COMMAND) + " - " + command.getDescription();
     }
 }

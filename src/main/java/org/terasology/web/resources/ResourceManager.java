@@ -36,7 +36,6 @@ import org.terasology.web.resources.base.ResourcePath;
 import org.terasology.web.resources.base.RouterResource;
 import org.terasology.web.resources.config.ServerMotdResource;
 import org.terasology.web.resources.config.ServerPortResource;
-import org.terasology.web.resources.console.ConsoleHelpResource;
 import org.terasology.web.resources.console.ConsoleResource;
 import org.terasology.web.resources.engineState.EngineStateResource;
 import org.terasology.web.resources.games.GamesResource;
@@ -92,7 +91,6 @@ public final class ResourceManager implements ResourceObserver {
         rootResource = new RouterResource.Builder(resourceInitializer)
                 .addSubResource("onlinePlayers", new OnlinePlayersResource())
                 .addSubResource("console", new ConsoleResource())
-                .addSubResource("consoleHelp", new ConsoleHelpResource())
                 .addSubResource("games", new GamesResource())
                 .addSubResource("engineState", new EngineStateResource())
                 .addSubResource("modules", new RouterResource.Builder(resourceInitializer)
