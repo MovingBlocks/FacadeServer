@@ -17,10 +17,14 @@ package org.terasology.web.resources.systemStatus;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.terasology.web.resources.base.ResourceObserver;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.verify;
 
-public class SystemStatusResourceTest {
+public class SystemResourceTest {
 
     private SystemResource systemResource;
     private SystemMetadata systemMetadata;
@@ -32,8 +36,16 @@ public class SystemStatusResourceTest {
     }
 
     @Test
-    public void testSystemInfoRefreshServiceStarts() {
+    public void testSystemInfoRefreshService() {
+        ResourceObserver resourceObserverMock = mock(ResourceObserver.class);
+        systemResource.setObserver(resourceObserverMock);
         systemResource.startSystemInfoRefreshService();
+        try {
+            Thread.sleep(1200);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        verify(resourceObserverMock).onChangedForAllClients(any(), any());
     }
 
     @Test

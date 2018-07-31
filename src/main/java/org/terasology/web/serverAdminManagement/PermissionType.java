@@ -45,4 +45,12 @@ public enum PermissionType {
         consolePermissionsMap.put(CONSOLE_DEBUG, PermissionManager.DEBUG_PERMISSION);
         return Collections.unmodifiableMap(consolePermissionsMap);
     }
+
+    protected static Map<PermissionType, Boolean> generatePermissionMap(boolean initialValues) {
+        Map<PermissionType, Boolean> permissionMap = new HashMap<>();
+        for (PermissionType permissionType : PermissionType.values()) {
+            permissionMap.put(permissionType, initialValues);
+        }
+        return permissionMap;
+    }
 }
