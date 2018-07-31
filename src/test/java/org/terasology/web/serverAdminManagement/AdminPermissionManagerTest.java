@@ -15,7 +15,6 @@
  */
 package org.terasology.web.serverAdminManagement;
 
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -24,7 +23,6 @@ import org.terasology.context.internal.ContextImpl;
 import org.terasology.entitySystem.entity.EntityManager;
 import org.terasology.entitySystem.entity.EntityRef;
 import org.terasology.logic.permission.PermissionManager;
-import org.terasology.logic.permission.PermissionSystem;
 import org.terasology.network.ClientComponent;
 import org.terasology.registry.InjectionHelper;
 
@@ -38,8 +36,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class AdminPermissionManagerTest {
 
@@ -79,9 +76,7 @@ public class AdminPermissionManagerTest {
         assertEquals(allPermissionsFalse, adminPermissionManager.getPermissionsOfAdmin("second"));
     }
 
-    // TODO make work
     @Test
-    @Ignore
     public void testConsoleAdminPermissions() {
         PermissionManager permissionManagerMock = mock(PermissionManager.class);
         EntityManager entityManagerMock = mock(EntityManager.class);
@@ -94,11 +89,17 @@ public class AdminPermissionManagerTest {
         AdminPermissionManager adminPermissionManager = createPermissionListWithTwoAdmins();
         InjectionHelper.inject(adminPermissionManager, context);
 
-        // The permission manager mock does not correctly add the permissions
+        verify(permissionManagerMock, never()).addPermission(any(), eq("cheat"));
         adminPermissionManager.updateAdminConsolePermissions("first", clientEntityRefMock);
+        verify(permissionManagerMock, atLeastOnce()).addPermission(any(), eq("cheat"));
 
-        // Therefore, this is false
-        assertTrue(permissionManagerMock.hasPermission(clientEntityRefMock, PermissionManager.CHEAT_PERMISSION));
+        Map<PermissionType, Boolean> newPermissionMap = PermissionType.generatePermissionMap(true);
+        newPermissionMap.put(PermissionType.CONSOLE_CHEAT, false);
+        adminPermissionManager.setAdminPermissions("first", new IdPermissionPair("first", newPermissionMap));
+
+        verify(permissionManagerMock, never()).removePermission(any(), eq("cheat"));
+        adminPermissionManager.updateAdminConsolePermissions("first", clientEntityRefMock);
+        verify(permissionManagerMock, atLeastOnce()).removePermission(any(), eq("cheat"));
     }
 
     @Test
