@@ -464,6 +464,24 @@
           "$ref": "#/components/parameters/Session-Token"
         }
       ],
+      "get": {
+        "summary": "Returns a list of console commands that can be run on a server",
+        "responses": {
+          "200": {
+            "description": "The console commands that are designated by the console as runnable on the server.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
       "post": {
         "summary": "Executes a console command",
         "requestBody": {
