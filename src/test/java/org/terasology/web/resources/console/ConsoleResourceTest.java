@@ -15,31 +15,67 @@
  */
 package org.terasology.web.resources.console;
 
+import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.terasology.context.Context;
 import org.terasology.context.internal.ContextImpl;
 import org.terasology.entitySystem.entity.EntityRef;
+
 import org.terasology.logic.console.Console;
+import org.terasology.logic.console.ConsoleImpl;
 import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
+import org.terasology.logic.console.commandSystem.MethodCommand;
+import org.terasology.logic.console.commands.ServerCommands;
 import org.terasology.network.Client;
+import org.terasology.network.ClientComponent;
+import org.terasology.network.NetworkMode;
+import org.terasology.network.NetworkSystem;
 import org.terasology.registry.InjectionHelper;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceObserver;
 import org.terasology.web.resources.base.ResourcePath;
 
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 public class ConsoleResourceTest {
+
+    @Rule
+    public ExpectedException expectedException = ExpectedException.none();
+
+    private Console consoleMock;
+    private Context context;
+    private Client client;
+    private EntityRef clientEntityMock;
+    private ConsoleResource consoleResource;
+
+    @Before
+    public void setupConsole() {
+        consoleMock = mock(Console.class);
+        context = new ContextImpl();
+        context.put(Console.class, consoleMock);
+        consoleResource = new ConsoleResource();
+        InjectionHelper.inject(consoleResource, context);
+
+        client = mock(Client.class);
+        clientEntityMock = mock(EntityRef.class);
+        when(client.getEntity()).thenReturn(clientEntityMock);
+    }
+
+    @Test
+    public void testGetConsoleCommands() throws ResourceAccessException {
+        setupConsole();
+        assertNotNull(consoleResource.getGetMethod(ResourcePath.createEmpty()).perform(null, client));
+    }
 
     @Test
     @SuppressWarnings("unchecked")
     public void testMessageNotification() {
-        ConsoleResource consoleResource = new ConsoleResource();
         ResourceObserver observer = mock(ResourceObserver.class);
         MessageEvent testEvent = mock(MessageEvent.class);
         Message message = new Message("testMessage");
@@ -51,18 +87,43 @@ public class ConsoleResourceTest {
     }
 
     @Test
+    public void testCommandExecutionFails() throws ResourceAccessException {
+        setupConsole();
+
+        expectedException.expect(ResourceAccessException.class);
+        consoleResource.getPostMethod(ResourcePath.createEmpty()).perform("testCommand testArg", client);
+    }
+
+    @Test
     public void testCommandExecution() throws ResourceAccessException {
-        Console consoleMock = mock(Console.class);
-        Context context = new ContextImpl();
-        context.put(Console.class, consoleMock);
-        ConsoleResource consoleResource = new ConsoleResource();
+        context = new ContextImpl();
+        consoleResource = new ConsoleResource();
+        NetworkSystem networkSystemMock = mock(NetworkSystem.class);
+        when(networkSystemMock.getMode()).thenReturn(NetworkMode.NONE);
+        context.put(NetworkSystem.class, networkSystemMock);
+        Console consoleWithCommandsSpy = spy(new ConsoleImpl(context));
+        context.put(Console.class, consoleWithCommandsSpy);
         InjectionHelper.inject(consoleResource, context);
 
-        Client client = mock(Client.class);
-        EntityRef clientEntityMock = mock(EntityRef.class);
+        client = mock(Client.class);
+        clientEntityMock = mock(EntityRef.class);
+        when(clientEntityMock.getComponent(ClientComponent.class)).thenReturn(new ClientComponent());
         when(client.getEntity()).thenReturn(clientEntityMock);
 
-        consoleResource.getPostMethod(ResourcePath.createEmpty()).perform("testCommand testArg", client);
-        verify(consoleMock).execute("testCommand testArg", clientEntityMock);
+        ServerCommands serverCommands = new ServerCommands();
+        MethodCommand.registerAvailable(serverCommands, consoleWithCommandsSpy, context);
+
+        consoleResource.getPostMethod(ResourcePath.createEmpty()).perform("save", client);
+        verify(consoleWithCommandsSpy).execute("save", clientEntityMock);
+    }
+
+    @Test
+    public void testHelpCommand() throws ResourceAccessException {
+        setupConsole();
+
+        ResourceObserver resourceObserverMock = mock(ResourceObserver.class);
+        consoleResource.setObserver(resourceObserverMock);
+        consoleResource.getPostMethod(ResourcePath.createEmpty()).perform("help", client);
+        verify(consoleMock, never()).execute(anyString(), eq(clientEntityMock));
     }
 }
