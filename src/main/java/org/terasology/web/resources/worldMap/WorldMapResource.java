@@ -138,7 +138,7 @@ public class WorldMapResource extends AbstractSimpleResource {
      * @param img the image to convert.
      * @return a base64 encoded string representation of the image, or null if the image cannot be converted.
      */
-    private String convertImageToBase64String(final BufferedImage img) {
+    String convertImageToBase64String(final BufferedImage img) {
         final ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
         try {
             ImageIO.write(img, "png", byteArrayOutputStream);
@@ -155,7 +155,7 @@ public class WorldMapResource extends AbstractSimpleResource {
      * @param blockY the y coordinate of the block for use in determining brightness.
      * @return the average color of the block with brightness changed.
      */
-    private int getColorOfTexture(BufferedImage bufferedImage, int blockY) {
+    int getColorOfTexture(BufferedImage bufferedImage, int blockY) {
         double brightnessMin = 0.85;
         double blockYCoordinateBrightnessChange = 0.0015;
         double brightnessMultiplier = TeraMath.clamp(brightnessMin + blockY * blockYCoordinateBrightnessChange, brightnessMin, 1);
@@ -230,7 +230,7 @@ public class WorldMapResource extends AbstractSimpleResource {
      * @param mapBlockWidth the width of the map.
      * @param mapBlockLength the length of the map.
      */
-    private EntityRef loadChunks(Vector3i center, int mapBlockWidth, int mapBlockLength) {
+    EntityRef loadChunks(Vector3i center, int mapBlockWidth, int mapBlockLength) {
         final int maximumVerticalChunks = 8;
         LocationComponent locationComponent = new LocationComponent();
         locationComponent.setWorldPosition(center.toVector3f());
