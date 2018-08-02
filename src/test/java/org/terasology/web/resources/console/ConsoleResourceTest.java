@@ -39,9 +39,14 @@ import org.terasology.web.resources.base.ResourceObserver;
 import org.terasology.web.resources.base.ResourcePath;
 
 import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class ConsoleResourceTest {
 
@@ -69,7 +74,6 @@ public class ConsoleResourceTest {
 
     @Test
     public void testGetConsoleCommands() throws ResourceAccessException {
-        setupConsole();
         assertNotNull(consoleResource.getGetMethod(ResourcePath.createEmpty()).perform(null, client));
     }
 
@@ -87,9 +91,7 @@ public class ConsoleResourceTest {
     }
 
     @Test
-    public void testCommandExecutionFails() throws ResourceAccessException {
-        setupConsole();
-
+    public void testNonexistantCommandExecutionThrowsException() throws ResourceAccessException {
         expectedException.expect(ResourceAccessException.class);
         consoleResource.getPostMethod(ResourcePath.createEmpty()).perform("testCommand testArg", client);
     }
@@ -119,8 +121,6 @@ public class ConsoleResourceTest {
 
     @Test
     public void testHelpCommand() throws ResourceAccessException {
-        setupConsole();
-
         ResourceObserver resourceObserverMock = mock(ResourceObserver.class);
         consoleResource.setObserver(resourceObserverMock);
         consoleResource.getPostMethod(ResourcePath.createEmpty()).perform("help", client);

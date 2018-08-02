@@ -15,6 +15,7 @@
  */
 package org.terasology.web.resources.worldMap;
 
+import org.apache.commons.codec.binary.Base64;
 import org.junit.Before;
 import org.junit.Test;
 import org.terasology.context.Context;
@@ -26,11 +27,12 @@ import org.terasology.registry.InjectionHelper;
 import org.terasology.world.RelevanceRegionComponent;
 import org.terasology.world.WorldProvider;
 
-import java.awt.*;
+import java.awt.Graphics2D;
+import java.awt.Color;
 import java.awt.image.BufferedImage;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -67,15 +69,15 @@ public class WorldMapResourceTest {
 
     @Test
     public void testColorOfTexture() {
-        // predetermined to be the correct color through testing
-        final int arbitraryImageColorToTest = 3947580;
-        assertEquals(arbitraryImageColorToTest, worldMapResource.getColorOfTexture(getTestImage(), 75));
+        // each color takes up 1/4th of the image
+        final int colorToTest = new Color(60, 60, 60).getRGB() & 0x00FFFFFF;
+        assertEquals(colorToTest, worldMapResource.getColorOfTexture(getTestImage(), 75));
     }
 
     @Test
     public void testImageConvertsToBase64String() {
         BufferedImage testImage = getTestImage();
-        assertNotNull(worldMapResource.convertImageToBase64String(testImage));
+        assertTrue(Base64.isBase64(worldMapResource.convertImageToBase64String(testImage)));
     }
 
     @Test
