@@ -57,18 +57,20 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     private final Path adminPermissionsFilePath;
     private final Type typeOfServerAdminPermissions = new TypeToken<Set<IdPermissionPair>>() {
     }.getType();
+    private boolean autoSave;
     private Set<IdPermissionPair> serverAdminPermissions;
     private Runnable onListChanged = () -> {
     };
 
-    private AdminPermissionManager(Path adminPermissionsFilePath) {
+    AdminPermissionManager(Path adminPermissionsFilePath, boolean autoSave) {
         this.adminPermissionsFilePath = adminPermissionsFilePath;
+        this.autoSave = autoSave;
         setServerAdminPermissions(new HashSet<>());
     }
 
     public static AdminPermissionManager getInstance() {
         if (instance == null) {
-            instance = new AdminPermissionManager(PathManager.getInstance().getHomePath().resolve("serverAdminPermissions.json"));
+            instance = new AdminPermissionManager(PathManager.getInstance().getHomePath().resolve("serverAdminPermissions.json"), true);
         }
         return instance;
     }
@@ -90,7 +92,7 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     }
 
     public void giveAllPermissionsToAdmin(String adminId) {
-        setAdminPermissions(adminId, new IdPermissionPair(adminId, generatePermissionMap(true)));
+        setAdminPermissions(adminId, new IdPermissionPair(adminId, PermissionType.generatePermissionMap(true)));
     }
 
     @SuppressWarnings({"SuspiciousToArrayCall", "SuspiciousMethodCalls"})
@@ -108,15 +110,19 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
             }
         }
         serverAdminPermissions.add(new IdPermissionPair(adminId, fixedNewPermissions));
-        try {
-            saveAdminPermissionList();
-        } catch (IOException e) {
-            logger.error("cannot save the admin permission list after setting a permission", e);
+        if (autoSave) {
+            try {
+                saveAdminPermissionList();
+            } catch (IOException e) {
+                logger.error("cannot save the admin permission list after setting a permission", e);
+            }
         }
         EntityRef playerToChange = EntityRef.NULL;
-        for (Client player : networkSystem.getPlayers()) {
-            if (player.getId().equals(adminId)) {
-                playerToChange = player.getEntity();
+        if (networkSystem != null) {
+            for (Client player : networkSystem.getPlayers()) {
+                if (player.getId().equals(adminId)) {
+                    playerToChange = player.getEntity();
+                }
             }
         }
         if (playerToChange != EntityRef.NULL) {
@@ -125,7 +131,7 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
     }
 
     public void addAdmin(String id) {
-        serverAdminPermissions.add(new IdPermissionPair(id, generatePermissionMap(false)));
+        serverAdminPermissions.add(new IdPermissionPair(id, PermissionType.generatePermissionMap(false)));
         onListChanged.run();
     }
 
@@ -158,7 +164,7 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
             logger.warn("Failed to load the admin permissions list, resetting all permissions to false!");
             newValue = new HashSet<>();
             for (String adminId : ServerAdminsManager.getInstance().getAdminIds()) {
-                newValue.add(new IdPermissionPair(adminId, generatePermissionMap(false)));
+                newValue.add(new IdPermissionPair(adminId, PermissionType.generatePermissionMap(false)));
             }
         }
         setServerAdminPermissions(newValue);
@@ -180,14 +186,6 @@ public final class AdminPermissionManager implements DefaultComponentSystem {
 
     private void setServerAdminPermissions(Set<IdPermissionPair> permissions) {
         serverAdminPermissions = Collections.synchronizedSet(permissions);
-    }
-
-    private Map<PermissionType, Boolean> generatePermissionMap(boolean initialValues) {
-        Map<PermissionType, Boolean> permissionMap = new HashMap<>();
-        for (PermissionType permissionType : PermissionType.values()) {
-            permissionMap.put(permissionType, initialValues);
-        }
-        return permissionMap;
     }
 
 }
