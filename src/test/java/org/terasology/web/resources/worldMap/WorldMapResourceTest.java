@@ -15,7 +15,7 @@
  */
 package org.terasology.web.resources.worldMap;
 
-import org.apache.commons.codec.binary.Base64;
+import org.codehaus.plexus.util.Base64;
 import org.junit.Before;
 import org.junit.Test;
 import org.terasology.context.Context;
@@ -30,6 +30,7 @@ import org.terasology.world.WorldProvider;
 import java.awt.Graphics2D;
 import java.awt.Color;
 import java.awt.image.BufferedImage;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
@@ -77,7 +78,8 @@ public class WorldMapResourceTest {
     @Test
     public void testImageConvertsToBase64String() {
         BufferedImage testImage = getTestImage();
-        assertTrue(Base64.isBase64(worldMapResource.convertImageToBase64String(testImage)));
+        assertTrue(Base64.isArrayByteBase64(worldMapResource.convertImageToBase64String(testImage)
+                .getBytes(StandardCharsets.UTF_8)));
     }
 
     @Test
