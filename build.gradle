@@ -18,7 +18,7 @@ plugins {
     id "application"
 }
 
-apply from: "$rootDir/config/gradle/artifactory.gradle"
+apply from: "$rootDir/config/gradle/maven.gradle"
 apply from: 'config/gradle/versioning.gradle'
 
 import groovy.json.JsonBuilder
