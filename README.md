@@ -17,7 +17,7 @@ Here is a step-by-step summary:
     * `git checkout develop`
     * `cd ../..`
 * Run `./gradlew jar`
-* To start a server using FacadeServer, execute `./gradlew facades:Server:run`.
+* To start a server using FacadeServer, execute `./gradlew facades:FacadeServer:run`.
 
 ### API documentation
 
