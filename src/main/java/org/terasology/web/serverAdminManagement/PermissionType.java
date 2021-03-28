@@ -15,7 +15,7 @@
  */
 package org.terasology.web.serverAdminManagement;
 
-import org.terasology.logic.permission.PermissionManager;
+import org.terasology.engine.logic.permission.PermissionManager;
 
 import java.util.Collections;
 import java.util.HashMap;

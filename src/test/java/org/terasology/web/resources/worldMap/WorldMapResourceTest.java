@@ -16,16 +16,16 @@
 package org.terasology.web.resources.worldMap;
 
 import org.codehaus.plexus.util.Base64;
+import org.joml.Vector3i;
 import org.junit.Before;
 import org.junit.Test;
-import org.terasology.context.Context;
-import org.terasology.context.internal.ContextImpl;
-import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.logic.location.LocationComponent;
-import org.terasology.math.geom.Vector3i;
-import org.terasology.registry.InjectionHelper;
-import org.terasology.world.RelevanceRegionComponent;
-import org.terasology.world.WorldProvider;
+import org.terasology.engine.context.Context;
+import org.terasology.engine.context.internal.ContextImpl;
+import org.terasology.engine.entitySystem.entity.EntityManager;
+import org.terasology.engine.logic.location.LocationComponent;
+import org.terasology.engine.registry.InjectionHelper;
+import org.terasology.engine.world.RelevanceRegionComponent;
+import org.terasology.engine.world.WorldProvider;
 
 import java.awt.Graphics2D;
 import java.awt.Color;

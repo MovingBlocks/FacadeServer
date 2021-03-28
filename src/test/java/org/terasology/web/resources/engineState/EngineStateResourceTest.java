@@ -17,10 +17,10 @@ package org.terasology.web.resources.engineState;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.terasology.context.Context;
-import org.terasology.engine.GameEngine;
-import org.terasology.engine.modes.GameState;
-import org.terasology.registry.InjectionHelper;
+import org.terasology.engine.context.Context;
+import org.terasology.engine.core.GameEngine;
+import org.terasology.engine.core.modes.GameState;
+import org.terasology.engine.registry.InjectionHelper;
 import org.terasology.web.StateEngineIdle;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourcePath;

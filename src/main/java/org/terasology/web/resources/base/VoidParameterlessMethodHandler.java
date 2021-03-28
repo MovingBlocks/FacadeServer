@@ -15,7 +15,8 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.network.Client;
+
+import org.terasology.engine.network.Client;
 
 /**
  * Method handler for {@link ResourceMethodFactory} that is used for resources where the server does not need to

@@ -15,10 +15,12 @@
  */
 package org.terasology.web.client;
 
-import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.network.internal.AbstractClient;
-import org.terasology.rendering.nui.Color;
+import org.joml.Vector3ic;
+import org.terasology.engine.entitySystem.entity.EntityManager;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.network.internal.AbstractClient;
+import org.terasology.engine.world.chunks.Chunk;
+import org.terasology.nui.Color;
 
 /**
  * This class is used to make an authenticated client, which is able to connect to the
@@ -69,4 +71,13 @@ public class AuthenticatedHeadlessClient extends AbstractClient implements Headl
         return Color.BLACK; //TODO temporary default
     }
 
+    @Override
+    public void onChunkRelevant(Vector3ic pos, Chunk chunk) {
+
+    }
+
+    @Override
+    public void onChunkIrrelevant(Vector3ic pos) {
+
+    }
 }

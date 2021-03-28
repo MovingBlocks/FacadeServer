@@ -16,15 +16,15 @@
 package org.terasology.web.resources.engineState;
 
 import com.google.common.collect.ImmutableMap;
-import org.terasology.engine.GameEngine;
-import org.terasology.engine.modes.GameState;
-import org.terasology.engine.modes.StateIngame;
-import org.terasology.engine.modes.StateLoading;
-import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
-import org.terasology.game.Game;
-import org.terasology.network.NetworkMode;
-import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
-import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
+import org.terasology.engine.core.GameEngine;
+import org.terasology.engine.core.modes.GameState;
+import org.terasology.engine.core.modes.StateIngame;
+import org.terasology.engine.core.modes.StateLoading;
+import org.terasology.engine.core.subsystem.headless.mode.StateHeadlessSetup;
+import org.terasology.engine.game.Game;
+import org.terasology.engine.network.NetworkMode;
+import org.terasology.engine.rendering.nui.layers.mainMenu.savedGames.GameInfo;
+import org.terasology.engine.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.StateEngineIdle;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.io.JsonSession;

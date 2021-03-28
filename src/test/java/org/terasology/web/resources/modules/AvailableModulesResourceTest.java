@@ -18,15 +18,15 @@ package org.terasology.web.resources.modules;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
-import org.terasology.context.Context;
-import org.terasology.engine.module.ModuleManager;
+import org.terasology.engine.context.Context;
+import org.terasology.engine.core.module.ModuleManager;
+import org.terasology.engine.registry.InjectionHelper;
 import org.terasology.i18n.I18nMap;
 import org.terasology.module.Module;
 import org.terasology.module.ModuleMetadata;
 import org.terasology.module.ModuleRegistry;
 import org.terasology.naming.Name;
 import org.terasology.naming.Version;
-import org.terasology.registry.InjectionHelper;
 import org.terasology.web.resources.base.ResourceAccessException;
 
 import java.util.List;

@@ -15,7 +15,8 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.entitySystem.entity.EntityRef;
+
+import org.terasology.engine.entitySystem.entity.EntityRef;
 
 /**
  * Interface for a resource observer. A resource observer looks at a particular resource

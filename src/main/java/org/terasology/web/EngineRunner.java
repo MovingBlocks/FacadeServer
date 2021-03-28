@@ -15,20 +15,20 @@
  */
 package org.terasology.web;
 
-import org.terasology.engine.ComponentSystemManager;
-import org.terasology.engine.TerasologyEngine;
-import org.terasology.engine.TerasologyEngineBuilder;
-import org.terasology.engine.modes.GameState;
-import org.terasology.engine.modes.StateIngame;
-import org.terasology.engine.modes.StateLoading;
-import org.terasology.engine.modes.StateMainMenu;
-import org.terasology.engine.subsystem.common.hibernation.HibernationSubsystem;
-import org.terasology.engine.subsystem.headless.HeadlessAudio;
-import org.terasology.engine.subsystem.headless.HeadlessGraphics;
-import org.terasology.engine.subsystem.headless.HeadlessInput;
-import org.terasology.engine.subsystem.headless.HeadlessTimer;
-import org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup;
-import org.terasology.game.Game;
+import org.terasology.engine.core.ComponentSystemManager;
+import org.terasology.engine.core.TerasologyEngine;
+import org.terasology.engine.core.TerasologyEngineBuilder;
+import org.terasology.engine.core.modes.GameState;
+import org.terasology.engine.core.modes.StateIngame;
+import org.terasology.engine.core.modes.StateLoading;
+import org.terasology.engine.core.modes.StateMainMenu;
+import org.terasology.engine.core.subsystem.common.hibernation.HibernationSubsystem;
+import org.terasology.engine.core.subsystem.headless.HeadlessAudio;
+import org.terasology.engine.core.subsystem.headless.HeadlessGraphics;
+import org.terasology.engine.core.subsystem.headless.HeadlessInput;
+import org.terasology.engine.core.subsystem.headless.HeadlessTimer;
+import org.terasology.engine.core.subsystem.headless.mode.StateHeadlessSetup;
+import org.terasology.engine.game.Game;
 import org.terasology.web.io.JsonSession;
 import org.terasology.web.resources.ResourceManager;
 import org.terasology.web.serverAdminManagement.ServerAdminListUpdaterSystem;

@@ -15,7 +15,8 @@
  */
 package org.terasology.web.resources.config;
 
-import org.terasology.config.Config;
+
+import org.terasology.engine.config.Config;
 
 /**
  * Resource used to get and set the server's MOTD.

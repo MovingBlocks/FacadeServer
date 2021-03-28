@@ -15,9 +15,12 @@
  */
 package org.terasology.web.client;
 
-import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.rendering.nui.Color;
+
+import org.joml.Vector3ic;
+import org.terasology.engine.entitySystem.entity.EntityManager;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.world.chunks.Chunk;
+import org.terasology.nui.Color;
 
 /**
  * This class is used to make an anonymous client, which is used to get read-only access to resources.
@@ -65,5 +68,15 @@ public class AnonymousHeadlessClient implements HeadlessClient {
     @Override
     public Color getColor() {
         return Color.BLACK;
+    }
+
+    @Override
+    public void onChunkRelevant(Vector3ic pos, Chunk chunk) {
+
+    }
+
+    @Override
+    public void onChunkIrrelevant(Vector3ic pos) {
+
     }
 }

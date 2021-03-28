@@ -15,7 +15,7 @@
  */
 package org.terasology.web.resources.base;
 
-import org.terasology.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.entity.EntityRef;
 
 /**
  * Base class for a {@link org.terasology.web.resources.base.Resource} which can notify an attached resource observer

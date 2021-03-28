@@ -15,8 +15,8 @@
  */
 package org.terasology.web.resources.engineState;
 
-import org.terasology.engine.GameEngine;
-import org.terasology.registry.In;
+import org.terasology.engine.core.GameEngine;
+import org.terasology.engine.registry.In;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;

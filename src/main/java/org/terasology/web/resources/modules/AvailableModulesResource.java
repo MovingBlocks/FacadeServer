@@ -15,12 +15,12 @@
  */
 package org.terasology.web.resources.modules;
 
-import org.terasology.engine.module.ModuleManager;
+import org.terasology.engine.core.module.ModuleManager;
+import org.terasology.engine.registry.In;
 import org.terasology.i18n.I18nMap;
 import org.terasology.module.Module;
 import org.terasology.module.ModuleMetadata;
 import org.terasology.naming.Name;
-import org.terasology.registry.In;
 import org.terasology.web.resources.base.StreamBasedItemCollectionResource;
 
 import java.util.Comparator;

@@ -15,26 +15,28 @@
  */
 package org.terasology.web;
 
-import org.terasology.context.Context;
-import org.terasology.engine.ComponentSystemManager;
-import org.terasology.engine.GameEngine;
-import org.terasology.engine.LoggingContext;
-import org.terasology.engine.bootstrap.EntitySystemSetupUtil;
-import org.terasology.engine.modes.GameState;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.entity.internal.EngineEntityManager;
-import org.terasology.entitySystem.event.internal.EventSystem;
-import org.terasology.input.InputSystem;
-import org.terasology.logic.console.Console;
-import org.terasology.logic.console.ConsoleImpl;
-import org.terasology.logic.console.ConsoleSystem;
-import org.terasology.logic.console.commands.CoreCommands;
-import org.terasology.logic.players.LocalPlayer;
-import org.terasology.network.ClientComponent;
-import org.terasology.registry.CoreRegistry;
-import org.terasology.rendering.nui.NUIManager;
-import org.terasology.rendering.nui.internal.CanvasRenderer;
-import org.terasology.rendering.nui.internal.NUIManagerInternal;
+
+import org.terasology.engine.context.Context;
+import org.terasology.engine.core.ComponentSystemManager;
+import org.terasology.engine.core.GameEngine;
+import org.terasology.engine.core.LoggingContext;
+import org.terasology.engine.core.bootstrap.EntitySystemSetupUtil;
+import org.terasology.engine.core.modes.GameState;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.entity.internal.EngineEntityManager;
+import org.terasology.engine.entitySystem.event.internal.EventSystem;
+import org.terasology.engine.input.InputSystem;
+import org.terasology.engine.logic.console.Console;
+import org.terasology.engine.logic.console.ConsoleImpl;
+import org.terasology.engine.logic.console.ConsoleSystem;
+import org.terasology.engine.logic.console.commands.CoreCommands;
+import org.terasology.engine.logic.players.LocalPlayer;
+import org.terasology.engine.network.ClientComponent;
+import org.terasology.engine.registry.CoreRegistry;
+import org.terasology.engine.rendering.nui.NUIManager;
+import org.terasology.engine.rendering.nui.internal.NUIManagerInternal;
+import org.terasology.engine.rendering.nui.internal.TerasologyCanvasRenderer;
+import org.terasology.nui.canvas.CanvasRenderer;
 
 /**
  * An engine state similar to {@link org.terasology.engine.subsystem.headless.mode.StateHeadlessSetup} which doesn't
@@ -60,7 +62,7 @@ public class StateEngineIdle implements GameState {
         eventSystem = context.get(EventSystem.class);
         context.put(Console.class, new ConsoleImpl(context));
 
-        NUIManager nuiManager = new NUIManagerInternal(context.get(CanvasRenderer.class), context);
+        NUIManager nuiManager = new NUIManagerInternal(context.get(TerasologyCanvasRenderer.class), context);
         context.put(NUIManager.class, nuiManager);
 
         componentSystemManager = new ComponentSystemManager(context);

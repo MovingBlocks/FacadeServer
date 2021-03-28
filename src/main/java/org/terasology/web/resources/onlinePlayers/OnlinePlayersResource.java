@@ -15,13 +15,13 @@
  */
 package org.terasology.web.resources.onlinePlayers;
 
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.network.NetworkSystem;
-import org.terasology.network.events.ConnectedEvent;
-import org.terasology.network.events.DisconnectedEvent;
-import org.terasology.registry.In;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.event.ReceiveEvent;
+import org.terasology.engine.entitySystem.systems.RegisterSystem;
+import org.terasology.engine.network.NetworkSystem;
+import org.terasology.engine.network.events.ConnectedEvent;
+import org.terasology.engine.network.events.DisconnectedEvent;
+import org.terasology.engine.registry.In;
 import org.terasology.web.resources.DefaultComponentSystem;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.AbstractSimpleResource;
