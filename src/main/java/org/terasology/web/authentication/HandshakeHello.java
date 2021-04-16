@@ -16,7 +16,7 @@
 package org.terasology.web.authentication;
 
 import com.google.common.primitives.Bytes;
-import org.terasology.identity.PublicIdentityCertificate;
+import org.terasology.engine.identity.PublicIdentityCertificate;
 import org.terasology.web.io.gsonUtils.InvalidClientMessageException;
 import org.terasology.web.io.gsonUtils.Validable;
 

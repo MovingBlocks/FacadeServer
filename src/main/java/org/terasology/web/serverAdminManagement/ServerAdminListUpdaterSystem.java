@@ -15,10 +15,10 @@
  */
 package org.terasology.web.serverAdminManagement;
 
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.BaseComponentSystem;
-import org.terasology.network.events.ConnectedEvent;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.event.ReceiveEvent;
+import org.terasology.engine.entitySystem.systems.BaseComponentSystem;
+import org.terasology.engine.network.events.ConnectedEvent;
 
 /**
  * This class serves as an abstraction layer between ServerAdminsManager and other classes.

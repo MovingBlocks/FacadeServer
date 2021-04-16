@@ -15,7 +15,8 @@
  */
 package org.terasology.web.resources;
 
-import org.terasology.entitySystem.systems.ComponentSystem;
+
+import org.terasology.engine.entitySystem.systems.ComponentSystem;
 
 /**
  * Extension of {@link org.terasology.entitySystem.systems.ComponentSystem} which provides default

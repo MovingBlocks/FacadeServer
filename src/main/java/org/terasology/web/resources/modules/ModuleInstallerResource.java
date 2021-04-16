@@ -15,12 +15,13 @@
  */
 package org.terasology.web.resources.modules;
 
-import org.terasology.engine.module.DependencyResolutionFailedException;
-import org.terasology.engine.module.ModuleManager;
+import org.terasology.engine.core.module.DependencyResolutionFailedException;
+import org.terasology.engine.core.module.ModuleManager;
+import org.terasology.engine.registry.In;
+import org.terasology.engine.utilities.download.MultiFileTransferProgressListener;
+import org.terasology.engine.world.generator.internal.WorldGeneratorManager;
 import org.terasology.module.Module;
 import org.terasology.naming.Name;
-import org.terasology.registry.In;
-import org.terasology.utilities.download.MultiFileTransferProgressListener;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.AbstractSimpleResource;
@@ -28,7 +29,6 @@ import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
 import org.terasology.web.serverAdminManagement.PermissionType;
-import org.terasology.world.generator.internal.WorldGeneratorManager;
 
 import java.util.List;
 import java.util.Set;

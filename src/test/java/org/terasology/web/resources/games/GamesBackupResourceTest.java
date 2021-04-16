@@ -19,8 +19,8 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.terasology.engine.paths.PathManager;
-import org.terasology.game.GameManifest;
+import org.terasology.engine.core.paths.PathManager;
+import org.terasology.engine.game.GameManifest;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourcePath;
 

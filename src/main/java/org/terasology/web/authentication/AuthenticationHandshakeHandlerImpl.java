@@ -15,10 +15,10 @@
  */
 package org.terasology.web.authentication;
 
-import org.terasology.config.SecurityConfig;
-import org.terasology.identity.CertificatePair;
-import org.terasology.identity.IdentityConstants;
-import org.terasology.identity.PublicIdentityCertificate;
+import org.terasology.engine.config.SecurityConfig;
+import org.terasology.engine.identity.CertificatePair;
+import org.terasology.engine.identity.IdentityConstants;
+import org.terasology.engine.identity.PublicIdentityCertificate;
 
 import java.security.SecureRandom;
 

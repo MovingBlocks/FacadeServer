@@ -15,15 +15,15 @@
  */
 package org.terasology.web.client;
 
-import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.event.Event;
+import org.terasology.engine.entitySystem.entity.EntityManager;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.event.Event;
+import org.terasology.engine.network.Client;
+import org.terasology.engine.rendering.world.viewDistance.ViewDistance;
+import org.terasology.engine.world.chunks.Chunk;
 import org.terasology.math.geom.Vector3i;
-import org.terasology.network.Client;
-import org.terasology.rendering.world.viewDistance.ViewDistance;
 import org.terasology.web.serverAdminManagement.AdminPermissionManager;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
-import org.terasology.world.chunks.Chunk;
 
 /**
  * Interface for clients attempting to access resources or connect to the web interface frontend.
@@ -36,14 +36,6 @@ public interface HeadlessClient extends Client {
     default ClientSecurityInfo getSecurityInfo() {
         return new ClientSecurityInfo(!isAnonymous(), ServerAdminsManager.getInstance().clientHasAdminPermissions(getId()),
                 AdminPermissionManager.getInstance().getPermissionsOfAdmin(getId()));
-    }
-
-    @Override
-    default void onChunkRelevant(Vector3i pos, Chunk chunk) {
-    }
-
-    @Override
-    default void onChunkIrrelevant(Vector3i pos) {
     }
 
     @Override

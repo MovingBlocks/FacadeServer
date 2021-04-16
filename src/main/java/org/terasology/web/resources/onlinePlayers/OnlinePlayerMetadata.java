@@ -15,8 +15,8 @@
  */
 package org.terasology.web.resources.onlinePlayers;
 
-import org.terasology.network.Client;
-import org.terasology.rendering.nui.Color;
+import org.terasology.engine.network.Client;
+import org.terasology.nui.Color;
 
 import java.util.Objects;
 

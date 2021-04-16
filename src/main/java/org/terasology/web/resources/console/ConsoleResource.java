@@ -15,19 +15,19 @@
  */
 package org.terasology.web.resources.console;
 
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.entitySystem.event.ReceiveEvent;
-import org.terasology.entitySystem.systems.RegisterSystem;
-import org.terasology.logic.console.Console;
-import org.terasology.logic.console.ConsoleColors;
-import org.terasology.logic.console.ConsoleMessageEvent;
-import org.terasology.logic.console.MessageEvent;
-import org.terasology.logic.console.commandSystem.ConsoleCommand;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.entitySystem.event.ReceiveEvent;
+import org.terasology.engine.entitySystem.systems.RegisterSystem;
+import org.terasology.engine.logic.console.Console;
+import org.terasology.engine.logic.console.ConsoleColors;
+import org.terasology.engine.logic.console.ConsoleMessageEvent;
+import org.terasology.engine.logic.console.MessageEvent;
+import org.terasology.engine.logic.console.commandSystem.ConsoleCommand;
+import org.terasology.engine.network.ClientComponent;
+import org.terasology.engine.network.events.ConnectedEvent;
+import org.terasology.engine.registry.In;
 import org.terasology.naming.Name;
-import org.terasology.network.ClientComponent;
-import org.terasology.network.events.ConnectedEvent;
-import org.terasology.registry.In;
-import org.terasology.rendering.FontColor;
+import org.terasology.nui.FontColor;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.DefaultComponentSystem;
 import org.terasology.web.resources.base.*;

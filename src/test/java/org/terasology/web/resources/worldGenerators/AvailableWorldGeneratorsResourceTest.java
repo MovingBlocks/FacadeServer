@@ -16,13 +16,13 @@
 package org.terasology.web.resources.worldGenerators;
 
 import org.junit.Test;
-import org.terasology.context.Context;
-import org.terasology.engine.SimpleUri;
-import org.terasology.registry.InjectionHelper;
+import org.terasology.engine.context.Context;
+import org.terasology.engine.core.SimpleUri;
+import org.terasology.engine.registry.InjectionHelper;
+import org.terasology.engine.world.generator.internal.WorldGeneratorInfo;
+import org.terasology.engine.world.generator.internal.WorldGeneratorManager;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourcePath;
-import org.terasology.world.generator.internal.WorldGeneratorInfo;
-import org.terasology.world.generator.internal.WorldGeneratorManager;
 
 import java.util.Arrays;
 import java.util.List;

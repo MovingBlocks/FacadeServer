@@ -2,7 +2,6 @@
 buildscript {
     repositories {
         // External libs - jcenter is Bintray and is supposed to be a superset of Maven Central, but do both just in case
-        jcenter()
         mavenCentral()
         // gradle plugins
         maven {
@@ -138,11 +137,3 @@ run.workingDir = rootDir
 run.args = ["-homedir=terasology-server"]
 run.dependsOn setupServerConfig
 run.dependsOn setupServerModules
-
-// Support both standalone workspace (expect certain things provided) and embedding in a Terasology workspace (use task dependencies)
-if (project.name != project(':').name) {
-    run.dependsOn rootProject.extractNatives
-    run.dependsOn rootProject.moduleClasses
-} else {
-    // For a standalone workspace natives should be provided
-}

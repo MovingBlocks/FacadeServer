@@ -15,28 +15,29 @@
  */
 package org.terasology.web.resources.worldMap;
 
+import org.joml.Vector3f;
+import org.joml.Vector3i;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.terasology.assets.ResourceUrn;
-import org.terasology.entitySystem.entity.EntityManager;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.logic.location.LocationComponent;
+import org.terasology.engine.entitySystem.entity.EntityManager;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.logic.location.LocationComponent;
+import org.terasology.engine.registry.In;
+import org.terasology.engine.utilities.Assets;
+import org.terasology.engine.world.RelevanceRegionComponent;
+import org.terasology.engine.world.WorldProvider;
+import org.terasology.engine.world.block.Block;
+import org.terasology.engine.world.block.tiles.BlockTile;
+import org.terasology.engine.world.chunks.Chunks;
 import org.terasology.math.TeraMath;
-import org.terasology.math.geom.Vector3i;
-import org.terasology.network.Client;
-import org.terasology.registry.In;
-import org.terasology.utilities.Assets;
+import org.terasology.engine.network.Client;
 import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
 import org.terasology.web.serverAdminManagement.ServerAdminsManager;
-import org.terasology.world.RelevanceRegionComponent;
-import org.terasology.world.WorldProvider;
-import org.terasology.world.block.Block;
-import org.terasology.world.block.tiles.BlockTile;
-import org.terasology.world.chunks.ChunkConstants;
 
 import javax.imageio.ImageIO;
 import java.awt.Color;
@@ -96,8 +97,8 @@ public class WorldMapResource extends AbstractSimpleResource {
             mapLoadingRef = loadChunks(center, mapBlockWidth, mapBlockLength);
         }
 
-        for (int x = (int) Math.floor((double) center.getX() - mapBlockWidth / 2); x < (int) Math.ceil((double) mapBlockWidth / 2 + center.getX()); ++x) {
-            for (int z = (int) Math.floor((double) center.getZ() - mapBlockLength / 2); z < (int) Math.ceil((double) mapBlockLength / 2 + center.getZ()); ++z) {
+        for (int x = (int) Math.floor((double) center.x() - mapBlockWidth / 2); x < (int) Math.ceil((double) mapBlockWidth / 2 + center.x()); ++x) {
+            for (int z = (int) Math.floor((double) center.z() - mapBlockLength / 2); z < (int) Math.ceil((double) mapBlockLength / 2 + center.z()); ++z) {
                 while (worldProvider.getBlock(x, blockY, z).getURI().toString().equals("engine:unloaded")) {
                     try {
                         Thread.sleep(1000);
@@ -106,15 +107,15 @@ public class WorldMapResource extends AbstractSimpleResource {
                     }
                 }
                 mapLoadingRef.destroy();
-                blockY = isSurface ? getSurfaceY(x, blockY, z) : center.getY();
+                blockY = isSurface ? getSurfaceY(x, blockY, z) : center.y();
                 Block block = worldProvider.getBlock(x, blockY, z);
                 ResourceUrn blockUrn = block.getURI().getBlockFamilyDefinitionUrn();
                 if (Assets.get(blockUrn, BlockTile.class).isPresent()) {
                     BufferedImage blockImage = Assets.get(blockUrn, BlockTile.class).get().getImage();
-                    colors.get(x - (center.getX() - mapBlockWidth / 2)).add(new Color(getColorOfTexture(blockImage, blockY)));
+                    colors.get(x - (center.x() - mapBlockWidth / 2)).add(new Color(getColorOfTexture(blockImage, blockY)));
                 } else {
                     logger.warn("cannot find texture of block " + blockUrn.toString());
-                    colors.get(x - (center.getX() - mapBlockWidth / 2)).add(Color.BLACK);
+                    colors.get(x - (center.x() - mapBlockWidth / 2)).add(Color.BLACK);
                 }
             }
         }
@@ -233,10 +234,10 @@ public class WorldMapResource extends AbstractSimpleResource {
     EntityRef loadChunks(Vector3i center, int mapBlockWidth, int mapBlockLength) {
         final int maximumVerticalChunks = 8;
         LocationComponent locationComponent = new LocationComponent();
-        locationComponent.setWorldPosition(center.toVector3f());
+        locationComponent.setWorldPosition(new Vector3f(center));
         RelevanceRegionComponent relevanceRegionComponent = new RelevanceRegionComponent();
-        relevanceRegionComponent.distance = new Vector3i(((int) Math.ceil((double) mapBlockWidth / ChunkConstants.SIZE_X) * 2) + 2, maximumVerticalChunks,
-                ((int) Math.ceil((double) mapBlockLength / ChunkConstants.SIZE_Z) * 2) + 2);
+        relevanceRegionComponent.distance = new Vector3i(((int) Math.ceil((double) mapBlockWidth / Chunks.SIZE_X) * 2) + 2, maximumVerticalChunks,
+                ((int) Math.ceil((double) mapBlockLength / Chunks.SIZE_Z) * 2) + 2);
         return entityManager.create(locationComponent, relevanceRegionComponent);
     }
 

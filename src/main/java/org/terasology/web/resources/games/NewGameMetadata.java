@@ -15,7 +15,7 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.SimpleUri;
+import org.terasology.engine.core.SimpleUri;
 import org.terasology.naming.Name;
 
 import java.util.List;

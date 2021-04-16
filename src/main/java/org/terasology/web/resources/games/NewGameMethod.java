@@ -15,21 +15,21 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.TerasologyConstants;
-import org.terasology.engine.module.ModuleManager;
-import org.terasology.engine.paths.PathManager;
-import org.terasology.game.GameManifest;
+import org.terasology.engine.core.TerasologyConstants;
+import org.terasology.engine.core.module.ModuleManager;
+import org.terasology.engine.core.paths.PathManager;
+import org.terasology.engine.game.GameManifest;
+import org.terasology.engine.world.internal.WorldInfo;
+import org.terasology.engine.world.time.WorldTime;
 import org.terasology.module.DependencyResolver;
 import org.terasology.module.Module;
 import org.terasology.module.ResolutionResult;
-import org.terasology.network.Client;
+import org.terasology.engine.network.Client;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceMethodImpl;
 import org.terasology.web.serverAdminManagement.PermissionType;
-import org.terasology.world.internal.WorldInfo;
-import org.terasology.world.time.WorldTime;
 
 import java.io.IOException;
 import java.nio.file.Files;

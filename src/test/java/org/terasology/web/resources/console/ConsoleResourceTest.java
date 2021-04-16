@@ -29,7 +29,7 @@ import org.terasology.logic.console.Message;
 import org.terasology.logic.console.MessageEvent;
 import org.terasology.logic.console.commandSystem.MethodCommand;
 import org.terasology.logic.console.commands.ServerCommands;
-import org.terasology.network.Client;
+import org.terasology.engine.network.Client;
 import org.terasology.network.ClientComponent;
 import org.terasology.network.NetworkMode;
 import org.terasology.network.NetworkSystem;

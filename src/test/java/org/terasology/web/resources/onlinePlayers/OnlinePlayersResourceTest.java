@@ -16,15 +16,15 @@
 package org.terasology.web.resources.onlinePlayers;
 
 import org.junit.Test;
-import org.terasology.context.Context;
-import org.terasology.context.internal.ContextImpl;
-import org.terasology.entitySystem.entity.EntityRef;
-import org.terasology.network.Client;
-import org.terasology.network.NetworkSystem;
-import org.terasology.network.events.ConnectedEvent;
-import org.terasology.network.events.DisconnectedEvent;
-import org.terasology.registry.InjectionHelper;
-import org.terasology.rendering.nui.Color;
+import org.terasology.engine.context.Context;
+import org.terasology.engine.context.internal.ContextImpl;
+import org.terasology.engine.entitySystem.entity.EntityRef;
+import org.terasology.engine.network.Client;
+import org.terasology.engine.network.NetworkSystem;
+import org.terasology.engine.network.events.ConnectedEvent;
+import org.terasology.engine.network.events.DisconnectedEvent;
+import org.terasology.engine.registry.InjectionHelper;
+import org.terasology.nui.Color;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceObserver;
 import org.terasology.web.resources.base.ResourcePath;

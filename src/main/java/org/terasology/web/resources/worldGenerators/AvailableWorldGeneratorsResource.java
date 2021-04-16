@@ -15,14 +15,14 @@
  */
 package org.terasology.web.resources.worldGenerators;
 
-import org.terasology.registry.In;
-import org.terasology.web.resources.base.ResourceAccessException;
+import org.terasology.engine.registry.In;
+import org.terasology.engine.world.generator.internal.WorldGeneratorInfo;
+import org.terasology.engine.world.generator.internal.WorldGeneratorManager;
 import org.terasology.web.resources.base.AbstractSimpleResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
+import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ResourceMethod;
 import org.terasology.web.resources.base.ResourcePath;
-import org.terasology.world.generator.internal.WorldGeneratorInfo;
-import org.terasology.world.generator.internal.WorldGeneratorManager;
 
 import java.util.List;
 

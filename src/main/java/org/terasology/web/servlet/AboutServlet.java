@@ -24,7 +24,6 @@ import javax.ws.rs.core.MediaType;
 import org.glassfish.jersey.server.mvc.Viewable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.terasology.web.version.VersionInfo;
 
 import com.google.common.collect.ImmutableMap;
 

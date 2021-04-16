@@ -15,12 +15,12 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.module.ModuleManager;
-import org.terasology.engine.paths.PathManager;
-import org.terasology.game.GameManifest;
-import org.terasology.registry.In;
-import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameInfo;
-import org.terasology.rendering.nui.layers.mainMenu.savedGames.GameProvider;
+import org.terasology.engine.core.module.ModuleManager;
+import org.terasology.engine.core.paths.PathManager;
+import org.terasology.engine.game.GameManifest;
+import org.terasology.engine.registry.In;
+import org.terasology.engine.rendering.nui.layers.mainMenu.savedGames.GameInfo;
+import org.terasology.engine.rendering.nui.layers.mainMenu.savedGames.GameProvider;
 import org.terasology.web.EngineRunner;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.base.ResourceAccessException;

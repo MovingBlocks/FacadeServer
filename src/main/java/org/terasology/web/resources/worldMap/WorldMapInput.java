@@ -15,7 +15,8 @@
  */
 package org.terasology.web.resources.worldMap;
 
-import org.terasology.math.geom.Vector3i;
+
+import org.joml.Vector3i;
 
 /**
  * This class defines the data format that is sent from the frontend for use in {@link WorldMapResource}.

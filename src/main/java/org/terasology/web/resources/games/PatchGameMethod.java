@@ -15,9 +15,9 @@
  */
 package org.terasology.web.resources.games;
 
-import org.terasology.engine.paths.PathManager;
-import org.terasology.game.GameManifest;
-import org.terasology.network.Client;
+import org.terasology.engine.core.paths.PathManager;
+import org.terasology.engine.game.GameManifest;
+import org.terasology.engine.network.Client;
 import org.terasology.web.io.ActionResult;
 import org.terasology.web.resources.base.ResourceAccessException;
 import org.terasology.web.resources.base.ClientSecurityRequirements;

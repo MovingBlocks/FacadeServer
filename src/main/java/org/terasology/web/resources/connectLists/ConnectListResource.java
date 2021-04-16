@@ -15,7 +15,7 @@
  */
 package org.terasology.web.resources.connectLists;
 
-import org.terasology.network.internal.ServerConnectListManager;
+import org.terasology.engine.network.internal.ServerConnectListManager;
 import org.terasology.web.resources.base.AbstractItemCollectionResource;
 import org.terasology.web.resources.base.ClientSecurityRequirements;
 import org.terasology.web.resources.base.ResourceAccessException;

@@ -15,7 +15,7 @@
  */
 package org.terasology.web.client;
 
-import org.terasology.entitySystem.entity.EntityManager;
+import org.terasology.engine.entitySystem.entity.EntityManager;
 import org.terasology.web.EngineRunner;
 
 /**
