@@ -1,7 +1,7 @@
 // Need this here in case we're building standalone, not inside a Terasology engine workspace
 buildscript {
     repositories {
-        // External libs - jcenter is Bintray and is supposed to be a superset of Maven Central, but do both just in case
+        // External libs
         mavenCentral()
         // gradle plugins
         maven {
